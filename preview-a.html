@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yalla Cancel — اكتشف اشتراكاتك المخفية</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #00A651;
+      --primary-hover: #00C060;
+      --primary-dark: #007A3D;
+      --primary-bg: #F0FBF4;
+      --dark: #0F172A;
+      --dark2: #1E293B;
+      --dark3: #334155;
+      --surface: #F8FAFC;
+      --white: #FFFFFF;
+      --text: #0F172A;
+      --text2: #64748B;
+      --muted: #94A3B8;
+      --border: #E2E8F0;
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Noto Sans Arabic", -apple-system, sans-serif;
+      background: var(--white);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.6;
+    }
+    img { max-width: 100%; }
+    a { text-decoration: none; color: inherit; }
+
+    /* ══════════════════════════════════════════
+       NAVIGATION
+    ══════════════════════════════════════════ */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(15,23,42,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 32px;
+      height: 64px; display: flex; align-items: center; justify-content: flex-start;
+    }
+    .nav-logo {
+      font-family: "Inter", -apple-system, sans-serif;
+      font-size: 1.35rem; font-weight: 900; color: white;
+      display: flex; align-items: center; gap: 8px;
+      cursor: pointer;
+    }
+    .nav-logo span { color: var(--primary); }
+
+    /* ══════════════════════════════════════════
+       HERO
+    ══════════════════════════════════════════ */
+    .hero {
+      background: linear-gradient(135deg, #0F172A 0%, #1a2744 50%, #0d2618 100%);
+      padding: 140px 32px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at 30% 50%, rgba(0,166,81,0.12) 0%, transparent 60%),
+                  radial-gradient(ellipse at 70% 20%, rgba(0,166,81,0.06) 0%, transparent 50%);
+    }
+    .hero-inner {
+      max-width: 1200px; margin: 0 auto; position: relative; z-index: 2;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
+    }
+    .hero h1 {
+      font-size: clamp(2.2rem, 4.5vw, 3.5rem);
+      font-weight: 900; color: white; line-height: 1.2; margin-bottom: 20px;
+    }
+    .hero h1 em { font-style: normal; color: var(--primary); }
+    .hero-sub { font-size: 1.15rem; color: rgba(255,255,255,0.7); line-height: 1.8; margin-bottom: 32px; max-width: 480px; }
+    .hero-note { font-size: 0.8rem; color: rgba(255,255,255,0.4); display: flex; align-items: center; gap: 16px; }
+    .hero-note span { display: flex; align-items: center; gap: 4px; }
+
+    /* Upload Card in Hero */
+    .hero-upload-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 32px;
+      backdrop-filter: blur(10px);
+    }
+    .upload-zone {
+      border: 2px dashed rgba(255,255,255,0.25);
+      border-radius: 16px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 20px;
+    }
+    .upload-zone:hover {
+      border-color: var(--primary);
+      background: rgba(0,166,81,0.06);
+    }
+    .upload-zone-icon {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+    }
+    .upload-zone-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 6px;
+    }
+    .upload-zone-sub {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.45);
+    }
+    .upload-file-input {
+      display: none;
+    }
+    .btn-upload-primary {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%;
+      background: var(--primary); color: white;
+      padding: 16px 24px; border-radius: 14px;
+      font-weight: 700; font-size: 1.05rem;
+      border: none; cursor: pointer; font-family: inherit;
+      transition: all 0.25s; box-shadow: 0 4px 20px rgba(0,166,81,0.4);
+      margin-bottom: 16px;
+    }
+    .btn-upload-primary:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,166,81,0.5); }
+    .upload-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 16px;
+    }
+    .upload-divider::before, .upload-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.12);
+    }
+    .upload-divider span {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.35);
+      white-space: nowrap;
+    }
+    .btn-sample-ghost {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%;
+      background: rgba(255,255,255,0.06); color: white;
+      padding: 14px 24px; border-radius: 14px;
+      font-weight: 600; font-size: 0.95rem;
+      border: 1px solid rgba(255,255,255,0.15); cursor: pointer; font-family: inherit;
+      transition: all 0.2s;
+    }
+    .btn-sample-ghost:hover { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.3); }
+
+    /* Hero badge (below upload card) */
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(0,166,81,0.15); border: 1px solid rgba(0,166,81,0.3);
+      border-radius: 9999px; padding: 8px 18px; margin-top: 16px;
+      font-size: 0.85rem; font-weight: 600; color: var(--primary);
+    }
+
+    @media (max-width: 900px) {
+      .hero-inner { grid-template-columns: 1fr; }
+    }
+
+    /* ══════════════════════════════════════════
+       ANALYZING OVERLAY
+    ══════════════════════════════════════════ */
+    .analyzing-overlay {
+      display: none;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15,23,42,0.97);
+      z-index: 9999;
+      align-items: center; justify-content: center;
+      flex-direction: column;
+    }
+    .analyzing-overlay.active {
+      display: flex;
+    }
+    .analyzing-spinner {
+      width: 56px; height: 56px;
+      border: 4px solid rgba(255,255,255,0.1);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 24px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .analyzing-text {
+      color: white;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .analyzing-sub {
+      color: rgba(255,255,255,0.5);
+      font-size: 0.85rem;
+      margin-bottom: 32px;
+    }
+    .progress-bar-wrap {
+      width: 320px;
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      border-radius: 9999px;
+      transition: width 0.3s ease;
+    }
+
+    /* ══════════════════════════════════════════
+       REPORT PAGE (hidden by default)
+    ══════════════════════════════════════════ */
+    .report-page {
+      display: none;
+      min-height: 100vh;
+      background: var(--surface);
+    }
+    .report-page.active {
+      display: block;
+    }
+    .report-page-nav {
+      background: var(--dark);
+      padding: 0 32px;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .report-page-nav .nav-logo {
+      font-family: "Inter", -apple-system, sans-serif;
+      font-size: 1.35rem; font-weight: 900; color: white;
+      display: flex; align-items: center; gap: 8px;
+      cursor: pointer;
+    }
+    .report-page-nav .nav-logo span { color: var(--primary); }
+    .btn-back {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.08); color: white;
+      padding: 10px 20px; border-radius: 12px;
+      font-weight: 600; font-size: 0.85rem;
+      border: 1px solid rgba(255,255,255,0.12); cursor: pointer; font-family: inherit;
+      transition: all 0.2s;
+    }
+    .btn-back:hover { background: rgba(255,255,255,0.14); }
+    .report-page-body {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 32px 80px;
+    }
+    .report-page-header {
+      margin-bottom: 32px;
+    }
+    .report-page-header h2 {
+      font-size: 1.6rem; font-weight: 900; margin-bottom: 6px;
+    }
+    .report-page-header p {
+      font-size: 0.9rem; color: var(--text2);
+    }
+    .report-page-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 640px) { .report-page-stats { grid-template-columns: 1fr; } }
+    .rpage-stat {
+      background: white; border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px; text-align: center;
+    }
+    .rpage-stat.hl { border-color: var(--primary); background: var(--primary-bg); }
+    .rpage-stat .v { font-size: 1.5rem; font-weight: 900; }
+    .rpage-stat.hl .v { color: var(--primary); }
+    .rpage-stat .l { font-size: 0.8rem; color: var(--text2); margin-top: 4px; }
+    .report-page-list-title {
+      font-size: 1.1rem; font-weight: 800; margin-bottom: 16px;
+    }
+    .rpage-sub {
+      display: flex; align-items: center; justify-content: space-between;
+      background: white; border: 1px solid var(--border);
+      border-radius: 16px; padding: 16px 20px; margin-bottom: 10px;
+      transition: all 0.2s;
+    }
+    .rpage-sub:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.04); }
+    .rpage-sub-left { display: flex; align-items: center; gap: 14px; }
+    .rpage-sub-logo { width: 32px; height: 32px; border-radius: 8px; }
+    .rpage-sub-info {}
+    .rpage-sub-name { font-weight: 700; font-size: 0.95rem; }
+    .rpage-sub-meta { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+    .rpage-sub-freq { font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 9999px; background: #F1F5F9; color: #64748B; }
+    .rpage-sub-price { font-weight: 900; font-size: 1rem; color: var(--text); }
+    .rpage-sub-right { display: flex; align-items: center; gap: 8px; }
+    .btn-cancel-sub {
+      padding: 8px 18px; border-radius: 10px;
+      font-weight: 700; font-size: 0.8rem;
+      border: 1px solid #FECACA; background: #FEF2F2; color: #DC2626;
+      cursor: pointer; font-family: inherit; transition: all 0.2s;
+    }
+    .btn-cancel-sub:hover { background: #FEE2E2; border-color: #F87171; }
+    .btn-keep-sub {
+      padding: 8px 18px; border-radius: 10px;
+      font-weight: 700; font-size: 0.8rem;
+      border: 1px solid #BBF7D0; background: #ECFDF5; color: #16A34A;
+      cursor: pointer; font-family: inherit; transition: all 0.2s;
+    }
+    .btn-keep-sub:hover { background: #DCFCE7; border-color: #86EFAC; }
+
+    /* ══════════════════════════════════════════
+       LANDING PAGE wrapper
+    ══════════════════════════════════════════ */
+    .landing-page {}
+    .landing-page.hidden { display: none; }
+
+    /* ══════════════════════════════════════════
+       LOGO BAR
+    ══════════════════════════════════════════ */
+    .logo-bar { background: white; border-bottom: 1px solid var(--border); padding: 40px 32px; }
+    .logo-bar-inner { max-width: 1200px; margin: 0 auto; text-align: center; }
+    .logo-bar-label {
+      font-size: 0.75rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 24px;
+    }
+    .logo-bar-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+    .logo-chip {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 10px 20px; transition: all 0.2s;
+    }
+    .logo-chip:hover { border-color: var(--primary); background: var(--primary-bg); }
+    .logo-chip img { width: 24px; height: 24px; border-radius: 4px; object-fit: contain; }
+    .logo-chip span { font-size: 0.85rem; font-weight: 600; color: var(--text2); }
+
+    /* ══════════════════════════════════════════
+       PROBLEM SECTION
+    ══════════════════════════════════════════ */
+    .problem { padding: 100px 32px; background: var(--surface); }
+    .problem-inner { max-width: 900px; margin: 0 auto; text-align: center; }
+    .section-label {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--primary-bg); color: var(--primary);
+      font-size: 0.75rem; font-weight: 700; padding: 6px 14px;
+      border-radius: 9999px; margin-bottom: 20px;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .section-title { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 900; margin-bottom: 16px; line-height: 1.3; }
+    .section-sub { font-size: 1.05rem; color: var(--text2); max-width: 600px; margin: 0 auto 48px; line-height: 1.8; }
+    .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    @media (max-width: 640px) { .stat-cards { grid-template-columns: 1fr; } }
+    .stat-card-big {
+      background: white; border: 1px solid var(--border); border-radius: 20px;
+      padding: 36px 24px; text-align: center;
+      transition: all 0.25s;
+    }
+    .stat-card-big:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.06); }
+    .stat-card-big .stat-icon { font-size: 2.5rem; margin-bottom: 16px; }
+    .stat-card-big .stat-num { font-size: 2rem; font-weight: 900; color: var(--primary); margin-bottom: 4px; }
+    .stat-card-big .stat-text { font-size: 0.9rem; color: var(--text2); }
+
+    /* ══════════════════════════════════════════
+       HOW IT WORKS
+    ══════════════════════════════════════════ */
+    .how { padding: 100px 32px; background: white; }
+    .how-inner { max-width: 1100px; margin: 0 auto; }
+    .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 48px; }
+    @media (max-width: 768px) { .steps-grid { grid-template-columns: 1fr; } }
+    .step-card {
+      background: var(--surface); border-radius: 24px; padding: 40px 28px;
+      text-align: center; position: relative;
+      transition: all 0.3s;
+    }
+    .step-card:hover { transform: translateY(-6px); box-shadow: 0 16px 48px rgba(0,0,0,0.06); }
+    .step-num {
+      position: absolute; top: -16px; right: 24px;
+      width: 40px; height: 40px; background: var(--primary); color: white;
+      border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 1.1rem;
+      box-shadow: 0 4px 12px rgba(0,166,81,0.3);
+    }
+    .step-icon {
+      width: 80px; height: 80px; margin: 0 auto 24px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .step-card h3 { font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; }
+    .step-card p { font-size: 0.9rem; color: var(--text2); line-height: 1.7; }
+
+    /* ══════════════════════════════════════════
+       PRODUCT SHOWCASE (Report Preview)
+    ══════════════════════════════════════════ */
+    .showcase {
+      padding: 100px 32px;
+      background: linear-gradient(135deg, #0F172A 0%, #162415 100%);
+      position: relative;
+    }
+    .showcase::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at 50% 30%, rgba(0,166,81,0.1) 0%, transparent 60%);
+    }
+    .showcase-inner { max-width: 1100px; margin: 0 auto; position: relative; z-index: 2; }
+    .showcase .section-label { background: rgba(0,166,81,0.15); border: 1px solid rgba(0,166,81,0.2); }
+    .showcase .section-title { color: white; }
+    .showcase .section-sub { color: rgba(255,255,255,0.6); }
+    .showcase-frame {
+      background: white; border-radius: 24px; overflow: hidden;
+      box-shadow: 0 32px 100px rgba(0,0,0,0.4);
+      margin-top: 48px;
+    }
+    .showcase-bar {
+      background: #F8FAFC; padding: 14px 20px;
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .showcase-bar .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .showcase-bar .dot.r { background: #EF4444; }
+    .showcase-bar .dot.y { background: #F59E0B; }
+    .showcase-bar .dot.g { background: #22C55E; }
+    .showcase-bar .url {
+      flex: 1; background: white; border: 1px solid var(--border);
+      border-radius: 8px; padding: 6px 14px; font-size: 0.75rem;
+      color: var(--muted); text-align: center; margin-inline-start: 12px; direction: ltr;
+    }
+    .report-preview { padding: 32px; }
+    .rp-header { margin-bottom: 24px; }
+    .rp-header h2 { font-size: 1.4rem; font-weight: 900; margin-bottom: 4px; }
+    .rp-header p { font-size: 0.85rem; color: var(--muted); }
+    .rp-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
+    @media (max-width: 640px) { .rp-stats { grid-template-columns: 1fr; } }
+    .rp-stat {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 18px; text-align: center;
+    }
+    .rp-stat.hl { border-color: var(--primary); background: var(--primary-bg); }
+    .rp-stat .v { font-size: 1.4rem; font-weight: 900; }
+    .rp-stat.hl .v { color: var(--primary); }
+    .rp-stat .l { font-size: 0.7rem; color: var(--text2); margin-top: 2px; }
+    .rp-section-title { font-size: 1rem; font-weight: 700; margin-bottom: 12px; }
+    .rp-sub {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px; border-radius: 14px; margin-bottom: 8px;
+      background: var(--surface); border: 1px solid var(--border);
+    }
+    .rp-sub-left { display: flex; align-items: center; gap: 12px; }
+    .rp-sub-logo { width: 28px; height: 28px; border-radius: 8px; }
+    .rp-sub-name { font-weight: 700; font-size: 0.9rem; }
+    .rp-sub-freq { font-size: 0.65rem; font-weight: 600; padding: 2px 8px; border-radius: 9999px; background: #F1F5F9; color: #64748B; margin-inline-start: 8px; }
+    .rp-sub-right { display: flex; align-items: center; gap: 10px; }
+    .rp-sub-price { font-weight: 900; font-size: 1.05rem; }
+    .rp-sub-unit { font-size: 0.7rem; color: var(--muted); }
+    .rp-sub-actions { display: flex; gap: 6px; margin-inline-start: 12px; }
+    .rp-btn-cancel {
+      padding: 5px 12px; border-radius: 8px;
+      font-weight: 700; font-size: 0.65rem;
+      border: 1px solid #FECACA; background: #FEF2F2; color: #DC2626;
+      cursor: pointer; font-family: inherit; transition: all 0.2s;
+    }
+    .rp-btn-cancel:hover { background: #FEE2E2; }
+    .rp-btn-keep {
+      padding: 5px 12px; border-radius: 8px;
+      font-weight: 700; font-size: 0.65rem;
+      border: 1px solid #BBF7D0; background: #ECFDF5; color: #16A34A;
+      cursor: pointer; font-family: inherit; transition: all 0.2s;
+    }
+    .rp-btn-keep:hover { background: #DCFCE7; }
+
+    /* ══════════════════════════════════════════
+       FEATURES GRID
+    ══════════════════════════════════════════ */
+    .features { padding: 100px 32px; background: white; }
+    .features-inner { max-width: 1100px; margin: 0 auto; }
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 48px; }
+    @media (max-width: 768px) { .features-grid { grid-template-columns: 1fr; } }
+    .feature-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 32px 28px;
+      transition: all 0.25s;
+    }
+    .feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.06); border-color: var(--primary); }
+    .feature-icon {
+      width: 52px; height: 52px;
+      background: var(--primary-bg); border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 20px;
+    }
+    .feature-card h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 8px; }
+    .feature-card p { font-size: 0.88rem; color: var(--text2); line-height: 1.7; }
+
+    /* ══════════════════════════════════════════
+       SUBSCRIPTIONS WE DETECT
+    ══════════════════════════════════════════ */
+    .subs-detect { padding: 80px 32px; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .subs-detect-inner { max-width: 1100px; margin: 0 auto; text-align: center; }
+    .subs-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-top: 40px; }
+    .sub-chip {
+      display: flex; align-items: center; gap: 10px;
+      background: white; border: 1px solid var(--border);
+      border-radius: 14px; padding: 12px 20px;
+      transition: all 0.2s;
+    }
+    .sub-chip:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.04); }
+    .sub-chip img { width: 24px; height: 24px; border-radius: 6px; }
+    .sub-chip span { font-size: 0.9rem; font-weight: 600; }
+    .sub-chip .sub-price-tag { font-size: 0.75rem; color: var(--muted); font-weight: 500; }
+
+    /* ══════════════════════════════════════════
+       TESTIMONIALS
+    ══════════════════════════════════════════ */
+    .testimonials { padding: 100px 32px; background: white; }
+    .testimonials-inner { max-width: 1100px; margin: 0 auto; }
+    .test-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 48px; }
+    @media (max-width: 768px) { .test-grid { grid-template-columns: 1fr; } }
+    .test-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 32px;
+      transition: all 0.25s;
+    }
+    .test-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.06); }
+    .test-stars { color: #F59E0B; font-size: 0.9rem; margin-bottom: 16px; letter-spacing: 2px; }
+    .test-quote { font-size: 0.95rem; color: var(--text); line-height: 1.8; margin-bottom: 20px; }
+    .test-author { display: flex; align-items: center; gap: 12px; }
+    .test-avatar {
+      width: 40px; height: 40px; background: var(--primary-bg);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-weight: 800; color: var(--primary); font-size: 0.9rem;
+    }
+    .test-name { font-weight: 700; font-size: 0.85rem; }
+    .test-role { font-size: 0.75rem; color: var(--muted); }
+
+    /* ══════════════════════════════════════════
+       FAQ
+    ══════════════════════════════════════════ */
+    .faq { padding: 100px 32px; background: var(--surface); }
+    .faq-inner { max-width: 720px; margin: 0 auto; }
+    .faq-item {
+      background: white; border: 1px solid var(--border);
+      border-radius: 16px; margin-bottom: 12px; overflow: hidden;
+    }
+    .faq-q {
+      padding: 20px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; font-weight: 700; font-size: 0.95rem;
+      transition: background 0.15s;
+    }
+    .faq-q:hover { background: var(--surface); }
+    .faq-q .arrow { transition: transform 0.3s; font-size: 1.2rem; color: var(--muted); }
+    .faq-item.open .faq-q .arrow { transform: rotate(180deg); }
+    .faq-a {
+      max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+      padding: 0 24px;
+    }
+    .faq-item.open .faq-a { max-height: 300px; padding: 0 24px 20px; }
+    .faq-a p { font-size: 0.9rem; color: var(--text2); line-height: 1.8; }
+
+    /* ══════════════════════════════════════════
+       CTA SECTION
+    ══════════════════════════════════════════ */
+    .cta-section {
+      padding: 80px 32px;
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, #00C060 100%);
+      text-align: center;
+    }
+    .cta-inner { max-width: 600px; margin: 0 auto; }
+    .cta-section h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 900; color: white; margin-bottom: 12px; }
+    .cta-section p { font-size: 1rem; color: rgba(255,255,255,0.85); margin-bottom: 32px; }
+    .btn-cta-white {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: white; color: var(--primary-dark);
+      padding: 16px 40px; border-radius: 14px;
+      font-weight: 800; font-size: 1.05rem;
+      border: none; cursor: pointer; font-family: inherit;
+      transition: all 0.25s; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .btn-cta-white:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.2); }
+    .cta-note { margin-top: 16px; font-size: 0.8rem; color: rgba(255,255,255,0.6); }
+
+    /* ══════════════════════════════════════════
+       MEGA FOOTER
+    ══════════════════════════════════════════ */
+    .mega-footer { background: var(--dark); color: white; padding: 80px 32px 40px; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 60px; }
+    @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; } }
+    .footer-brand .footer-logo {
+      font-family: "Inter", -apple-system, sans-serif;
+      font-size: 1.4rem; font-weight: 900; margin-bottom: 12px;
+    }
+    .footer-brand .footer-logo span { color: var(--primary); }
+    .footer-brand p { font-size: 0.85rem; color: rgba(255,255,255,0.5); line-height: 1.7; margin-bottom: 20px; }
+    .footer-social { display: flex; gap: 12px; }
+    .footer-social a {
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,0.08); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; color: rgba(255,255,255,0.6);
+      transition: all 0.2s;
+    }
+    .footer-social a:hover { background: var(--primary); color: white; }
+    .footer-col h4 {
+      font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.4);
+      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px;
+    }
+    .footer-col ul { list-style: none; }
+    .footer-col li { margin-bottom: 10px; }
+    .footer-col a {
+      font-size: 0.875rem; color: rgba(255,255,255,0.65);
+      transition: color 0.2s;
+    }
+    .footer-col a:hover { color: var(--primary); }
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding-top: 24px;
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;
+    }
+    .footer-bottom p { font-size: 0.75rem; color: rgba(255,255,255,0.3); }
+    .footer-bottom-links { display: flex; gap: 24px; }
+    .footer-bottom-links a { font-size: 0.75rem; color: rgba(255,255,255,0.3); }
+    .footer-bottom-links a:hover { color: rgba(255,255,255,0.6); }
+  </style>
+</head>
+<body>
+
+  <!-- ══════ ANALYZING OVERLAY ══════ -->
+  <div class="analyzing-overlay" id="analyzingOverlay">
+    <div class="analyzing-spinner"></div>
+    <div class="analyzing-text">نحلّل كشف حسابك...</div>
+    <div class="analyzing-sub">نفحص العمليات ونكتشف الاشتراكات المتكررة</div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressBarFill"></div>
+    </div>
+  </div>
+
+  <!-- ══════ REPORT PAGE (hidden by default) ══════ -->
+  <div class="report-page" id="reportPage">
+    <div class="report-page-nav">
+      <div class="nav-logo" onclick="goBackToLanding()">Yalla <span>Cancel</span></div>
+      <button class="btn-back" onclick="goBackToLanding()">ارفع كشف آخر</button>
+    </div>
+    <div class="report-page-body">
+      <div class="report-page-header">
+        <h2>تقرير اشتراكاتك</h2>
+        <p>حللنا ٣٤٧ عملية من الأشهر الأربعة الأخيرة واكتشفنا ٨ اشتراكات متكررة</p>
+      </div>
+      <div class="report-page-stats">
+        <div class="rpage-stat">
+          <div class="v">٨</div>
+          <div class="l">اشتراكات مكتشفة</div>
+        </div>
+        <div class="rpage-stat hl">
+          <div class="v">٦٧٣ ريال</div>
+          <div class="l">المجموع الشهري</div>
+        </div>
+        <div class="rpage-stat">
+          <div class="v">٨,٠٧٦ ريال</div>
+          <div class="l">المجموع السنوي</div>
+        </div>
+      </div>
+      <p class="report-page-list-title">جميع اشتراكاتك</p>
+
+      <div class="rpage-sub">
+        <div class="rpage-sub-left">
+          <img class="rpage-sub-logo" src="https://www.google.com/s2/favicons?domain=netflix.com&sz=64" alt="">
+          <div class="rpage-sub-info">
+            <div class="rpage-sub-name">Netflix</div>
+            <div class="rpage-sub-meta"><span class="rpage-sub-freq">شهري</span><span class="rpage-sub-price">٦٠ ريال/شهر</span></div>
+          </div>
+        </div>
+        <div class="rpage-sub-right">
+          <button class="btn-cancel-sub">ألغي</button>
+          <button class="btn-keep-sub">خلّي</button>
+        </div>
+      </div>
+
+      <div class="rpage-sub">
+        <div class="rpage-sub-left">
+          <img class="rpage-sub-logo" src="https://www.google.com/s2/favicons?domain=spotify.com&sz=64" alt="">
+          <div class="rpage-sub-info">
+            <div class="rpage-sub-name">Spotify</div>
+            <div class="rpage-sub-meta"><span class="rpage-sub-freq">شهري</span><span class="rpage-sub-price">٣٣ ريال/شهر</span></div>
+          </div>
+        </div>
+        <div class="rpage-sub-right">
+          <button class="btn-cancel-sub">ألغي</button>
+          <button class="btn-keep-sub">خلّي</button>
+        </div>
+      </div>
+
+      <div class="rpage-sub">
+        <div class="rpage-sub-left">
+          <img class="rpage-sub-logo" src="https://www.google.com/s2/favicons?domain=shahid.mbc.net&sz=64" alt="">
+          <div class="rpage-sub-info">
+            <div class="rpage-sub-name">شاهد VIP</div>
+            <div class="rpage-sub-meta"><span class="rpage-sub-freq">شهري</span><span class="rpage-sub-price">٤٥ ريال/شهر</span></div>
+          </div>
+        </div>
+        <div class="rpage-sub-right">
+          <button class="btn-cancel-sub">ألغي</button>
+          <button class="btn-keep-sub">خلّي</button>
+        </div>
+      </div>
+
+      <div class="rpage-sub">
+        <div class="rpage-sub-left">
+          <img class="rpage-sub-logo" src="https://www.google.com/s2/favicons?domain=adobe.com&sz=64" alt="">
+          <div class="rpage-sub-info">
+            <div class="rpage-sub-name">Adobe Creative Cloud</div>
+            <div class="rpage-sub-meta"><span class="rpage-sub-freq">شهري</span><span class="rpage-sub-price">١٣٤ ريال/شهر</span></div>
+          </div>
+        </div>
+        <div class="rpage-sub-right">
+          <button class="btn-cancel-sub">ألغي</button>
+          <button class="btn-keep-sub">خلّي</button>
+        </div>
+      </div>
+
+      <div class="rpage-sub">
+        <div class="rpage-sub-left">
+          <img class="rpage-sub-logo" src="https://www.google.com/s2/favicons?domain=openai.com&sz=64" alt="">
+          <div class="rpage-sub-info">
+            <div class="rpage-sub-name">ChatGPT Plus</div>
+            <div class="rpage-sub-meta"><span class="rpage-sub-freq">شهري</span><span class="rpage-sub-price">٧٥ ريال/شهر</span></div>
+          </div>
+        </div>
+        <div class="rpage-sub-right">
+          <button class="btn-cancel-sub">ألغي</button>
+          <button class="btn-keep-sub">خلّي</button>
+        </div>
+      </div>
+
+      <div class="rpage-sub">
+        <div class="rpage-sub-left">
+          <img class="rpage-sub-logo" src="https://www.google.com/s2/favicons?domain=calm.com&sz=64" alt="">
+          <div class="rpage-sub-info">
+            <div class="rpage-sub-name">Calm</div>
+            <div class="rpage-sub-meta"><span class="rpage-sub-freq">شهري</span><span class="rpage-sub-price">٤٥ ريال/شهر</span></div>
+          </div>
+        </div>
+        <div class="rpage-sub-right">
+          <button class="btn-cancel-sub">ألغي</button>
+          <button class="btn-keep-sub">خلّي</button>
+        </div>
+      </div>
+
+      <div class="rpage-sub">
+        <div class="rpage-sub-left">
+          <img class="rpage-sub-logo" src="https://www.google.com/s2/favicons?domain=hungerstation.com&sz=64" alt="">
+          <div class="rpage-sub-info">
+            <div class="rpage-sub-name">هنقرستيشن</div>
+            <div class="rpage-sub-meta"><span class="rpage-sub-freq">شهري</span><span class="rpage-sub-price">٢٩ ريال/شهر</span></div>
+          </div>
+        </div>
+        <div class="rpage-sub-right">
+          <button class="btn-cancel-sub">ألغي</button>
+          <button class="btn-keep-sub">خلّي</button>
+        </div>
+      </div>
+
+      <div class="rpage-sub">
+        <div class="rpage-sub-left">
+          <img class="rpage-sub-logo" src="https://www.google.com/s2/favicons?domain=icloud.com&sz=64" alt="">
+          <div class="rpage-sub-info">
+            <div class="rpage-sub-name">iCloud+</div>
+            <div class="rpage-sub-meta"><span class="rpage-sub-freq">شهري</span><span class="rpage-sub-price">٢٥٢ ريال/شهر</span></div>
+          </div>
+        </div>
+        <div class="rpage-sub-right">
+          <button class="btn-cancel-sub">ألغي</button>
+          <button class="btn-keep-sub">خلّي</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════ LANDING PAGE ══════ -->
+  <div class="landing-page" id="landingPage">
+
+  <!-- ══════ NAVIGATION ══════ -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="nav-logo" onclick="goBackToLanding()">Yalla <span>Cancel</span></div>
+    </div>
+  </nav>
+
+  <!-- ══════ HERO ══════ -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <h1>اشتراكاتك <em>تحت السيطرة</em></h1>
+        <p class="hero-sub">ارفع كشف حسابك البنكي واكتشف كل الاشتراكات المتكررة اللي تنخصم منك — بخصوصية تامة وبدون ما تشارك بياناتك مع أحد.</p>
+        <div class="hero-note">
+          <span>🔒 بياناتك ما تطلع من جهازك</span>
+          <span>⚡ النتيجة في ثوانٍ</span>
+        </div>
+      </div>
+
+      <!-- Upload Card -->
+      <div>
+        <div class="hero-upload-card">
+          <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-zone-icon">📄</div>
+            <div class="upload-zone-title">اسحب كشف حسابك هنا أو اضغط للرفع</div>
+            <div class="upload-zone-sub">يدعم CSV و PDF</div>
+          </div>
+          <input type="file" class="upload-file-input" id="fileInput" accept=".csv,.pdf" onchange="handleFileUpload()">
+          <button class="btn-upload-primary" onclick="document.getElementById('fileInput').click()">اختر ملف</button>
+          <div class="upload-divider"><span>أو</span></div>
+          <button class="btn-sample-ghost" onclick="startAnalysis()">🧪 جرب بكشف تجريبي</button>
+        </div>
+        <div style="text-align:center;">
+          <div class="hero-badge">🇸🇦 يدعم جميع البنوك السعودية</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ LOGO BAR ══════ -->
+  <section class="logo-bar">
+    <div class="logo-bar-inner">
+      <p class="logo-bar-label">يدعم جميع البنوك السعودية</p>
+      <div class="logo-bar-row">
+        <div class="logo-chip"><img src="https://www.google.com/s2/favicons?domain=alrajhibank.com.sa&sz=64" alt=""><span>الراجحي</span></div>
+        <div class="logo-chip"><img src="https://www.google.com/s2/favicons?domain=alahli.com&sz=64" alt=""><span>الأهلي</span></div>
+        <div class="logo-chip"><img src="https://www.google.com/s2/favicons?domain=riyadbank.com&sz=64" alt=""><span>بنك الرياض</span></div>
+        <div class="logo-chip"><img src="https://www.google.com/s2/favicons?domain=bankalbilad.com&sz=64" alt=""><span>البلاد</span></div>
+        <div class="logo-chip"><img src="https://www.google.com/s2/favicons?domain=alinma.com&sz=64" alt=""><span>الإنماء</span></div>
+        <div class="logo-chip"><img src="https://www.google.com/s2/favicons?domain=sabb.com&sz=64" alt=""><span>ساب</span></div>
+        <div class="logo-chip"><img src="https://www.google.com/s2/favicons?domain=alfransi.com.sa&sz=64" alt=""><span>الفرنسي</span></div>
+        <div class="logo-chip"><img src="https://www.google.com/s2/favicons?domain=anb.com.sa&sz=64" alt=""><span>العربي</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ PROBLEM ══════ -->
+  <section class="problem">
+    <div class="problem-inner">
+      <span class="section-label">المشكلة</span>
+      <h2 class="section-title">السعوديين يخسرون آلاف الريالات سنوياً على اشتراكات منسية</h2>
+      <p class="section-sub">اشتراكات تنخصم كل شهر بدون ما تنتبه — تطبيقات ما تستخدمها، خدمات نسيتها، وفترات تجريبية تحولت لاشتراكات.</p>
+      <div class="stat-cards">
+        <div class="stat-card-big">
+          <div class="stat-icon">💳</div>
+          <div class="stat-num">١٢+</div>
+          <div class="stat-text">متوسط الاشتراكات لكل شخص</div>
+        </div>
+        <div class="stat-card-big">
+          <div class="stat-icon">🫣</div>
+          <div class="stat-num">٨٤٪</div>
+          <div class="stat-text">ما يعرفون كم يدفعون بالضبط</div>
+        </div>
+        <div class="stat-card-big">
+          <div class="stat-icon">💸</div>
+          <div class="stat-num">٣,٦٠٠+</div>
+          <div class="stat-text">ريال سنوياً على اشتراكات غير مستخدمة</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ HOW IT WORKS ══════ -->
+  <section class="how" id="how">
+    <div class="how-inner">
+      <div style="text-align:center">
+        <span class="section-label">كيف يشتغل</span>
+        <h2 class="section-title">ثلاث خطوات وتكتشف كل اشتراكاتك</h2>
+        <p class="section-sub">بدون تسجيل دخول، بدون ربط حساب بنكي، وبدون مشاركة بياناتك مع أي طرف ثالث.</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">١</div>
+          <div class="step-icon">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+              <rect x="16" y="8" width="32" height="42" rx="4" stroke="#0F172A" stroke-width="2.5" fill="none"/>
+              <line x1="22" y1="18" x2="42" y2="18" stroke="#E2E8F0" stroke-width="2" stroke-linecap="round"/>
+              <line x1="22" y1="24" x2="38" y2="24" stroke="#E2E8F0" stroke-width="2" stroke-linecap="round"/>
+              <line x1="22" y1="30" x2="35" y2="30" stroke="#E2E8F0" stroke-width="2" stroke-linecap="round"/>
+              <line x1="22" y1="36" x2="40" y2="36" stroke="#E2E8F0" stroke-width="2" stroke-linecap="round"/>
+              <path d="M32 58 L32 46" stroke="#00A651" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M26 52 L32 46 L38 52" stroke="#00A651" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>ارفع كشف حسابك</h3>
+          <p>نزّل كشف الحساب من تطبيق بنكك بصيغة CSV أو PDF وارفعه هنا مباشرة.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">٢</div>
+          <div class="step-icon">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+              <circle cx="28" cy="28" r="16" stroke="#0F172A" stroke-width="2.5" fill="none"/>
+              <line x1="40" y1="40" x2="54" y2="54" stroke="#0F172A" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="24" cy="25" r="3" fill="#00A651" opacity="0.3"/>
+              <circle cx="32" cy="22" r="3.5" fill="#00A651" opacity="0.5"/>
+              <circle cx="27" cy="33" r="2.5" fill="#00A651" opacity="0.4"/>
+            </svg>
+          </div>
+          <h3>نحلّل اشتراكاتك</h3>
+          <p>نفحص كل عملية ونكتشف الاشتراكات المتكررة والرسوم المخفية — على جهازك فقط.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">٣</div>
+          <div class="step-icon">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+              <rect x="8" y="16" width="48" height="14" rx="7" stroke="#EF4444" stroke-width="2" fill="none" opacity="0.5"/>
+              <line x1="18" y1="23" x2="28" y2="23" stroke="#EF4444" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+              <rect x="8" y="34" width="48" height="14" rx="7" stroke="#22C55E" stroke-width="2" fill="none"/>
+              <path d="M16 41 L19 44 L26 37" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="30" y1="41" x2="42" y2="41" stroke="#22C55E" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="50" cy="12" r="8" fill="#00A651" opacity="0.12"/>
+              <text x="50" y="16" text-anchor="middle" fill="#00A651" font-size="10" font-weight="900">٪</text>
+            </svg>
+          </div>
+          <h3>قرّر ووفّر</h3>
+          <p>اختار اللي تبي تلغيه واللي تبي تخليه. أنت تقرر — ونعطيك روابط الإلغاء المباشرة.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ PRODUCT SHOWCASE ══════ -->
+  <section class="showcase">
+    <div class="showcase-inner">
+      <div style="text-align:center">
+        <span class="section-label">التقرير</span>
+        <h2 class="section-title">شوف كيف يطلع تقريرك</h2>
+        <p class="section-sub">تقرير تفصيلي بكل اشتراكاتك — أنت تقرر تلغي أو تخلّي كل اشتراك.</p>
+      </div>
+      <div class="showcase-frame">
+        <div class="showcase-bar">
+          <div class="dot r"></div>
+          <div class="dot y"></div>
+          <div class="dot g"></div>
+          <div class="url">yallacancel.sa/report</div>
+        </div>
+        <div class="report-preview">
+          <div class="rp-header">
+            <h2>تقرير اشتراكاتك</h2>
+            <p>حللنا ٣٤٧ عملية من الأشهر الأربعة الأخيرة واكتشفنا ٨ اشتراكات متكررة</p>
+          </div>
+          <div class="rp-stats">
+            <div class="rp-stat"><div class="v">٨</div><div class="l">اشتراكات مكتشفة</div></div>
+            <div class="rp-stat hl"><div class="v">٦٧٣ ريال</div><div class="l">المجموع الشهري</div></div>
+            <div class="rp-stat"><div class="v">٨,٠٧٦ ريال</div><div class="l">المجموع السنوي</div></div>
+          </div>
+          <p class="rp-section-title">جميع اشتراكاتك</p>
+          <div class="rp-sub">
+            <div class="rp-sub-left"><img class="rp-sub-logo" src="https://www.google.com/s2/favicons?domain=netflix.com&sz=64" alt=""><span class="rp-sub-name">Netflix</span><span class="rp-sub-freq">شهري</span></div>
+            <div class="rp-sub-right"><span class="rp-sub-price">٦٠ <span class="rp-sub-unit">ريال/شهر</span></span><div class="rp-sub-actions"><button class="rp-btn-cancel">ألغي</button><button class="rp-btn-keep">خلّي</button></div></div>
+          </div>
+          <div class="rp-sub">
+            <div class="rp-sub-left"><img class="rp-sub-logo" src="https://www.google.com/s2/favicons?domain=spotify.com&sz=64" alt=""><span class="rp-sub-name">Spotify</span><span class="rp-sub-freq">شهري</span></div>
+            <div class="rp-sub-right"><span class="rp-sub-price">٣٣ <span class="rp-sub-unit">ريال/شهر</span></span><div class="rp-sub-actions"><button class="rp-btn-cancel">ألغي</button><button class="rp-btn-keep">خلّي</button></div></div>
+          </div>
+          <div class="rp-sub">
+            <div class="rp-sub-left"><img class="rp-sub-logo" src="https://www.google.com/s2/favicons?domain=shahid.mbc.net&sz=64" alt=""><span class="rp-sub-name">شاهد VIP</span><span class="rp-sub-freq">شهري</span></div>
+            <div class="rp-sub-right"><span class="rp-sub-price">٤٥ <span class="rp-sub-unit">ريال/شهر</span></span><div class="rp-sub-actions"><button class="rp-btn-cancel">ألغي</button><button class="rp-btn-keep">خلّي</button></div></div>
+          </div>
+          <div class="rp-sub">
+            <div class="rp-sub-left"><img class="rp-sub-logo" src="https://www.google.com/s2/favicons?domain=adobe.com&sz=64" alt=""><span class="rp-sub-name">Adobe Creative Cloud</span><span class="rp-sub-freq">شهري</span></div>
+            <div class="rp-sub-right"><span class="rp-sub-price">١٣٤ <span class="rp-sub-unit">ريال/شهر</span></span><div class="rp-sub-actions"><button class="rp-btn-cancel">ألغي</button><button class="rp-btn-keep">خلّي</button></div></div>
+          </div>
+          <div class="rp-sub">
+            <div class="rp-sub-left"><img class="rp-sub-logo" src="https://www.google.com/s2/favicons?domain=openai.com&sz=64" alt=""><span class="rp-sub-name">ChatGPT Plus</span><span class="rp-sub-freq">شهري</span></div>
+            <div class="rp-sub-right"><span class="rp-sub-price">٧٥ <span class="rp-sub-unit">ريال/شهر</span></span><div class="rp-sub-actions"><button class="rp-btn-cancel">ألغي</button><button class="rp-btn-keep">خلّي</button></div></div>
+          </div>
+          <div class="rp-sub">
+            <div class="rp-sub-left"><img class="rp-sub-logo" src="https://www.google.com/s2/favicons?domain=calm.com&sz=64" alt=""><span class="rp-sub-name">Calm</span><span class="rp-sub-freq">شهري</span></div>
+            <div class="rp-sub-right"><span class="rp-sub-price">٤٥ <span class="rp-sub-unit">ريال/شهر</span></span><div class="rp-sub-actions"><button class="rp-btn-cancel">ألغي</button><button class="rp-btn-keep">خلّي</button></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ FEATURES ══════ -->
+  <section class="features" id="features">
+    <div class="features-inner">
+      <div style="text-align:center">
+        <span class="section-label">المميزات</span>
+        <h2 class="section-title">ليش Yalla Cancel؟</h2>
+        <p class="section-sub">مصمم خصيصاً للمستخدم السعودي — يدعم جميع البنوك ويحترم خصوصيتك.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <h3>خصوصية ١٠٠٪</h3>
+          <p>كل التحليل يصير على جهازك. ما نرفع بياناتك لأي سيرفر ولا نخزنها أبداً.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🏦</div>
+          <h3>جميع البنوك السعودية</h3>
+          <p>ندعم الراجحي، الأهلي، الرياض، البلاد، الإنماء، ساب، الفرنسي، والعربي الوطني.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>نتيجة في ثوانٍ</h3>
+          <p>ارفع الكشف وخلال ثوانٍ تحصل على تقرير تفصيلي بكل اشتراكاتك المتكررة.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3>تقرير واضح</h3>
+          <p>نعرض لك كل اشتراكاتك بشكل واضح — وأنت تقرر تلغي أو تخلّي كل اشتراك.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔗</div>
+          <h3>روابط إلغاء مباشرة</h3>
+          <p>نعطيك الرابط المباشر لإلغاء كل خدمة — بدون ما تدور في الإعدادات.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📄</div>
+          <h3>تصدير PDF</h3>
+          <p>حمّل تقريرك كملف PDF لمراجعته لاحقاً أو مشاركته مع المحاسب.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ SUBSCRIPTIONS WE DETECT ══════ -->
+  <section class="subs-detect">
+    <div class="subs-detect-inner">
+      <span class="section-label">+٥٠ خدمة</span>
+      <h2 class="section-title">نكتشف أكثر من ٥٠ خدمة واشتراك</h2>
+      <p class="section-sub">من منصات المشاهدة والموسيقى للتطبيقات والألعاب والخدمات السحابية.</p>
+      <div class="subs-grid">
+        <div class="sub-chip"><img src="https://www.google.com/s2/favicons?domain=netflix.com&sz=64" alt=""><span>Netflix</span></div>
+        <div class="sub-chip"><img src="https://www.google.com/s2/favicons?domain=spotify.com&sz=64" alt=""><span>Spotify</span></div>
+        <div class="sub-chip"><img src="https://www.google.com/s2/favicons?domain=shahid.mbc.net&sz=64" alt=""><span>شاهد</span></div>
+        <div class="sub-chip"><img src="https://www.google.com/s2/favicons?domain=anghami.com&sz=64" alt=""><span>أنغامي</span></div>
+        <div class="sub-chip"><img src="https://www.google.com/s2/favicons?domain=youtube.com&sz=64" alt=""><span>YouTube</span></div>
+        <div class="sub-chip"><img src="https://www.google.com/s2/favicons?domain=apple.com&sz=64" alt=""><span>Apple</span></div>
+        <div class="sub-chip"><img src="https://www.google.com/s2/favicons?domain=amazon.sa&sz=64" alt=""><span>Amazon</span></div>
+        <div class="sub-chip"><img src="https://www.google.com/s2/favicons?domain=adobe.com&sz=64" alt=""><span>Adobe</span></div>
+        <div class="sub-chip"><img src="https://www.google.com/s2/favicons?domain=openai.com&sz=64" alt=""><span>ChatGPT</span></div>
+        <div class="sub-chip"><img src="https://www.google.com/s2/favicons?domain=icloud.com&sz=64" alt=""><span>iCloud</span></div>
+        <div class="sub-chip"><img src="https://www.google.com/s2/favicons?domain=hungerstation.com&sz=64" alt=""><span>هنقرستيشن</span></div>
+        <div class="sub-chip"><img src="https://www.google.com/s2/favicons?domain=calm.com&sz=64" alt=""><span>Calm</span></div>
+        <div class="sub-chip"><img src="https://www.google.com/s2/favicons?domain=gym.sa&sz=64" alt=""><span>نوادي رياضية</span></div>
+        <div class="sub-chip"><img src="https://www.google.com/s2/favicons?domain=stcplay.com.sa&sz=64" alt=""><span>STC Play</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ TESTIMONIALS ══════ -->
+  <section class="testimonials">
+    <div class="testimonials-inner">
+      <div style="text-align:center">
+        <span class="section-label">آراء المستخدمين</span>
+        <h2 class="section-title">اللي جربوه عجبهم</h2>
+      </div>
+      <div class="test-grid">
+        <div class="test-card">
+          <div class="test-stars">★★★★★</div>
+          <p class="test-quote">"اكتشفت إني أدفع لثلاث تطبيقات ما فتحتها من سنة. وفرت أكثر من ٢٠٠ ريال بالشهر!"</p>
+          <div class="test-author">
+            <div class="test-avatar">م</div>
+            <div><div class="test-name">محمد</div><div class="test-role">مستخدم من الرياض</div></div>
+          </div>
+        </div>
+        <div class="test-card">
+          <div class="test-stars">★★★★★</div>
+          <p class="test-quote">"أحسن شي إنه ما يطلب مني أربط حسابي البنكي. بس أرفع الكشف وخلاص. أمان وسرعة."</p>
+          <div class="test-author">
+            <div class="test-avatar">ن</div>
+            <div><div class="test-name">نورة</div><div class="test-role">مستخدمة من جدة</div></div>
+          </div>
+        </div>
+        <div class="test-card">
+          <div class="test-stars">★★★★★</div>
+          <p class="test-quote">"كنت أحسب إني أدفع ٣٠٠ ريال اشتراكات بالشهر. طلع الرقم الحقيقي ٧٠٠! شكراً يلا كانسل."</p>
+          <div class="test-author">
+            <div class="test-avatar">ع</div>
+            <div><div class="test-name">عبدالله</div><div class="test-role">مستخدم من الدمام</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ FAQ ══════ -->
+  <section class="faq" id="faq">
+    <div class="faq-inner">
+      <div style="text-align:center; margin-bottom:48px;">
+        <span class="section-label">أسئلة شائعة</span>
+        <h2 class="section-title">عندك سؤال؟</h2>
+      </div>
+
+      <div class="faq-item open">
+        <div class="faq-q" onclick="toggleFaq(this)">هل بياناتي البنكية آمنة؟ <span class="arrow">▾</span></div>
+        <div class="faq-a"><p>نعم ١٠٠٪. كل التحليل يتم على جهازك مباشرة (client-side). ما نرفع كشف حسابك لأي سيرفر، وما نخزن أي بيانات. بعد ما تقفل الصفحة، كل شي ينمسح.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">كيف أنزّل كشف حسابي؟ <span class="arrow">▾</span></div>
+        <div class="faq-a"><p>ادخل تطبيق بنكك (مثل الراجحي أو الأهلي)، روح للحساب الجاري، واختر "تصدير كشف الحساب" أو "Export Statement" بصيغة CSV أو PDF. عادة تلقاها في قسم الحساب أو العمليات.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">هل الخدمة مجانية؟ <span class="arrow">▾</span></div>
+        <div class="faq-a"><p>التحليل الأول مجاني بالكامل. مع الترقية (٤٩ ريال مرة واحدة) تحصل على تحليلات غير محدودة، تصدير PDF، وروابط إلغاء مباشرة لأكثر من ٥٠ خدمة.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">هل تدعمون بنكي؟ <span class="arrow">▾</span></div>
+        <div class="faq-a"><p>ندعم جميع البنوك السعودية الرئيسية: الراجحي، الأهلي، بنك الرياض، البلاد، الإنماء، ساب، الفرنسي، والعربي الوطني. وعندنا محلل عام يشتغل مع أي كشف CSV.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">هل تلغون الاشتراكات عني؟ <span class="arrow">▾</span></div>
+        <div class="faq-a"><p>حالياً نوفر لك تقرير تفصيلي مع روابط إلغاء مباشرة. الإلغاء نفسه تسويه بنفسك عبر الرابط — عادة يأخذ أقل من دقيقة لكل اشتراك.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ CTA ══════ -->
+  <section class="cta-section">
+    <div class="cta-inner">
+      <h2>جاهز تكتشف اشتراكاتك المخفية؟</h2>
+      <p>ارفع كشف حسابك الحين واعرف وين فلوسك رايحة — مجاناً وبخصوصية تامة.</p>
+      <button class="btn-cta-white" onclick="window.scrollTo({top:0,behavior:'smooth'})">ابدأ الحين</button>
+      <p class="cta-note">بدون تسجيل دخول · بدون بطاقة ائتمان · النتيجة في ثوانٍ</p>
+    </div>
+  </section>
+
+  <!-- ══════ MEGA FOOTER ══════ -->
+  <footer class="mega-footer">
+    <div class="footer-inner">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="footer-logo">Yalla <span>Cancel</span></div>
+          <p>أداة سعودية تساعدك تكتشف اشتراكاتك المخفية وتوفر فلوسك — بخصوصية تامة وبدون مشاركة بياناتك البنكية.</p>
+          <div class="footer-social">
+            <a href="#">𝕏</a>
+            <a href="#">in</a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>المنتج</h4>
+          <ul>
+            <li><a href="#">كيف يشتغل</a></li>
+            <li><a href="#">المميزات</a></li>
+            <li><a href="#">الأسعار</a></li>
+            <li><a href="#">ابدأ مجاناً</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>البنوك المدعومة</h4>
+          <ul>
+            <li><a href="#">إلغاء اشتراكات الراجحي</a></li>
+            <li><a href="#">إلغاء اشتراكات الأهلي</a></li>
+            <li><a href="#">إلغاء اشتراكات بنك الرياض</a></li>
+            <li><a href="#">إلغاء اشتراكات الإنماء</a></li>
+            <li><a href="#">إلغاء اشتراكات ساب</a></li>
+            <li><a href="#">إلغاء اشتراكات البلاد</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>أدلة الإلغاء</h4>
+          <ul>
+            <li><a href="#">كيف ألغي Netflix</a></li>
+            <li><a href="#">كيف ألغي شاهد VIP</a></li>
+            <li><a href="#">كيف ألغي Spotify</a></li>
+            <li><a href="#">كيف ألغي Apple Music</a></li>
+            <li><a href="#">كيف ألغي Adobe</a></li>
+            <li><a href="#">كيف ألغي YouTube Premium</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>الموارد</h4>
+          <ul>
+            <li><a href="#">مدونة</a></li>
+            <li><a href="#">دليل توفير الاشتراكات</a></li>
+            <li><a href="#">مقارنة الاشتراكات بالسعودية</a></li>
+            <li><a href="#">إحصائيات الإنفاق على الاشتراكات</a></li>
+            <li><a href="#">مفتوح المصدر</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; ٢٠٢٦ Yalla Cancel · صُنع بـ ❤️ في السعودية 🇸🇦</p>
+        <div class="footer-bottom-links">
+          <a href="#">سياسة الخصوصية</a>
+          <a href="#">الشروط والأحكام</a>
+          <a href="#">تواصل معنا</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  </div><!-- end landing-page -->
+
+  <script>
+    // FAQ toggle
+    function toggleFaq(el) {
+      var item = el.parentElement;
+      var allItems = document.querySelectorAll('.faq-item');
+      allItems.forEach(function(i) { if (i !== item) i.classList.remove('open'); });
+      item.classList.toggle('open');
+    }
+
+    // Drag & drop on upload zone
+    var uploadZone = document.getElementById('uploadZone');
+    if (uploadZone) {
+      uploadZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadZone.style.borderColor = '#00A651';
+        uploadZone.style.background = 'rgba(0,166,81,0.08)';
+      });
+      uploadZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadZone.style.borderColor = 'rgba(255,255,255,0.25)';
+        uploadZone.style.background = 'transparent';
+      });
+      uploadZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadZone.style.borderColor = 'rgba(255,255,255,0.25)';
+        uploadZone.style.background = 'transparent';
+        startAnalysis();
+      });
+    }
+
+    // Handle file upload
+    function handleFileUpload() {
+      startAnalysis();
+    }
+
+    // Start analysis flow
+    function startAnalysis() {
+      var overlay = document.getElementById('analyzingOverlay');
+      var progressFill = document.getElementById('progressBarFill');
+      overlay.classList.add('active');
+      progressFill.style.width = '0%';
+
+      // Animate progress bar over ~3 seconds
+      var progress = 0;
+      var interval = setInterval(function() {
+        progress += Math.random() * 8 + 2;
+        if (progress >= 100) {
+          progress = 100;
+          progressFill.style.width = '100%';
+          clearInterval(interval);
+          setTimeout(function() {
+            overlay.classList.remove('active');
+            showReport();
+          }, 400);
+        } else {
+          progressFill.style.width = progress + '%';
+        }
+      }, 150);
+    }
+
+    // Show report page
+    function showReport() {
+      document.getElementById('landingPage').classList.add('hidden');
+      document.getElementById('reportPage').classList.add('active');
+      window.scrollTo({ top: 0 });
+    }
+
+    // Go back to landing
+    function goBackToLanding() {
+      document.getElementById('reportPage').classList.remove('active');
+      document.getElementById('landingPage').classList.remove('hidden');
+      window.scrollTo({ top: 0 });
+    }
+  </script>
+
+</body>
+</html>
