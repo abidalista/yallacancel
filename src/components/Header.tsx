@@ -8,33 +8,31 @@ interface HeaderProps {
 
 export default function Header({ locale, onLocaleChange, onLogoClick }: HeaderProps) {
   return (
-    <header className="bg-white border-b border-[var(--color-border)] sticky top-0 z-50">
-      <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-        <button
-          onClick={onLogoClick}
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-        >
-          <span className="text-xl font-black text-[var(--color-primary)] tracking-tight">
-            Yalla Cancel
-          </span>
+    <header
+      className="fixed top-0 left-0 right-0 z-50"
+      style={{
+        background: "rgba(15,23,42,0.35)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
+        borderBottom: "1px solid rgba(255,255,255,0.05)",
+      }}
+    >
+      <div className="max-w-[1200px] mx-auto px-8 h-16 flex items-center justify-between">
+        <button onClick={onLogoClick} className="nav-logo">
+          yalla<span className="accent">cancel</span>
         </button>
 
-        <div className="flex items-center gap-2">
-          <a
-            href="https://github.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-ghost text-xs"
-          >
-            {locale === "ar" ? "مفتوح المصدر" : "Open Source"}
-          </a>
-          <button
-            onClick={() => onLocaleChange(locale === "ar" ? "en" : "ar")}
-            className="btn-ghost text-xs font-semibold"
-          >
-            {locale === "ar" ? "EN" : "ع"}
-          </button>
-        </div>
+        <button
+          onClick={() => onLocaleChange(locale === "ar" ? "en" : "ar")}
+          className="text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all"
+          style={{
+            background: "rgba(255,255,255,0.08)",
+            borderColor: "rgba(255,255,255,0.12)",
+            color: "rgba(255,255,255,0.6)",
+          }}
+        >
+          {locale === "ar" ? "EN" : "ع"}
+        </button>
       </div>
     </header>
   );
