@@ -140,7 +140,7 @@ export default function SubscriptionCard({
             className="inline-flex items-center gap-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-4 py-2 rounded-lg transition-all hover:-translate-y-0.5 no-underline"
           >
             <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>
-            {ar ? "ألغِ الآن" : "Cancel Now"}
+            {ar ? "الغي الآن" : "Cancel Now"}
           </a>
         )}
 
@@ -178,7 +178,7 @@ export default function SubscriptionCard({
                 : "bg-white text-gray-400 border-gray-200 hover:border-red-300 hover:text-red-600"
             }`}
           >
-            {ar ? "ألغِه" : "Cancel"}
+            {ar ? "الغيه" : "Cancel"}
           </button>
         </div>
       </div>

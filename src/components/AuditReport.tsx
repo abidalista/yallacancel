@@ -97,7 +97,7 @@ export default function AuditReport({
             </p>
             <p className="text-xs text-blue-600">
               {ar
-                ? "اضغط \"ألغِه\" على الاشتراكات اللي ما تحتاجها وبنحسب لك التوفير المتوقع."
+                ? "اضغط \"الغيه\" على الاشتراكات اللي ما تحتاجها وبنحسب لك التوفير المتوقع."
                 : "Click \"Cancel\" on subscriptions you don't need and we'll calculate your potential savings."}
             </p>
           </div>

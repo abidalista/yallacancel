@@ -575,11 +575,11 @@ export default function HomePage() {
                           rel="noopener noreferrer"
                           className="text-[#4A7BF7] font-bold text-sm no-underline hover:underline flex-shrink-0"
                         >
-                          {ar ? "ألغِ ←" : "Cancel →"}
+                          {ar ? "الغي ←" : "Cancel →"}
                         </a>
                       ) : (
                         <span className="text-[#4A7BF7] font-bold text-sm flex-shrink-0">
-                          {ar ? "ألغِ ←" : "Cancel →"}
+                          {ar ? "الغي ←" : "Cancel →"}
                         </span>
                       )}
                     </div>
@@ -763,7 +763,7 @@ export default function HomePage() {
                 </h1>
                 <p className="text-base text-white/60 leading-relaxed max-w-[380px] mx-auto">
                   {ar
-                    ? "لا تترك تطبيقاتك تسحب من رصيدك. تابع وألغِ اشتراكاتك من مكان واحد."
+                    ? "لا تترك تطبيقاتك تسحب من رصيدك. تابع والغي اشتراكاتك من مكان واحد."
                     : "Don't let apps drain your balance. Track and cancel subscriptions from one place."}
                 </p>
               </div>
@@ -880,7 +880,7 @@ export default function HomePage() {
                 {[
                   { n: "١", title: ar ? "ارفع الكشف" : "Upload statement", desc: ar ? "نزّل كشف حسابك من تطبيق بنكك وارفعه هنا." : "Download your bank statement and upload it here." },
                   { n: "٢", title: ar ? "نحلّل لك" : "We analyze it", desc: ar ? "نكتشف كل الاشتراكات المتكررة ونفكك الرموز." : "We detect all recurring subscriptions and decode them." },
-                  { n: "٣", title: ar ? "ألغِ ووفّر" : "Cancel & save", desc: ar ? "اختار اللي تبي تلغيه واتبع الخطوات." : "Pick what to cancel and follow the steps." },
+                  { n: "٣", title: ar ? "الغي ووفّر" : "Cancel & save", desc: ar ? "اختار اللي تبي تلغيه واتبع الخطوات." : "Pick what to cancel and follow the steps." },
                 ].map((s) => (
                   <div
                     key={s.n}
@@ -991,7 +991,7 @@ export default function HomePage() {
                               </div>
                             </div>
                             {sub.warn ? (
-                              <span className="text-[8px] bg-red-50 text-red-500 px-1.5 py-0.5 rounded font-bold">{ar ? "ألغِ" : "Cancel"}</span>
+                              <span className="text-[8px] bg-red-50 text-red-500 px-1.5 py-0.5 rounded font-bold">{ar ? "الغي" : "Cancel"}</span>
                             ) : (
                               <span className="text-[8px] bg-green-50 text-green-600 px-1.5 py-0.5 rounded font-bold">{ar ? "خلّيه" : "Keep"}</span>
                             )}

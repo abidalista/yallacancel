@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     "اشتراكات, بنوك سعودية, الغاء اشتراكات, كشف حساب, الراجحي, الأهلي, يلا كانسل, yalla cancel, cancel subscription saudi",
   openGraph: {
     title: "Yalla Cancel — اشتراكاتك تحت السيطرة",
-    description: "لا تترك تطبيقاتك تسحب من رصيدك. تابع وألغِ اشتراكاتك من مكان واحد.",
+    description: "لا تترك تطبيقاتك تسحب من رصيدك. تابع والغي اشتراكاتك من مكان واحد.",
     type: "website",
     locale: "ar_SA",
     siteName: "Yalla Cancel",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Yalla Cancel — اشتراكاتك تحت السيطرة",
-    description: "لا تترك تطبيقاتك تسحب من رصيدك. تابع وألغِ اشتراكاتك من مكان واحد.",
+    description: "لا تترك تطبيقاتك تسحب من رصيدك. تابع والغي اشتراكاتك من مكان واحد.",
     images: ["https://yallacancel.com/og-image.png"],
   },
   icons: {
