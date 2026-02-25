@@ -18,6 +18,7 @@ export interface Transaction {
 }
 
 export type SubscriptionStatus = "cancel" | "keep" | "investigate";
+export type SubscriptionConfidence = "confirmed" | "suspicious";
 
 export type SubscriptionFrequency =
   | "weekly"
@@ -37,7 +38,11 @@ export interface Subscription {
   lastCharge: string;
   firstCharge: string;
   status: SubscriptionStatus;
+  confidence: SubscriptionConfidence;
+  aiDescription?: string;
+  rawDescription?: string;
   transactions: Transaction[];
+  userConfirmed?: boolean;
 }
 
 export interface AuditReport {

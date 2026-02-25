@@ -8,15 +8,10 @@ import PaywallModal from "@/components/PaywallModal";
 import { parseCSV, detectBank } from "@/lib/banks";
 import { parsePDF } from "@/lib/pdf-parser";
 import { analyzeTransactions } from "@/lib/analyzer";
-import { AuditReport as Report, SubscriptionStatus, Transaction } from "@/lib/types";
+import { AuditReport as Report, Subscription, SubscriptionStatus, Transaction } from "@/lib/types";
+import { getCancelInfo } from "@/lib/cancel-db";
 
-type Step = "landing" | "analyzing" | "results";
-
-interface UploadedFileInfo {
-  name: string;
-  size: number;
-  transactionCount: number;
-}
+type Step = "landing" | "analyzing" | "identify" | "results";
 
 const FAV = (domain: string) =>
   `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
@@ -231,10 +226,11 @@ export default function HomePage() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [stickyCta, setStickyCta] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFileInfo[]>([]);
-  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+  const [txCount, setTxCount] = useState(0);
+  const [analyzeTimer, setAnalyzeTimer] = useState(0);
+  const [analyzeStatus, setAnalyzeStatus] = useState("");
   const heroRef = useRef<HTMLElement>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const ar = locale === "ar";
 
@@ -243,7 +239,6 @@ export default function HomePage() {
     document.documentElement.setAttribute("lang", locale);
   }, [locale, ar]);
 
-  // Sticky CTA scroll detection
   useEffect(() => {
     let ticking = false;
     function onScroll() {
@@ -273,75 +268,96 @@ export default function HomePage() {
     }
   }
 
-  async function handleFilesSelect(files: File[]) {
+  async function handleScan(files: File[]) {
     setError(false);
-    setIsProcessing(true);
+    setStep("analyzing");
+    setAnalyzeTimer(0);
+    setTxCount(0);
+    setAnalyzeStatus(ar ? "نقرأ الملفات..." : "Reading files...");
+    window.scrollTo({ top: 0, behavior: "smooth" });
 
-    const newFiles: UploadedFileInfo[] = [];
-    let newTransactions: Transaction[] = [];
+    // Start timer
+    const start = Date.now();
+    timerRef.current = setInterval(() => {
+      setAnalyzeTimer(Math.floor((Date.now() - start) / 1000));
+    }, 1000);
+
+    let allTx: Transaction[] = [];
 
     for (const file of files) {
       try {
         const txs = await parseFile(file);
-        newFiles.push({
-          name: file.name,
-          size: file.size,
-          transactionCount: txs.length,
-        });
-        newTransactions = newTransactions.concat(txs);
-      } catch {
-        newFiles.push({
-          name: file.name,
-          size: file.size,
-          transactionCount: 0,
-        });
-      }
+        allTx = allTx.concat(txs);
+        setTxCount(allTx.length);
+      } catch { /* skip bad files */ }
     }
 
-    const mergedTransactions = [...allTransactions, ...newTransactions];
-    const mergedFiles = [...uploadedFiles, ...newFiles];
-
-    setAllTransactions(mergedTransactions);
-    setUploadedFiles(mergedFiles);
-
-    if (mergedTransactions.length === 0) {
+    if (allTx.length === 0) {
+      if (timerRef.current) clearInterval(timerRef.current);
       setError(true);
-      setIsProcessing(false);
+      setStep("landing");
       return;
     }
 
-    // Auto-analyze after upload
-    setStep("analyzing");
-    // Small delay so the analyzing spinner is visible
-    await new Promise((r) => setTimeout(r, 800));
+    setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
+    await new Promise((r) => setTimeout(r, 1500));
 
-    const result = analyzeTransactions(mergedTransactions);
+    const result = analyzeTransactions(allTx);
+    if (timerRef.current) clearInterval(timerRef.current);
+
     setReport(result);
-    setIsProcessing(false);
-    setStep("results");
+
+    // Check if there are suspicious subscriptions to identify
+    const suspicious = result.subscriptions.filter((s) => s.confidence === "suspicious");
+    if (suspicious.length > 0) {
+      setStep("identify");
+    } else {
+      setStep("results");
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   async function handleTestStatement() {
-    setIsProcessing(true);
-    setError(false);
     try {
       const res = await fetch("/test-statement.csv");
       const text = await res.text();
-      const bankId = detectBank(text);
-      const transactions = parseCSV(text, bankId);
-      setAllTransactions(transactions);
-      setUploadedFiles([{ name: "test-statement.csv", size: 0, transactionCount: transactions.length }]);
-      setStep("analyzing");
-      await new Promise((r) => setTimeout(r, 800));
-      const result = analyzeTransactions(transactions);
-      setReport(result);
-      setStep("results");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      // Create a fake File object
+      const blob = new Blob([text], { type: "text/csv" });
+      const file = new File([blob], "test-statement.csv", { type: "text/csv" });
+      handleScan([file]);
     } catch {
       setError(true);
     }
-    setIsProcessing(false);
+  }
+
+  function handleIdentifyConfirm(id: string, choice: "subscription" | "not" | "unknown") {
+    if (!report) return;
+    setReport({
+      ...report,
+      subscriptions: report.subscriptions.map((s) => {
+        if (s.id !== id) return s;
+        if (choice === "subscription") return { ...s, userConfirmed: true, confidence: "confirmed" as const };
+        if (choice === "not") return { ...s, userConfirmed: true, status: "keep" as const };
+        return { ...s, userConfirmed: true };
+      }),
+    });
+  }
+
+  function handleFinishIdentify() {
+    // Remove user-rejected subs, keep confirmed+unknown
+    if (report) {
+      const filtered = report.subscriptions.filter(
+        (s) => !(s.userConfirmed && s.status === "keep" && s.confidence === "suspicious")
+      );
+      setReport({ ...report, subscriptions: filtered });
+    }
+    setStep("results");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function handleSkipIdentify() {
+    setStep("results");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function handleStatusChange(id: string, status: SubscriptionStatus) {
@@ -354,18 +370,12 @@ export default function HomePage() {
     });
   }
 
-  function handleUploadMore() {
-    setStep("landing");
-    // Keep allTransactions and uploadedFiles — user adds more
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
   function handleStartOver() {
     setStep("landing");
     setReport(null);
     setError(false);
-    setAllTransactions([]);
-    setUploadedFiles([]);
+    setTxCount(0);
+    setAnalyzeTimer(0);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -385,70 +395,294 @@ export default function HomePage() {
         <PaywallModal locale={locale} onClose={() => setShowPaywall(false)} />
       )}
 
-      {/* ── RESULTS ── */}
-      {step === "results" && report && (
-        <div className="max-w-3xl mx-auto px-4 py-8 pt-24">
-          <div className="mb-6">
-            <h1 className="text-2xl font-black">
-              {ar ? "تقرير اشتراكاتك" : "Your subscription report"}
-            </h1>
-            <p className="text-sm text-[var(--color-text-muted)] mt-1">
-              {ar
-                ? `حللنا ${report.analyzedTransactions} عملية من ${uploadedFiles.length} ملف — لقينا ${report.subscriptions.length} اشتراك`
-                : `Analyzed ${report.analyzedTransactions} transactions from ${uploadedFiles.length} file${uploadedFiles.length > 1 ? "s" : ""} — found ${report.subscriptions.length} subscription${report.subscriptions.length !== 1 ? "s" : ""}`}
-            </p>
-          </div>
-
-          {/* Upload more / Start over buttons */}
-          <div className="flex gap-3 mb-6">
-            <button
-              onClick={handleUploadMore}
-              className="flex-1 flex items-center justify-center gap-2 bg-[var(--color-primary)] text-white py-3 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5"
-              style={{ boxShadow: "0 4px 16px rgba(0,166,81,0.25)" }}
-            >
-              <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              {ar ? "ارفع كشوفات إضافية" : "Upload more statements"}
-            </button>
-            <button
-              onClick={handleStartOver}
-              className="flex items-center justify-center gap-2 border border-[var(--color-border)] text-[var(--color-text-secondary)] px-5 py-3 rounded-xl font-semibold text-sm transition-all hover:bg-[var(--color-surface)]"
-            >
-              {ar ? "ابدأ من جديد" : "Start over"}
-            </button>
-          </div>
-
-          <AuditReport
-            report={report}
-            locale={locale}
-            onStatusChange={handleStatusChange}
-            onStartOver={handleStartOver}
-            onUpgradeClick={() => setShowPaywall(true)}
-          />
-        </div>
-      )}
-
-      {/* ── ANALYZING ── */}
+      {/* ── ANALYZING — matches JustCancel timer screen ── */}
       {step === "analyzing" && (
-        <div
-          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
-          style={{ background: "rgba(15,23,42,0.97)" }}
+        <div className="min-h-screen flex flex-col items-center justify-center px-6 pt-20"
+          style={{ background: "linear-gradient(135deg, #0F172A 0%, #1a2744 50%, #0d2618 100%)" }}
         >
-          <div
-            className="w-14 h-14 border-4 border-white/10 rounded-full mb-6"
-            style={{
-              borderTopColor: "var(--color-primary)",
-              animation: "spin 0.8s linear infinite",
-            }}
-          />
-          <p className="font-bold text-lg text-white mb-2">
-            {ar ? "نحلّل كشف حسابك..." : "Analyzing your statement..."}
-          </p>
-          <p className="text-sm text-white/50">
-            {ar ? "كل شيء يتم على جهازك" : "Everything stays on your device"}
-          </p>
-          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          <div className="w-full max-w-[500px] rounded-2xl border-2 border-dashed border-[#4A7BF7]/40 py-16 px-8 text-center">
+            <div className="text-5xl sm:text-6xl font-black text-white mb-2">
+              {txCount.toLocaleString()}
+            </div>
+            <div className="text-sm text-white/50 mb-6">
+              {ar ? "عملية" : "transactions"}
+            </div>
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <div className="w-2 h-2 rounded-full bg-[#4A7BF7]" style={{ animation: "pulse 1.5s ease-in-out infinite" }} />
+              <span className="text-sm text-white/70">{analyzeStatus}</span>
+            </div>
+            <div className="text-lg font-bold text-white/40 mb-6">
+              {analyzeTimer}s
+            </div>
+            <div className="inline-flex items-center gap-2 bg-white/8 border border-white/12 rounded-full px-4 py-2 text-xs text-white/50">
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/><path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+              {ar ? "تقريباً خلصنا — لا تطلع من الصفحة" : "Almost there – stay on this page"}
+            </div>
+          </div>
+          <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }`}</style>
         </div>
       )}
+
+      {/* ── IDENTIFY — help identify suspicious charges ── */}
+      {step === "identify" && report && (() => {
+        const confirmed = report.subscriptions.filter((s) => s.confidence === "confirmed");
+        const suspicious = report.subscriptions.filter((s) => s.confidence === "suspicious");
+        return (
+          <div className="min-h-screen bg-white pt-24 pb-16 px-6">
+            <div className="max-w-[700px] mx-auto">
+              <p className="text-[var(--color-primary)] font-bold text-sm mb-2">
+                {ar ? `لقينا ${confirmed.length} اشتراكات مؤكدة` : `Found ${confirmed.length} clear subscriptions`}
+              </p>
+              <h1 className="text-3xl font-black text-[var(--color-text-primary)] mb-2">
+                {ar ? `ساعدنا نتعرف على ${suspicious.length} إضافية` : `Help identify ${suspicious.length} more`}
+              </h1>
+              <div className="h-1 bg-[#4A7BF7]/20 rounded-full mb-6">
+                <div className="h-1 bg-[#4A7BF7] rounded-full" style={{ width: "60%" }} />
+              </div>
+              <p className="text-sm text-[var(--color-text-secondary)] mb-8">
+                {ar
+                  ? "لقينا بعض العمليات المتكررة مو متأكدين منها. ساعدنا نضيفها لمجموعك:"
+                  : "We found some recurring charges we're not sure about. Help us include them in your total:"}
+              </p>
+
+              <div className="space-y-4 mb-8">
+                {suspicious.map((sub) => (
+                  <div key={sub.id} className="border border-[var(--color-border)] rounded-2xl p-5">
+                    <div className="flex items-start justify-between mb-1">
+                      <div>
+                        <span className="font-bold text-base">{sub.name}</span>
+                        {sub.occurrences > 1 && (
+                          <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md mr-2 ml-2">
+                            x{sub.occurrences}
+                          </span>
+                        )}
+                      </div>
+                      <span className="font-bold text-base text-[var(--color-text-primary)]">
+                        {sub.amount.toFixed(0)} {ar ? "ر.س/شهر" : "SAR/monthly"}
+                      </span>
+                    </div>
+                    {sub.rawDescription && (
+                      <p className="text-xs text-[var(--color-text-muted)] mb-3">{sub.rawDescription}</p>
+                    )}
+                    <div className="flex gap-2.5">
+                      <button
+                        onClick={() => handleIdentifyConfirm(sub.id, "subscription")}
+                        className={`text-xs font-bold px-4 py-2 rounded-lg transition-all ${
+                          sub.userConfirmed && sub.confidence === "confirmed"
+                            ? "bg-[#4A7BF7] text-white"
+                            : "bg-white border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[#4A7BF7] hover:text-[#4A7BF7]"
+                        }`}
+                      >
+                        {ar ? "اشتراك" : "Subscription"}
+                      </button>
+                      <button
+                        onClick={() => handleIdentifyConfirm(sub.id, "not")}
+                        className={`text-xs font-bold px-4 py-2 rounded-lg transition-all ${
+                          sub.userConfirmed && sub.status === "keep"
+                            ? "bg-gray-700 text-white"
+                            : "bg-white border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-gray-400"
+                        }`}
+                      >
+                        {ar ? "مو اشتراك" : "Not a subscription"}
+                      </button>
+                      <button
+                        onClick={() => handleIdentifyConfirm(sub.id, "unknown")}
+                        className={`text-xs font-bold px-4 py-2 rounded-lg transition-all ${
+                          sub.userConfirmed && sub.confidence === "suspicious" && sub.status !== "keep"
+                            ? "bg-gray-700 text-white"
+                            : "bg-white border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-gray-400"
+                        }`}
+                      >
+                        {ar ? "ما أدري" : "Don't know"}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-xs text-center text-[var(--color-text-muted)] mb-5">
+                {ar ? "خذ وقتك — ما تقدر تعدل بعدين." : "Take your time — you can't edit these later."}
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleFinishIdentify}
+                  className="flex-1 bg-[var(--color-dark)] text-white font-bold text-sm py-3.5 rounded-xl transition-all hover:-translate-y-0.5"
+                >
+                  {ar ? "شوف المجموع ←" : "See your total →"}
+                </button>
+                <button
+                  onClick={handleSkipIdentify}
+                  className="border border-[var(--color-border)] text-[var(--color-text-secondary)] font-bold text-sm px-6 py-3.5 rounded-xl transition-all hover:bg-[var(--color-surface)]"
+                >
+                  {ar ? `تخطى، استخدم ${confirmed.length}` : `Skip, use ${confirmed.length} found`}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── RESULTS — spending total + numbered list + paywall ── */}
+      {step === "results" && report && (() => {
+        const subs = report.subscriptions;
+        const FREE_VISIBLE = 3;
+        const visible = subs.slice(0, FREE_VISIBLE);
+        const hidden = subs.slice(FREE_VISIBLE);
+        const hiddenYearly = hidden.reduce((s, sub) => s + sub.yearlyEquivalent, 0);
+        const hiddenMonthly = hidden.reduce((s, sub) => s + sub.monthlyEquivalent, 0);
+
+        return (
+          <div className="min-h-screen bg-white pt-24 pb-16 px-6">
+            <div className="max-w-[700px] mx-auto">
+              {/* Headline */}
+              <h1 className="text-3xl sm:text-4xl font-black text-[var(--color-text-primary)] mb-1">
+                {ar
+                  ? `تصرف ${report.totalYearly.toFixed(0)} ر.س/سنة`
+                  : `You're spending ${report.totalYearly.toFixed(0)} SAR/year`}
+              </h1>
+              <p className="text-sm text-[var(--color-text-muted)] mb-4">
+                {ar
+                  ? `من ${subs.length} اشتراك`
+                  : `across ${subs.length} subscriptions`}
+              </p>
+              <div className="h-1 bg-[#4A7BF7]/20 rounded-full mb-8">
+                <div className="h-1 bg-[#4A7BF7] rounded-full w-full" />
+              </div>
+
+              {/* Subscription list */}
+              <div className="border border-[var(--color-border)] rounded-2xl overflow-hidden mb-6">
+                {visible.map((sub, i) => {
+                  const info = getCancelInfo(sub.name);
+                  return (
+                    <div key={sub.id} className="flex items-center px-5 py-4 border-b border-[var(--color-border)]">
+                      <span className="text-sm text-[var(--color-text-muted)] w-8 flex-shrink-0">{i + 1}.</span>
+                      <span className="font-bold text-sm flex-1">{sub.name}</span>
+                      <span className="font-bold text-sm mr-4 ml-4">
+                        {sub.yearlyEquivalent.toFixed(0)} {ar ? "ر.س/سنة" : "SAR/yr"}
+                      </span>
+                      {info?.cancelUrl ? (
+                        <a
+                          href={info.cancelUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#4A7BF7] font-bold text-sm no-underline hover:underline flex-shrink-0"
+                        >
+                          {ar ? "ألغِ ←" : "Cancel →"}
+                        </a>
+                      ) : (
+                        <span className="text-[#4A7BF7] font-bold text-sm flex-shrink-0">
+                          {ar ? "ألغِ ←" : "Cancel →"}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Blurred/locked rows */}
+                {hidden.map((sub, i) => (
+                  <div key={sub.id} className="flex items-center px-5 py-4 border-b border-[var(--color-border)]">
+                    <span className="text-sm text-[var(--color-text-muted)] w-8 flex-shrink-0">{FREE_VISIBLE + i + 1}.</span>
+                    <span className="font-bold text-sm flex-1 blur-sm select-none">{sub.name}</span>
+                    <span className="font-bold text-sm mr-4 ml-4">
+                      {sub.yearlyEquivalent.toFixed(0)} {ar ? "ر.س/سنة" : "SAR/yr"}
+                    </span>
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" className="text-[var(--color-text-muted)] flex-shrink-0">
+                      <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="2"/>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                ))}
+
+                {/* Footer row */}
+                {hidden.length > 0 && (
+                  <div className="px-5 py-3 bg-[var(--color-surface)] text-center text-sm text-[var(--color-text-muted)]">
+                    + {hidden.length} {ar ? "إضافية" : "more"} ({hiddenYearly.toFixed(0)} {ar ? "ر.س/سنة" : "SAR/yr"})
+                  </div>
+                )}
+              </div>
+
+              {/* Paywall pitch */}
+              {hidden.length > 0 && (
+                <>
+                  <p className="text-center text-[var(--color-primary)] font-bold text-base mb-4">
+                    {ar
+                      ? `ادفع ٤٩ ر.س، ووفر ${hiddenYearly.toFixed(0)} ر.س/سنة — يعني ${Math.round(hiddenYearly / 49)}x عائد`
+                      : `Pay 49 SAR, save up to ${hiddenYearly.toFixed(0)} SAR/yr — that's a ${Math.round(hiddenYearly / 49)}x return`}
+                  </p>
+                  <button
+                    onClick={() => setShowPaywall(true)}
+                    className="w-full bg-[var(--color-primary)] text-white font-bold text-base py-4 rounded-xl transition-all hover:-translate-y-0.5 mb-3"
+                    style={{ boxShadow: "0 4px 24px rgba(0,166,81,0.35)" }}
+                  >
+                    {ar
+                      ? `اكشف كل ${subs.length} اشتراك — ٤٩ ر.س`
+                      : `Unlock all ${subs.length} subscriptions — 49 SAR`}
+                  </button>
+                  <p className="text-xs text-center text-[var(--color-text-muted)] mb-6">
+                    {ar
+                      ? "دفعة واحدة · بدون حساب · ضمان استرداد كامل"
+                      : "One-time payment · No account needed · 100% money-back guarantee"}
+                  </p>
+
+                  {/* Warning banner */}
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-3.5 text-center mb-6">
+                    <span className="text-sm text-red-600 font-semibold">
+                      {ar
+                        ? `تخسر ${hiddenMonthly.toFixed(0)} ر.س/شهر على ${hidden.length} اشتراكات مخفية`
+                        : `You're losing ${hiddenMonthly.toFixed(0)} SAR/mo to ${hidden.length} hidden subscriptions`}
+                    </span>
+                  </div>
+
+                  {/* What you get */}
+                  <div className="border border-[var(--color-border)] rounded-xl p-5 text-center space-y-2 mb-8">
+                    {[
+                      ar ? `روابط إلغاء لكل ${subs.length} اشتراك` : `Cancel links for all ${subs.length} subscriptions`,
+                      ar ? "تحذيرات الخدع (Dark Patterns) وكيف تتجاوزها" : "Dark pattern warnings + how to beat them",
+                      ar ? "شرح خطوة بخطوة للإلغاءات الصعبة" : "Step-by-step instructions for hard cancellations",
+                    ].map((t) => (
+                      <p key={t} className="text-sm text-[var(--color-text-secondary)]">
+                        <span className="text-[var(--color-primary)] font-bold mr-1 ml-1">&#10003;</span>
+                        {t}
+                      </p>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* If all visible (no paywall needed) — show full report */}
+              {hidden.length === 0 && (
+                <AuditReport
+                  report={report}
+                  locale={locale}
+                  onStatusChange={handleStatusChange}
+                  onStartOver={handleStartOver}
+                  onUpgradeClick={() => setShowPaywall(true)}
+                />
+              )}
+
+              {/* Testimonials */}
+              <div className="border-t border-[var(--color-border)] pt-8 mb-8 space-y-3">
+                {TESTIMONIALS.slice(0, 2).map((t) => (
+                  <p key={t.name} className="text-xs text-center text-[var(--color-text-muted)] italic">
+                    &ldquo;{t.quote.slice(0, 80)}...&rdquo; — {t.name}
+                  </p>
+                ))}
+              </div>
+
+              {/* Start over */}
+              <div className="text-center">
+                <button
+                  onClick={handleStartOver}
+                  className="border border-[var(--color-border)] text-[var(--color-text-secondary)] font-bold text-sm px-8 py-3 rounded-xl transition-all hover:bg-[var(--color-surface)]"
+                >
+                  {ar ? "ابدأ من جديد" : "Start Over"}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── LANDING ── */}
       {step === "landing" && (
@@ -496,9 +730,7 @@ export default function HomePage() {
 
               <UploadZone
                 locale={locale}
-                uploadedFiles={uploadedFiles}
-                isProcessing={isProcessing}
-                onFilesSelect={handleFilesSelect}
+                onScan={handleScan}
                 onTestClick={handleTestStatement}
               />
 

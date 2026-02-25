@@ -277,11 +277,11 @@ export function analyzeTransactions(
         lastCharge: sortedDates[sortedDates.length - 1] || "",
         firstCharge: sortedDates[0] || "",
         status: "investigate",
+        confidence: isKnownSub ? "confirmed" : "suspicious",
+        rawDescription: txs[0].description,
         transactions: txs,
       });
     } else if (isKnownSub && txs.length === 1) {
-      // Single occurrence of a known subscription service
-      // Assume monthly since we can't detect frequency from one charge
       const tx = txs[0];
       const amount = tx.amount;
 
@@ -297,6 +297,29 @@ export function analyzeTransactions(
         lastCharge: tx.date || "",
         firstCharge: tx.date || "",
         status: "investigate",
+        confidence: "confirmed",
+        rawDescription: tx.description,
+        transactions: txs,
+      });
+    } else if (txs.length >= 2) {
+      // Multiple occurrences but failed consistency/frequency — suspicious
+      const avgAmount = txs.reduce((sum, t) => sum + t.amount, 0) / txs.length;
+      const sortedDates = txs.map((t) => t.date).sort().filter((d) => d);
+
+      subscriptions.push({
+        id: `sub_${++idCounter}`,
+        name: txs[0].description,
+        normalizedName: key,
+        amount: Math.round(avgAmount * 100) / 100,
+        frequency: "monthly",
+        monthlyEquivalent: Math.round(avgAmount * 100) / 100,
+        yearlyEquivalent: Math.round(avgAmount * 12 * 100) / 100,
+        occurrences: txs.length,
+        lastCharge: sortedDates[sortedDates.length - 1] || "",
+        firstCharge: sortedDates[0] || "",
+        status: "investigate",
+        confidence: "suspicious",
+        rawDescription: txs[0].description,
         transactions: txs,
       });
     }
