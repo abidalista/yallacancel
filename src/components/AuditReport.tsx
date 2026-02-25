@@ -12,28 +12,6 @@ interface AuditReportProps {
   onUpgradeClick: () => void;
 }
 
-function StatCard({
-  label,
-  value,
-  sub,
-  highlight,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  highlight?: boolean;
-}) {
-  return (
-    <div className={`stat-card ${highlight ? "border-[var(--color-primary)] bg-[var(--color-primary-bg)]" : ""}`}>
-      <div className={`text-2xl font-black ${highlight ? "text-[var(--color-primary)]" : "text-[var(--color-text-primary)]"}`}>
-        {value}
-      </div>
-      <div className="text-xs text-[var(--color-text-secondary)] mt-0.5">{label}</div>
-      {sub && <div className="text-xs text-[var(--color-text-muted)] mt-0.5">{sub}</div>}
-    </div>
-  );
-}
-
 export default function AuditReport({
   report,
   locale,
@@ -42,166 +20,178 @@ export default function AuditReport({
   onUpgradeClick,
 }: AuditReportProps) {
   const [privacyMode, setPrivacyMode] = useState(false);
+  const [filter, setFilter] = useState<"all" | SubscriptionStatus>("all");
   const ar = locale === "ar";
 
-  const byStatus = (status: SubscriptionStatus): Subscription[] =>
-    report.subscriptions.filter((s) => s.status === status);
+  const cancelSubs = report.subscriptions.filter((s) => s.status === "cancel");
+  const keepSubs = report.subscriptions.filter((s) => s.status === "keep");
+  const cancelMonthlySavings = cancelSubs.reduce((sum, s) => sum + s.monthlyEquivalent, 0);
 
-  const cancelSubs = byStatus("cancel");
-  const keepSubs = byStatus("keep");
-  const investigateSubs = byStatus("investigate");
-
-  const cancelMonthlySavings = cancelSubs.reduce(
-    (sum, s) => sum + s.monthlyEquivalent,
-    0
-  );
-
-  const sections: {
-    title: string;
-    subs: Subscription[];
-    emptyMsg: string;
-  }[] = [
-    {
-      title: ar ? "🚫 ألغِها" : "🚫 Cancel These",
-      subs: cancelSubs,
-      emptyMsg: ar ? "ما فيه اشتراكات للإلغاء" : "No subscriptions marked to cancel",
-    },
-    {
-      title: ar ? "🔍 راجعها" : "🔍 Review These",
-      subs: investigateSubs,
-      emptyMsg: ar ? "كل الاشتراكات تم تصنيفها" : "All subscriptions categorized",
-    },
-    {
-      title: ar ? "✅ خلّيها" : "✅ Keep These",
-      subs: keepSubs,
-      emptyMsg: ar ? "ما فيه اشتراكات للإبقاء" : "No subscriptions marked to keep",
-    },
-  ];
+  const filtered = filter === "all"
+    ? report.subscriptions
+    : report.subscriptions.filter((s) => s.status === filter);
 
   return (
     <div className="space-y-6">
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard
-          label={ar ? "اشتراكات مكتشفة" : "Subscriptions found"}
-          value={String(report.subscriptions.length)}
-        />
-        <StatCard
-          label={ar ? "المجموع الشهري" : "Monthly total"}
-          value={`${report.totalMonthly.toFixed(0)} ${ar ? "ر.س" : "SAR"}`}
-          highlight
-        />
-        <StatCard
-          label={ar ? "المجموع السنوي" : "Yearly total"}
-          value={`${report.totalYearly.toFixed(0)} ${ar ? "ر.س" : "SAR"}`}
-        />
-        <StatCard
-          label={ar ? "توفير محتمل/شهر" : "Potential savings/mo"}
-          value={`${cancelMonthlySavings.toFixed(0)} ${ar ? "ر.س" : "SAR"}`}
-          sub={ar ? "من الاشتراكات المختارة للإلغاء" : "from subscriptions to cancel"}
-        />
-      </div>
-
-      {/* Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex gap-2">
-          <button
-            onClick={() => setPrivacyMode(!privacyMode)}
-            className={`btn-ghost text-xs ${privacyMode ? "bg-gray-100" : ""}`}
-          >
-            {privacyMode
-              ? (ar ? "👁 إظهار الأسماء" : "👁 Show names")
-              : (ar ? "🙈 إخفاء الأسماء" : "🙈 Hide names")}
-          </button>
-          <button onClick={onStartOver} className="btn-ghost text-xs">
-            {ar ? "↩ ارفع كشف آخر" : "↩ Upload another"}
-          </button>
+      {/* ── Summary Cards ── */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-white border border-[var(--color-border)] rounded-2xl p-5 text-center">
+          <div className="text-3xl font-black text-[var(--color-text-primary)]">
+            {report.subscriptions.length}
+          </div>
+          <div className="text-xs text-[var(--color-text-muted)] mt-1">
+            {ar ? "اشتراك مكتشف" : "subscriptions found"}
+          </div>
         </div>
-
-        {/* Premium CTA */}
-        <button
-          onClick={onUpgradeClick}
-          className="btn-primary text-sm py-2 px-4"
-        >
-          {ar ? "📄 صدّر PDF — ترقية" : "📄 Export PDF — Upgrade"}
-        </button>
+        <div className="bg-white border border-[var(--color-border)] rounded-2xl p-5 text-center">
+          <div className="text-3xl font-black text-[var(--color-text-primary)]">
+            {report.totalMonthly.toFixed(0)} <span className="text-sm font-semibold text-[var(--color-text-muted)]">{ar ? "ر.س" : "SAR"}</span>
+          </div>
+          <div className="text-xs text-[var(--color-text-muted)] mt-1">
+            {ar ? "المجموع الشهري" : "total per month"}
+          </div>
+        </div>
+        <div className="bg-white border border-[var(--color-border)] rounded-2xl p-5 text-center">
+          <div className="text-3xl font-black text-[var(--color-primary)]">
+            {report.totalYearly.toFixed(0)} <span className="text-sm font-semibold text-[var(--color-primary)]/60">{ar ? "ر.س" : "SAR"}</span>
+          </div>
+          <div className="text-xs text-[var(--color-text-muted)] mt-1">
+            {ar ? "المجموع السنوي" : "total per year"}
+          </div>
+        </div>
+        <div className="bg-white border border-[var(--color-border)] rounded-2xl p-5 text-center">
+          <div className="text-3xl font-black text-[var(--color-text-primary)]">
+            {report.analyzedTransactions}
+          </div>
+          <div className="text-xs text-[var(--color-text-muted)] mt-1">
+            {ar ? "عملية تم تحليلها" : "transactions analyzed"}
+          </div>
+        </div>
       </div>
 
-      {/* Cancel savings banner */}
+      {/* ── Savings Banner ── */}
       {cancelSubs.length > 0 && (
-        <div className="bg-[var(--color-primary-bg)] border border-[var(--color-primary)]/30 rounded-xl p-4 flex items-center gap-3">
-          <span className="text-2xl">💰</span>
+        <div className="bg-[var(--color-primary)] rounded-2xl p-5 text-center text-white">
+          <p className="text-sm text-white/70 mb-1">
+            {ar ? "التوفير المتوقع بإلغاء الاشتراكات المختارة" : "Estimated savings from selected cancellations"}
+          </p>
+          <div className="text-3xl font-black">
+            {(cancelMonthlySavings * 12).toFixed(0)} {ar ? "ر.س/سنة" : "SAR/year"}
+          </div>
+          <p className="text-xs text-white/50 mt-1">
+            = {cancelMonthlySavings.toFixed(0)} {ar ? "ر.س/شهر" : "SAR/month"} ({cancelSubs.length} {ar ? "اشتراك" : "subscriptions"})
+          </p>
+        </div>
+      )}
+
+      {/* ── Tip Banner ── */}
+      {report.subscriptions.length > 0 && cancelSubs.length === 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-start gap-3">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" className="text-blue-500 flex-shrink-0 mt-0.5">
+            <path d="M12 16v-4m0-4h.01M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
           <div>
-            <p className="font-bold text-[var(--color-primary-dark)]">
-              {ar
-                ? `تقدر توفر ${(cancelMonthlySavings * 12).toFixed(0)} ر.س سنوياً`
-                : `You could save ${(cancelMonthlySavings * 12).toFixed(0)} SAR per year`}
+            <p className="text-sm font-bold text-blue-800 mb-0.5">
+              {ar ? "نصيحة: راجع كل اشتراك" : "Tip: Review each subscription"}
             </p>
-            <p className="text-xs text-[var(--color-text-secondary)]">
+            <p className="text-xs text-blue-600">
               {ar
-                ? `بإلغاء ${cancelSubs.length} اشتراك اخترته`
-                : `by cancelling the ${cancelSubs.length} subscriptions you marked`}
+                ? "اضغط \"ألغِه\" على الاشتراكات اللي ما تحتاجها وبنحسب لك التوفير المتوقع."
+                : "Click \"Cancel\" on subscriptions you don't need and we'll calculate your potential savings."}
             </p>
           </div>
         </div>
       )}
 
-      {/* Sections */}
+      {/* ── Filter & Controls ── */}
+      <div className="flex flex-wrap items-center gap-2">
+        {(["all", "investigate", "cancel", "keep"] as const).map((f) => {
+          const labels: Record<string, { ar: string; en: string }> = {
+            all:         { ar: "الكل", en: "All" },
+            investigate: { ar: "مراجعة", en: "Review" },
+            cancel:      { ar: "يُلغى", en: "Cancel" },
+            keep:        { ar: "يُبقى", en: "Keep" },
+          };
+          const counts: Record<string, number> = {
+            all: report.subscriptions.length,
+            investigate: report.subscriptions.filter((s) => s.status === "investigate").length,
+            cancel: cancelSubs.length,
+            keep: keepSubs.length,
+          };
+          return (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`text-xs font-bold px-3.5 py-2 rounded-lg border transition-all ${
+                filter === f
+                  ? "bg-[var(--color-dark)] text-white border-[var(--color-dark)]"
+                  : "bg-white text-[var(--color-text-secondary)] border-[var(--color-border)] hover:border-[var(--color-dark)]"
+              }`}
+            >
+              {ar ? labels[f].ar : labels[f].en} ({counts[f]})
+            </button>
+          );
+        })}
+
+        <div className="flex-1" />
+
+        <button
+          onClick={() => setPrivacyMode(!privacyMode)}
+          className="text-xs font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
+        >
+          {privacyMode
+            ? (ar ? "اظهر الأسماء" : "Show names")
+            : (ar ? "اخفِ الأسماء" : "Hide names")}
+        </button>
+      </div>
+
+      {/* ── Subscription List ── */}
       {report.subscriptions.length === 0 ? (
-        <div className="card text-center py-12">
-          <div className="text-4xl mb-3">🔍</div>
-          <p className="font-bold text-lg">
+        <div className="bg-white border border-[var(--color-border)] rounded-2xl text-center py-16 px-6">
+          <svg width="48" height="48" fill="none" viewBox="0 0 24 24" className="mx-auto mb-4 text-[var(--color-text-muted)]">
+            <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2"/>
+            <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+          <p className="font-bold text-lg mb-2">
             {ar ? "ما لقينا اشتراكات متكررة" : "No recurring subscriptions found"}
           </p>
-          <p className="text-sm text-[var(--color-text-muted)] mt-1">
+          <p className="text-sm text-[var(--color-text-muted)] mb-1">
             {ar
-              ? "جرب رفع كشف حساب أطول (٣ أشهر أو أكثر)"
-              : "Try uploading a longer statement (3+ months)"}
+              ? "جرب ارفع كشف حساب أطول (٢-٣ أشهر) عشان نلقى الاشتراكات المتكررة."
+              : "Try uploading a longer statement (2-3 months) so we can detect recurring charges."}
+          </p>
+          <p className="text-sm text-[var(--color-text-muted)]">
+            {ar
+              ? "أو جرب ملف ثاني — بعض الكشوفات تحتاج صيغة CSV بدل PDF."
+              : "Or try a different file — some statements work better as CSV instead of PDF."}
           </p>
         </div>
       ) : (
-        sections.map((section) => (
-          <div key={section.title}>
-            <h3 className="section-title">{section.title}</h3>
-            {section.subs.length === 0 ? (
-              <p className="text-sm text-[var(--color-text-muted)] py-2 px-1">
-                {section.emptyMsg}
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {section.subs.map((sub) => (
-                  <SubscriptionCard
-                    key={sub.id}
-                    sub={sub}
-                    locale={locale}
-                    privacyMode={privacyMode}
-                    onStatusChange={onStatusChange}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        ))
+        <div className="space-y-3">
+          {filtered.map((sub) => (
+            <SubscriptionCard
+              key={sub.id}
+              sub={sub}
+              locale={locale}
+              privacyMode={privacyMode}
+              onStatusChange={onStatusChange}
+            />
+          ))}
+          {filtered.length === 0 && (
+            <div className="text-center py-8 text-sm text-[var(--color-text-muted)]">
+              {ar ? "لا توجد اشتراكات في هذه الفئة" : "No subscriptions in this category"}
+            </div>
+          )}
+        </div>
       )}
 
-      {/* Cancel links promo */}
-      <div className="card border-dashed border-2 border-[var(--color-primary)]/30 bg-[var(--color-primary-bg)] text-center py-8">
-        <div className="text-3xl mb-2">🔗</div>
-        <p className="font-bold text-[var(--color-primary-dark)] mb-1">
-          {ar
-            ? "تبي روابط الإلغاء المباشرة لكل خدمة؟"
-            : "Want direct cancel links for each service?"}
+      {/* ── Date Range ── */}
+      {report.dateRange.from && report.dateRange.to && (
+        <p className="text-xs text-center text-[var(--color-text-muted)]">
+          {ar ? "فترة التحليل:" : "Analysis period:"} {report.dateRange.from} — {report.dateRange.to}
         </p>
-        <p className="text-sm text-[var(--color-text-secondary)] mb-4">
-          {ar
-            ? "مع الترقية تحصل على روابط مباشرة + خطوات إلغاء لأكثر من ٥٠ خدمة سعودية"
-            : "Upgrade to get direct links + step-by-step guides for 50+ Saudi services"}
-        </p>
-        <button onClick={onUpgradeClick} className="btn-primary">
-          {ar ? "ترقية — ٤٩ ر.س مرة واحدة" : "Upgrade — 49 SAR once"}
-        </button>
-      </div>
+      )}
     </div>
   );
 }
