@@ -53,11 +53,12 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=DM+Sans:wght@400;500;700;800;900&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&display=swap"
           rel="stylesheet"
         />
-        {/* Cloudflare Web Analytics — replace YOUR_TOKEN with your beacon token from Cloudflare dashboard */}
+        {/* Google Analytics 4 — replace G-XXXXXXXXXX with your Measurement ID from analytics.google.com */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX" />
         <script
-          defer
-          src="https://static.cloudflareinsights.com/beacon.min.js"
-          data-cf-beacon='{"token": "YOUR_TOKEN"}'
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-XXXXXXXXXX');`,
+          }}
         />
       </head>
       <body>{children}</body>
