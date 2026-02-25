@@ -17,20 +17,19 @@ type Step = "landing" | "analyzing" | "results";
 const FAV = (domain: string) =>
   `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
 
-// Inline SVG bank logos (Google Favicons returns globe icons for most Saudi bank domains)
-const bankLogo = (initial: string, color: string) =>
-  `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${color}"/><text x="32" y="34" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-weight="800" font-size="26" fill="#fff">${initial}</text></svg>`)}`;
+const LOGO = (domain: string) =>
+  `https://logo.clearbit.com/${domain}`;
 
 const BANKS = [
-  { name: "الراجحي", logo: bankLogo("R", "#003B71") },
-  { name: "الأهلي", logo: bankLogo("S", "#006C35") },
-  { name: "بنك الرياض", logo: bankLogo("ر", "#512888") },
-  { name: "البلاد", logo: bankLogo("ب", "#E87722") },
-  { name: "الإنماء", logo: bankLogo("ن", "#009B8D") },
-  { name: "الأول (ساب)", logo: bankLogo("ف", "#00703C") },
-  { name: "الفرنسي", logo: bankLogo("ف", "#00529B") },
-  { name: "العربي الوطني", logo: bankLogo("ع", "#8B1A1A") },
-  { name: "stc pay", logo: bankLogo("S", "#4F008C") },
+  { name: "الراجحي", logo: LOGO("alrajhibank.com.sa") },
+  { name: "الأهلي", logo: LOGO("alahli.com") },
+  { name: "بنك الرياض", logo: LOGO("riyadbank.com") },
+  { name: "البلاد", logo: LOGO("bankalbilad.com") },
+  { name: "الإنماء", logo: LOGO("alinma.com") },
+  { name: "الأول (ساب)", logo: LOGO("sabb.com") },
+  { name: "الفرنسي", logo: LOGO("alfransi.com.sa") },
+  { name: "العربي الوطني", logo: LOGO("anb.com.sa") },
+  { name: "stc pay", logo: LOGO("stcpay.com.sa") },
 ];
 
 const PROBLEM_STATS = [
@@ -459,6 +458,38 @@ export default function HomePage() {
             </div>
           </section>
 
+          {/* ══════ CANCEL GUIDES ══════ */}
+          <section className="bg-[var(--color-surface)] py-16 px-8">
+            <div className="max-w-[1100px] mx-auto text-center">
+              <span className="section-label">{ar ? "أدلة الإلغاء" : "Cancel Guides"}</span>
+              <h2 className="section-title">{ar ? "٢٠٠+ دليل إلغاء خطوة بخطوة" : "200+ step-by-step cancel guides"}</h2>
+              <p className="section-sub">
+                {ar ? "اختر الخدمة اللي تبغى تلغيها ونوريك الطريقة بالتفصيل." : "Pick the service you want to cancel and we'll show you how."}
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 mt-10">
+                {GUIDE_CHIPS.map((g) => (
+                  <a
+                    key={g.slug}
+                    href={`/${g.slug}.html`}
+                    className="flex items-center gap-2.5 bg-white border border-[var(--color-border)] rounded-xl px-4 py-3 transition-all hover:border-[var(--color-primary)] hover:-translate-y-0.5 hover:shadow-md text-sm font-semibold no-underline text-[var(--color-text-primary)]"
+                  >
+                    <img src={FAV(g.domain)} alt="" className="w-5 h-5 rounded flex-shrink-0" />
+                    <span className="truncate">{g.name}</span>
+                  </a>
+                ))}
+              </div>
+              <div className="mt-8">
+                <a
+                  href="/guides/"
+                  className="inline-flex items-center gap-2 bg-[var(--color-dark)] text-white px-8 py-3.5 rounded-xl font-bold text-sm no-underline transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                >
+                  {ar ? "شوف كل الأدلة (٢٠٠+)" : "See all guides (200+)"}
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </a>
+              </div>
+            </div>
+          </section>
+
           {/* ══════ PROBLEM STATS ══════ */}
           <section className="bg-[var(--color-surface)] py-20 px-8">
             <div className="max-w-[900px] mx-auto text-center">
@@ -740,38 +771,6 @@ export default function HomePage() {
                     </div>
                   </div>
                 ))}
-              </div>
-            </div>
-          </section>
-
-          {/* ══════ CANCEL GUIDES ══════ */}
-          <section className="bg-[var(--color-surface)] py-20 px-8">
-            <div className="max-w-[1100px] mx-auto text-center">
-              <span className="section-label">{ar ? "أدلة الإلغاء" : "Cancel Guides"}</span>
-              <h2 className="section-title">{ar ? "٢٠٠+ دليل إلغاء خطوة بخطوة" : "200+ step-by-step cancel guides"}</h2>
-              <p className="section-sub">
-                {ar ? "اختر الخدمة اللي تبغى تلغيها ونوريك الطريقة بالتفصيل." : "Pick the service you want to cancel and we'll show you how."}
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 mt-10">
-                {GUIDE_CHIPS.map((g) => (
-                  <a
-                    key={g.slug}
-                    href={`/${g.slug}.html`}
-                    className="flex items-center gap-2.5 bg-white border border-[var(--color-border)] rounded-xl px-4 py-3 transition-all hover:border-[var(--color-primary)] hover:-translate-y-0.5 hover:shadow-md text-sm font-semibold no-underline text-[var(--color-text-primary)]"
-                  >
-                    <img src={FAV(g.domain)} alt="" className="w-5 h-5 rounded flex-shrink-0" />
-                    <span className="truncate">{g.name}</span>
-                  </a>
-                ))}
-              </div>
-              <div className="mt-8">
-                <a
-                  href="/guides/"
-                  className="inline-flex items-center gap-2 bg-[var(--color-dark)] text-white px-8 py-3.5 rounded-xl font-bold text-sm no-underline transition-all hover:-translate-y-0.5 hover:shadow-lg"
-                >
-                  {ar ? "شوف كل ٢٠١ دليل إلغاء" : "See all 201 cancel guides"}
-                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </a>
               </div>
             </div>
           </section>
