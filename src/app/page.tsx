@@ -5,10 +5,13 @@ import Header from "@/components/Header";
 import UploadZone from "@/components/UploadZone";
 import AuditReport from "@/components/AuditReport";
 import PaywallModal from "@/components/PaywallModal";
+import SpendingBreakdownComponent from "@/components/SpendingBreakdown";
 import { parseCSV, detectBank } from "@/lib/banks";
 import { parsePDF } from "@/lib/pdf-parser";
 import { analyzeTransactions } from "@/lib/analyzer";
+import { analyzeSpending } from "@/lib/spending";
 import { AuditReport as Report, Subscription, SubscriptionStatus, Transaction } from "@/lib/types";
+import { SpendingBreakdown as SpendingData } from "@/lib/spending";
 import { getCancelInfo } from "@/lib/cancel-db";
 
 type Step = "landing" | "analyzing" | "identify" | "results";
@@ -229,6 +232,7 @@ export default function HomePage() {
   const [txCount, setTxCount] = useState(0);
   const [analyzeTimer, setAnalyzeTimer] = useState(0);
   const [analyzeStatus, setAnalyzeStatus] = useState("");
+  const [spendingData, setSpendingData] = useState<SpendingData | null>(null);
   const heroRef = useRef<HTMLElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -303,9 +307,11 @@ export default function HomePage() {
     await new Promise((r) => setTimeout(r, 1500));
 
     const result = analyzeTransactions(allTx);
+    const spending = analyzeSpending(allTx);
     if (timerRef.current) clearInterval(timerRef.current);
 
     setReport(result);
+    setSpendingData(spending);
 
     // Check if there are suspicious subscriptions to identify
     const suspicious = result.subscriptions.filter((s) => s.confidence === "suspicious");
@@ -373,6 +379,7 @@ export default function HomePage() {
   function handleStartOver() {
     setStep("landing");
     setReport(null);
+    setSpendingData(null);
     setError(false);
     setTxCount(0);
     setAnalyzeTimer(0);
@@ -659,6 +666,50 @@ export default function HomePage() {
                   onStartOver={handleStartOver}
                   onUpgradeClick={() => setShowPaywall(true)}
                 />
+              )}
+
+              {/* Spending Breakdown — premium deep-dive */}
+              {spendingData && spendingData.categories.length > 0 && (
+                <div className="mt-8 mb-8">
+                  {hidden.length > 0 ? (
+                    <>
+                      {/* Teaser: show header + first 3 categories, blur the rest */}
+                      <div className="relative">
+                        <SpendingBreakdownComponent data={{
+                          ...spendingData,
+                          categories: spendingData.categories.slice(0, 3),
+                          takeaways: [],
+                        }} locale={locale} />
+                        {/* Blurred overlay for remaining categories */}
+                        <div className="relative -mt-1 rounded-b-2xl overflow-hidden" style={{ background: "#0F172A" }}>
+                          <div className="blur-sm select-none pointer-events-none px-6 py-4 space-y-3">
+                            {spendingData.categories.slice(3, 7).map((cat) => (
+                              <div key={cat.nameEn} className="flex items-center gap-3 text-sm text-white/50">
+                                <div className="w-2.5 h-2.5 rounded-sm bg-white/20" />
+                                <span className="flex-1">{ar ? cat.name : cat.nameEn}</span>
+                                <span>{cat.total.toLocaleString()} {ar ? "ر.س" : "SAR"}</span>
+                                <span>{cat.percent}%</span>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="text-center">
+                              <svg width="24" height="24" fill="none" viewBox="0 0 24 24" className="text-white/50 mx-auto mb-2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                              </svg>
+                              <p className="text-xs font-bold text-white/60">
+                                {ar ? "اكشف التحليل الكامل" : "Unlock full analysis"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <SpendingBreakdownComponent data={spendingData} locale={locale} />
+                  )}
+                </div>
               )}
 
               {/* Testimonials */}
