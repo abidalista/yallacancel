@@ -9,7 +9,7 @@ import { parseCSV } from "@/lib/banks";
 import { analyzeTransactions } from "@/lib/analyzer";
 import { AuditReport as Report, SubscriptionStatus } from "@/lib/types";
 
-const FREE_UPLOAD_LIMIT = 1;
+const FREE_UPLOAD_LIMIT = 999; // Free for now — testing phase
 const STORAGE_KEY = "yc_uploads_used";
 
 type Step = "landing" | "analyzing" | "results";
