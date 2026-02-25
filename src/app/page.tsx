@@ -5,7 +5,8 @@ import Header from "@/components/Header";
 import UploadZone from "@/components/UploadZone";
 import AuditReport from "@/components/AuditReport";
 import PaywallModal from "@/components/PaywallModal";
-import { parseCSV } from "@/lib/banks";
+import { parseCSV, detectBank } from "@/lib/banks";
+import { parsePDF } from "@/lib/pdf-parser";
 import { analyzeTransactions } from "@/lib/analyzer";
 import { AuditReport as Report, SubscriptionStatus } from "@/lib/types";
 
@@ -265,7 +266,8 @@ export default function HomePage() {
     setStep("analyzing");
     setError(false);
     try {
-      const transactions = parseCSV(text, "other");
+      const bankId = detectBank(text);
+      const transactions = parseCSV(text, bankId);
       if (transactions.length === 0) { setError(true); setStep("landing"); return; }
       const result = analyzeTransactions(transactions);
       setReport(result);
@@ -281,8 +283,27 @@ export default function HomePage() {
   }
 
   async function handleFileSelect(file: File) {
-    const text = await file.text();
-    processCSV(text);
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    if (ext === "pdf") {
+      setStep("analyzing");
+      setError(false);
+      try {
+        const transactions = await parsePDF(file);
+        if (transactions.length === 0) { setError(true); setStep("landing"); return; }
+        const report = analyzeTransactions(transactions);
+        setReport(report);
+        const used = uploadsUsed + 1;
+        setUploadsUsed(used);
+        try { localStorage.setItem(STORAGE_KEY, String(used)); } catch {}
+        setStep("results");
+      } catch {
+        setError(true);
+        setStep("landing");
+      }
+    } else {
+      const text = await file.text();
+      processCSV(text);
+    }
   }
 
   async function handleTestStatement() {

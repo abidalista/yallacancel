@@ -315,6 +315,48 @@ export function parseCSV(
   return transactions;
 }
 
+export function detectBank(content: string): BankId {
+  const lower = content.toLowerCase();
+  const firstLines = lower.split(/\r?\n/).slice(0, 10).join(" ");
+
+  // Check for bank-specific keywords in headers/first lines
+  if (firstLines.includes("الراجحي") || firstLines.includes("alrajhi"))
+    return "alrajhi";
+  if (
+    firstLines.includes("الأهلي") ||
+    firstLines.includes("snb") ||
+    firstLines.includes("الاهلي")
+  )
+    return "snb";
+  if (firstLines.includes("بنك الرياض") || firstLines.includes("riyad"))
+    return "riyadbank";
+  if (firstLines.includes("البلاد") || firstLines.includes("albilad"))
+    return "albilad";
+  if (firstLines.includes("الإنماء") || firstLines.includes("alinma"))
+    return "alinma";
+  if (firstLines.includes("ساب") || firstLines.includes("sabb"))
+    return "sabb";
+  if (firstLines.includes("الفرنسي") || firstLines.includes("fransi"))
+    return "bsf";
+  if (firstLines.includes("العربي") || firstLines.includes("anb"))
+    return "anb";
+
+  // Try all bank configs and pick the one that yields the most transactions
+  let bestBank: BankId = "other";
+  let bestCount = 0;
+
+  for (const [id, config] of Object.entries(bankConfigs)) {
+    if (id === "other") continue;
+    const txs = parseCSV(content, id as BankId);
+    if (txs.length > bestCount) {
+      bestCount = txs.length;
+      bestBank = id as BankId;
+    }
+  }
+
+  return bestCount > 0 ? bestBank : "other";
+}
+
 export function getBankConfig(bankId: BankId): BankConfig {
   return bankConfigs[bankId];
 }
