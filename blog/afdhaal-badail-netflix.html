@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>أفضل البدائل المجانية لـ Netflix و Spotify وباقي التطبيقات — Yalla Cancel</title>
+  <meta name="description" content="اكتشف أفضل البدائل المجانية لخدمات Netflix و Spotify و Microsoft 365 وغيرها. ليش تدفع وفيه خيارات ببلاش؟">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://yallacancel.sa/blog/afdhaal-badail-netflix.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=DM+Sans:wght@400;500;700;800;900&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #00A651; --primary-hover: #00C060; --primary-dark: #007A3D;
+      --primary-bg: #F0FBF4; --dark: #0F172A; --dark2: #1E293B; --dark3: #334155;
+      --surface: #F8FAFC; --white: #FFFFFF; --text: #0F172A; --text2: #64748B;
+      --muted: #94A3B8; --border: #E2E8F0; --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: "Noto Sans Arabic", -apple-system, sans-serif; background: var(--white); color: var(--text); -webkit-font-smoothing: antialiased; line-height: 1.6; }
+    a { text-decoration: none; color: inherit; }
+    .nav { background: var(--dark); border-bottom: 1px solid rgba(255,255,255,0.08); position: sticky; top: 0; z-index: 100; }
+    .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-family: "DM Sans", "Inter", sans-serif; font-size: 1.3rem; font-weight: 900; color: white; cursor: pointer; direction: ltr; unicode-bidi: bidi-override; }
+    .nav-logo span { color: var(--primary); }
+    .nav-back { font-size: 0.85rem; color: rgba(255,255,255,0.6); display: flex; align-items: center; gap: 6px; transition: color 0.2s; }
+    .nav-back:hover { color: white; }
+
+    .article-hero {
+      background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%);
+      padding: 80px 32px 56px; text-align: center; position: relative; overflow: hidden;
+    }
+    .article-hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse at 50% 80%, rgba(255,255,255,0.1) 0%, transparent 60%); }
+    .article-hero-content { position: relative; z-index: 2; max-width: 700px; margin: 0 auto; }
+    .article-tag { display: inline-block; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 9999px; padding: 6px 18px; font-size: 0.8rem; font-weight: 700; color: white; margin-bottom: 20px; }
+    .article-hero h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 900; color: white; line-height: 1.35; margin-bottom: 20px; }
+    .article-meta { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; }
+    .article-meta span { font-size: 0.85rem; color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 6px; }
+
+    .article-content { max-width: 740px; margin: 0 auto; padding: 48px 32px 80px; }
+    .article-content h2 { font-size: 1.35rem; font-weight: 900; color: var(--text); margin: 48px 0 20px; padding-bottom: 12px; border-bottom: 2px solid var(--border); }
+    .article-content h2:first-of-type { margin-top: 0; }
+    .article-content h3 { font-size: 1.1rem; font-weight: 800; color: var(--text); margin: 32px 0 12px; }
+    .article-content p { font-size: 0.95rem; color: var(--text2); line-height: 1.9; margin-bottom: 18px; }
+    .article-content ul { margin: 0 24px 20px 0; padding: 0; }
+    .article-content li { font-size: 0.93rem; color: var(--text2); line-height: 1.9; margin-bottom: 8px; }
+    .article-content strong { color: var(--text); }
+
+    .alt-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 24px; margin: 20px 0;
+    }
+    .alt-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+    .alt-paid { font-size: 0.82rem; color: #DC2626; font-weight: 700; background: #FFF1F2; padding: 4px 12px; border-radius: 8px; }
+    .alt-free { font-size: 0.82rem; color: var(--primary-dark); font-weight: 700; background: var(--primary-bg); padding: 4px 12px; border-radius: 8px; }
+    .alt-card h3 { font-size: 1rem; font-weight: 900; margin-bottom: 8px; }
+    .alt-card p { font-size: 0.88rem; color: var(--text2); line-height: 1.8; margin-bottom: 0; }
+    .alt-vs { display: flex; align-items: center; gap: 8px; margin: 10px 0; font-size: 0.85rem; font-weight: 800; color: var(--primary); }
+
+    .savings-summary {
+      background: linear-gradient(135deg, #0F172A, #1a2d1a);
+      border-radius: var(--radius); padding: 28px; margin: 32px 0;
+    }
+    .savings-summary h3 { color: white; font-size: 1.1rem; margin-bottom: 16px; }
+    .savings-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .savings-row:last-child { border-bottom: none; }
+    .savings-row .service { font-size: 0.88rem; color: rgba(255,255,255,0.6); }
+    .savings-row .amount { font-size: 0.88rem; color: var(--primary); font-weight: 800; }
+
+    .info-box { background: var(--primary-bg); border: 1px solid #BBF7D0; border-radius: var(--radius); padding: 22px 24px; margin: 24px 0; }
+    .info-box p { margin-bottom: 0; color: #166534; font-size: 0.9rem; }
+    .info-box strong { color: #14532D; display: block; margin-bottom: 6px; font-size: 0.95rem; }
+
+    .cta-box { background: linear-gradient(135deg, #00A651, #007A3D); border-radius: 20px; padding: 40px 32px; text-align: center; margin: 48px 0 0; }
+    .cta-box h3 { font-size: 1.3rem; font-weight: 900; color: white; margin-bottom: 10px; }
+    .cta-box p { font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: 24px; }
+    .cta-btn { display: inline-flex; align-items: center; gap: 8px; background: white; color: var(--primary); padding: 14px 32px; border-radius: 12px; font-weight: 900; font-size: 0.95rem; transition: all 0.2s; font-family: inherit; }
+    .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+
+    .related-posts { margin-top: 48px; padding-top: 32px; border-top: 2px solid var(--border); }
+    .related-posts h3 { font-size: 1.1rem; font-weight: 900; margin-bottom: 20px; }
+    .related-links { display: flex; flex-direction: column; gap: 10px; }
+    .related-link { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; transition: all 0.2s; font-size: 0.9rem; font-weight: 700; }
+    .related-link:hover { border-color: var(--primary); background: var(--primary-bg); }
+
+    .footer { background: var(--dark); color: white; padding: 36px 32px; text-align: center; }
+    .footer-links { display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; margin-bottom: 16px; }
+    .footer-links a { font-size: 0.85rem; color: rgba(255,255,255,0.5); transition: color 0.2s; }
+    .footer-links a:hover { color: var(--primary); }
+    .footer-copy { font-size: 0.78rem; color: rgba(255,255,255,0.25); }
+    @media(max-width: 600px) { .article-content { padding: 32px 20px 60px; } .cta-box { padding: 28px 20px; } .alt-header { flex-direction: column; align-items: flex-start; } }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="../preview-a.html">Yalla <span>Cancel</span></a>
+    <a class="nav-back" href="index.html">&larr; المدونة</a>
+  </div>
+</nav>
+
+<div class="article-hero">
+  <div class="article-hero-content">
+    <div class="article-tag">بدائل مجانية</div>
+    <h1>أفضل البدائل المجانية لـ Netflix و Spotify وباقي التطبيقات</h1>
+    <div class="article-meta">
+      <span>&#9998; فريق يلا كانسل</span>
+      <span>&#128197; ٨ فبراير ٢٠٢٦</span>
+      <span>&#9201; ٧ دقائق قراءة</span>
+    </div>
+  </div>
+</div>
+
+<article class="article-content">
+
+  <h2>ليش تدفع وفيه بدائل ببلاش؟</h2>
+  <p>كثير من الخدمات المدفوعة اللي نستخدمها عندها بدائل مجانية ممتازة. المشكلة إننا تعودنا على اسم معين وما فكرنا نبحث عن بدائل. في هالمقال، بنعطيك أفضل البدائل المجانية لأشهر الخدمات المدفوعة.</p>
+
+  <h2>بدائل منصات المشاهدة</h2>
+
+  <div class="alt-card">
+    <div class="alt-header">
+      <span class="alt-paid">Netflix -- ٦٠ ريال/شهر</span>
+      <span class="alt-free">البدائل المجانية</span>
+    </div>
+    <h3>Tubi و Pluto TV و YouTube المجاني</h3>
+    <p><strong>Tubi:</strong> مكتبة ضخمة من الأفلام والمسلسلات مجانا مع إعلانات بسيطة. متوفر في السعودية ويشتغل بدون VPN.</p>
+    <p><strong>Pluto TV:</strong> قنوات بث مباشر مجانية + مكتبة محتوى عند الطلب. فيه قنوات متنوعة من أفلام وأخبار ورياضة.</p>
+    <p><strong>YouTube المجاني:</strong> محتوى لا محدود. أفلام كاملة مجانية (بإعلانات)، وثائقيات، ومحتوى عربي ممتاز.</p>
+  </div>
+
+  <div class="alt-card">
+    <div class="alt-header">
+      <span class="alt-paid">Spotify -- ٢٧ ريال/شهر</span>
+      <span class="alt-free">البدائل المجانية</span>
+    </div>
+    <h3>Spotify Free و YouTube Music المجاني</h3>
+    <p><strong>Spotify Free:</strong> نفس المكتبة الكاملة لكن مع إعلانات وبدون تحميل. على الكمبيوتر تقدر تختار أي أغنية، وعلى الجوال تكون عشوائية.</p>
+    <p><strong>YouTube Music المجاني:</strong> كل الأغاني متوفرة مجانا مع إعلانات. وتقدر تلاقي ريمكسات وأغاني نادرة ما تلقاها في Spotify.</p>
+  </div>
+
+  <div class="alt-card">
+    <div class="alt-header">
+      <span class="alt-paid">Microsoft 365 -- ٣٠ ريال/شهر</span>
+      <span class="alt-free">البدائل المجانية</span>
+    </div>
+    <h3>Google Docs و LibreOffice</h3>
+    <p><strong>Google Docs/Sheets/Slides:</strong> مجاني تماما وشغال أونلاين. يفتح ملفات Office ويحفظها. مثالي لأغلب الاستخدامات اليومية.</p>
+    <p><strong>LibreOffice:</strong> بديل مجاني ومفتوح المصدر لـ Microsoft Office. يشتغل أوفلاين ويدعم كل صيغ الملفات. بديل ممتاز لو ما تحتاج التخزين السحابي.</p>
+  </div>
+
+  <div class="alt-card">
+    <div class="alt-header">
+      <span class="alt-paid">Canva Pro -- ٥٠ ريال/شهر</span>
+      <span class="alt-free">البدائل المجانية</span>
+    </div>
+    <h3>Canva Free و Figma المجاني</h3>
+    <p><strong>Canva المجاني:</strong> أغلب المزايا موجودة في النسخة المجانية. قوالب كثيرة، تعديل صور، وتصاميم جاهزة. النسخة المدفوعة تضيف بس صور إضافية وحذف الخلفية.</p>
+    <p><strong>Figma المجاني:</strong> أداة تصميم احترافية مجانية للاستخدام الشخصي. ممتازة لتصميم السوشال ميديا والعروض التقديمية.</p>
+  </div>
+
+  <div class="alt-card">
+    <div class="alt-header">
+      <span class="alt-paid">NordVPN -- ٤٥ ريال/شهر</span>
+      <span class="alt-free">البدائل المجانية</span>
+    </div>
+    <h3>Cloudflare WARP و ProtonVPN Free</h3>
+    <p><strong>Cloudflare WARP:</strong> مجاني تماما وسريع وآمن. ما يعطيك كل مزايا VPN التقليدي لكن يحمي خصوصيتك ويسرع اتصالك.</p>
+    <p><strong>ProtonVPN Free:</strong> VPN مجاني بدون حد للبيانات. سرعات معقولة وخوادم في ٣ دول. من نفس الشركة اللي تقدم ProtonMail.</p>
+  </div>
+
+  <div class="savings-summary">
+    <h3>كم بتوفر لو استخدمت البدائل المجانية؟</h3>
+    <div class="savings-row">
+      <span class="service">Netflix &rarr; Tubi/YouTube</span>
+      <span class="amount">+٦٠ ر.س/شهر</span>
+    </div>
+    <div class="savings-row">
+      <span class="service">Spotify &rarr; Spotify Free</span>
+      <span class="amount">+٢٧ ر.س/شهر</span>
+    </div>
+    <div class="savings-row">
+      <span class="service">Microsoft 365 &rarr; Google Docs</span>
+      <span class="amount">+٣٠ ر.س/شهر</span>
+    </div>
+    <div class="savings-row">
+      <span class="service">Canva Pro &rarr; Canva Free</span>
+      <span class="amount">+٥٠ ر.س/شهر</span>
+    </div>
+    <div class="savings-row">
+      <span class="service">NordVPN &rarr; Cloudflare WARP</span>
+      <span class="amount">+٤٥ ر.س/شهر</span>
+    </div>
+    <div class="savings-row" style="border-top: 2px solid rgba(0,166,81,0.3); padding-top: 14px; margin-top: 4px;">
+      <span class="service" style="color: white; font-weight: 800;">المجموع</span>
+      <span class="amount" style="font-size: 1.1rem;">٢١٢ ر.س/شهر = ٢,٥٤٤ ر.س/سنة</span>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <strong>&#128161; ملاحظة مهمة</strong>
+    <p>البدائل المجانية ممتازة لأغلب الاستخدامات، لكن ما تناسب الكل. لو أنت محترف وتعتمد على مزايا متقدمة، البديل المدفوع ممكن يكون يستاهل. القرار يرجع لك.</p>
+  </div>
+
+  <div class="cta-box">
+    <h3>اكتشف اشتراكاتك اللي تقدر تستبدلها</h3>
+    <p>حلل كشف حسابك وشوف وين تقدر توفر</p>
+    <a href="../preview-a.html" class="cta-btn">ابدأ التحليل المجاني &larr;</a>
+  </div>
+
+  <div class="related-posts">
+    <h3>مقالات ذات صلة</h3>
+    <div class="related-links">
+      <a href="tawfir-floos-ishtirakaat.html" class="related-link">&#128176; كيف توفر أكثر من ٤,٠٠٠ ريال سنويا</a>
+      <a href="../cancel-netflix.html" class="related-link">&#127909; دليل إلغاء Netflix خطوة بخطوة</a>
+      <a href="../cancel-spotify.html" class="related-link">&#127925; دليل إلغاء Spotify خطوة بخطوة</a>
+    </div>
+  </div>
+
+</article>
+
+<footer class="footer">
+  <div class="footer-links">
+    <a href="../preview-a.html">الرئيسية</a>
+    <a href="index.html">المدونة</a>
+    <a href="../privacy.html">سياسة الخصوصية</a>
+  </div>
+  <p class="footer-copy">&copy; ٢٠٢٦ Yalla Cancel. جميع الحقوق محفوظة.</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مدونة Yalla Cancel — نصائح إلغاء الاشتراكات وتوفير الفلوس</title>
+  <meta name="description" content="مدونة يلا كانسل: نصائح عملية لإلغاء الاشتراكات، كشف الرسوم المخفية، وتوفير فلوسك. محتوى سعودي ١٠٠٪.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://yallacancel.sa/blog/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=DM+Sans:wght@400;500;700;800;900&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #00A651;
+      --primary-hover: #00C060;
+      --primary-dark: #007A3D;
+      --primary-bg: #F0FBF4;
+      --dark: #0F172A;
+      --dark2: #1E293B;
+      --dark3: #334155;
+      --surface: #F8FAFC;
+      --white: #FFFFFF;
+      --text: #0F172A;
+      --text2: #64748B;
+      --muted: #94A3B8;
+      --border: #E2E8F0;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Noto Sans Arabic", -apple-system, sans-serif;
+      background: var(--white); color: var(--text);
+      -webkit-font-smoothing: antialiased; line-height: 1.6;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* NAV */
+    .nav {
+      background: var(--dark);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto; padding: 0 32px;
+      height: 64px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: "DM Sans", "Inter", sans-serif; font-size: 1.3rem; font-weight: 900;
+      color: white; cursor: pointer; direction: ltr; unicode-bidi: bidi-override;
+    }
+    .nav-logo span { color: var(--primary); }
+    .nav-back {
+      font-size: 0.85rem; color: rgba(255,255,255,0.6);
+      display: flex; align-items: center; gap: 6px; transition: color 0.2s;
+    }
+    .nav-back:hover { color: white; }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, #0F172A 0%, #1a2744 50%, #0d2618 100%);
+      padding: 80px 32px 64px; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at 50% 40%, rgba(0,166,81,0.12) 0%, transparent 65%);
+    }
+    .hero-content { position: relative; z-index: 2; max-width: 700px; margin: 0 auto; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(0,166,81,0.15); border: 1px solid rgba(0,166,81,0.3);
+      border-radius: 9999px; padding: 8px 20px;
+      font-size: 0.82rem; font-weight: 700; color: #4ADE80;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 4.5vw, 3rem);
+      font-weight: 900; color: white; line-height: 1.25; margin-bottom: 16px;
+    }
+    .hero h1 em { font-style: normal; color: var(--primary); }
+    .hero p {
+      font-size: 1.05rem; color: rgba(255,255,255,0.6); line-height: 1.8;
+      max-width: 560px; margin: 0 auto;
+    }
+
+    /* BLOG GRID */
+    .blog-section {
+      max-width: 1100px; margin: 0 auto; padding: 56px 32px 80px;
+    }
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 28px;
+    }
+    @media(max-width: 700px) {
+      .blog-grid { grid-template-columns: 1fr; }
+    }
+
+    /* BLOG CARD */
+    .blog-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: all 0.25s ease;
+      display: flex; flex-direction: column;
+    }
+    .blog-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,166,81,0.1);
+    }
+    .blog-card-thumb {
+      height: 180px; position: relative;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .blog-card-thumb .thumb-icon {
+      font-size: 3rem; position: relative; z-index: 2;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
+    }
+    .blog-card-body {
+      padding: 24px; flex: 1; display: flex; flex-direction: column;
+    }
+    .blog-card-tag {
+      display: inline-block;
+      background: var(--primary-bg); color: var(--primary-dark);
+      font-size: 0.72rem; font-weight: 800;
+      padding: 4px 12px; border-radius: 6px;
+      margin-bottom: 12px; width: fit-content;
+    }
+    .blog-card-title {
+      font-size: 1.05rem; font-weight: 800; line-height: 1.6;
+      color: var(--text); margin-bottom: 10px;
+    }
+    .blog-card-excerpt {
+      font-size: 0.85rem; color: var(--text2); line-height: 1.8;
+      margin-bottom: 16px; flex: 1;
+    }
+    .blog-card-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 14px; border-top: 1px solid var(--border);
+    }
+    .blog-card-date {
+      font-size: 0.78rem; color: var(--muted); font-weight: 600;
+    }
+    .blog-card-read {
+      font-size: 0.8rem; color: var(--primary); font-weight: 700;
+      display: flex; align-items: center; gap: 4px;
+    }
+
+    /* FOOTER */
+    .footer {
+      background: var(--dark); color: white;
+      padding: 36px 32px; text-align: center;
+    }
+    .footer-links {
+      display: flex; align-items: center; justify-content: center;
+      gap: 24px; flex-wrap: wrap; margin-bottom: 16px;
+    }
+    .footer-links a {
+      font-size: 0.85rem; color: rgba(255,255,255,0.5);
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--primary); }
+    .footer-copy { font-size: 0.78rem; color: rgba(255,255,255,0.25); }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="../preview-a.html">Yalla <span>Cancel</span></a>
+    <a class="nav-back" href="../preview-a.html">&larr; العودة للرئيسية</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">&#9998; مدونة يلا كانسل</div>
+    <h1>نصائح <em>توفر فلوسك</em> وتكشف اشتراكاتك المخفية</h1>
+    <p>مقالات عملية بالسعودي عشان تفهم اشتراكاتك، تلغي اللي ما تحتاجه، وتوفر أكثر كل شهر.</p>
+  </div>
+</div>
+
+<div class="blog-section">
+  <div class="blog-grid">
+
+    <!-- Post 1 -->
+    <a href="kif-talgi-ishtirakaat-mukhfiya.html" class="blog-card">
+      <div class="blog-card-thumb" style="background: linear-gradient(135deg, #0F172A, #1E3A5F);">
+        <span class="thumb-icon">&#128179;</span>
+      </div>
+      <div class="blog-card-body">
+        <div class="blog-card-tag">كشف حساب</div>
+        <h3 class="blog-card-title">كيف تلقى اشتراكاتك المخفية في كشف حسابك البنكي</h3>
+        <p class="blog-card-excerpt">تعرف على الرموز الغريبة في كشف حسابك مثل NFLX.COM و APPLE.COM/BILL وكيف تفك شفرتها.</p>
+        <div class="blog-card-meta">
+          <span class="blog-card-date">٢٠ فبراير ٢٠٢٦</span>
+          <span class="blog-card-read">اقرأ المقال &larr;</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Post 2 -->
+    <a href="kam-yisrif-sudi-ishtirakaat.html" class="blog-card">
+      <div class="blog-card-thumb" style="background: linear-gradient(135deg, #00A651, #007A3D);">
+        <span class="thumb-icon">&#128200;</span>
+      </div>
+      <div class="blog-card-body">
+        <div class="blog-card-tag">إحصائيات</div>
+        <h3 class="blog-card-title">كم يصرف السعودي على الاشتراكات شهريا؟ الأرقام بتصدمك</h3>
+        <p class="blog-card-excerpt">متوسط ٣٨٢ ريال شهريا على اشتراكات كثير منها منسية. شوف الأرقام حسب الفئة العمرية.</p>
+        <div class="blog-card-meta">
+          <span class="blog-card-date">١٨ فبراير ٢٠٢٦</span>
+          <span class="blog-card-read">اقرأ المقال &larr;</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Post 3 -->
+    <a href="akhta-ilghaa-ishtirakaat.html" class="blog-card">
+      <div class="blog-card-thumb" style="background: linear-gradient(135deg, #DC2626, #991B1B);">
+        <span class="thumb-icon">&#9888;&#65039;</span>
+      </div>
+      <div class="blog-card-body">
+        <div class="blog-card-tag">أخطاء شائعة</div>
+        <h3 class="blog-card-title">٥ أخطاء يسوونها الناس لما يبون يلغون اشتراكاتهم</h3>
+        <p class="blog-card-excerpt">من نسيان التجارب المجانية إلى عدم التحقق من تواريخ التجديد. تجنب هالأخطاء المكلفة.</p>
+        <div class="blog-card-meta">
+          <span class="blog-card-date">١٥ فبراير ٢٠٢٦</span>
+          <span class="blog-card-read">اقرأ المقال &larr;</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Post 4 -->
+    <a href="dark-patterns-tatbikat.html" class="blog-card">
+      <div class="blog-card-thumb" style="background: linear-gradient(135deg, #1E293B, #0F172A);">
+        <span class="thumb-icon">&#128065;</span>
+      </div>
+      <div class="blog-card-body">
+        <div class="blog-card-tag">تصميم مظلم</div>
+        <h3 class="blog-card-title">الأنماط المظلمة: كيف التطبيقات تخليك ما تلغي اشتراكك</h3>
+        <p class="blog-card-excerpt">أزرار مخفية، رسائل ذنب، وخطوات معقدة عمدا. تعرف على الحيل وكيف تتغلب عليها.</p>
+        <div class="blog-card-meta">
+          <span class="blog-card-date">١٢ فبراير ٢٠٢٦</span>
+          <span class="blog-card-read">اقرأ المقال &larr;</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Post 5 -->
+    <a href="tawfir-floos-ishtirakaat.html" class="blog-card">
+      <div class="blog-card-thumb" style="background: linear-gradient(135deg, #059669, #047857);">
+        <span class="thumb-icon">&#128176;</span>
+      </div>
+      <div class="blog-card-body">
+        <div class="blog-card-tag">توفير</div>
+        <h3 class="blog-card-title">كيف توفر أكثر من ٤,٠٠٠ ريال سنويا من اشتراكاتك</h3>
+        <p class="blog-card-excerpt">نصائح عملية: مراجعة ربع سنوية، مشاركة العائلة، والاشتراك السنوي. وفر فلوسك الحين.</p>
+        <div class="blog-card-meta">
+          <span class="blog-card-date">١٠ فبراير ٢٠٢٦</span>
+          <span class="blog-card-read">اقرأ المقال &larr;</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Post 6 -->
+    <a href="afdhaal-badail-netflix.html" class="blog-card">
+      <div class="blog-card-thumb" style="background: linear-gradient(135deg, #7C3AED, #5B21B6);">
+        <span class="thumb-icon">&#127916;</span>
+      </div>
+      <div class="blog-card-body">
+        <div class="blog-card-tag">بدائل مجانية</div>
+        <h3 class="blog-card-title">أفضل البدائل المجانية لـ Netflix و Spotify وباقي التطبيقات</h3>
+        <p class="blog-card-excerpt">بدائل مجانية ممتازة لأشهر الخدمات المدفوعة. ليش تدفع وفيه خيارات ببلاش؟</p>
+        <div class="blog-card-meta">
+          <span class="blog-card-date">٨ فبراير ٢٠٢٦</span>
+          <span class="blog-card-read">اقرأ المقال &larr;</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Post 7 -->
+    <a href="trial-trap-tajriba-majaniya.html" class="blog-card">
+      <div class="blog-card-thumb" style="background: linear-gradient(135deg, #EA580C, #C2410C);">
+        <span class="thumb-icon">&#129693;</span>
+      </div>
+      <div class="blog-card-body">
+        <div class="blog-card-tag">تحذير</div>
+        <h3 class="blog-card-title">فخ التجربة المجانية: كيف ما تنصاد</h3>
+        <p class="blog-card-excerpt">التجربة المجانية مو فعلا مجانية إذا نسيت تلغي. تعلم كيف تحمي نفسك من الفخ.</p>
+        <div class="blog-card-meta">
+          <span class="blog-card-date">٥ فبراير ٢٠٢٦</span>
+          <span class="blog-card-read">اقرأ المقال &larr;</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Post 8 -->
+    <a href="ilghaa-stc-mobily-zain.html" class="blog-card">
+      <div class="blog-card-thumb" style="background: linear-gradient(135deg, #6366F1, #4338CA);">
+        <span class="thumb-icon">&#128241;</span>
+      </div>
+      <div class="blog-card-body">
+        <div class="blog-card-tag">دليل شامل</div>
+        <h3 class="blog-card-title">طريقة إلغاء اشتراكات stc وموبايلي وزين بالتفصيل</h3>
+        <p class="blog-card-excerpt">أكواد USSD، خدمات القيمة المضافة، واشتراكات المحتوى. كل شي تحتاج تعرفه عن شركات الاتصالات.</p>
+        <div class="blog-card-meta">
+          <span class="blog-card-date">٣ فبراير ٢٠٢٦</span>
+          <span class="blog-card-read">اقرأ المقال &larr;</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Post 9 -->
+    <a href="mushkila-apple-billing.html" class="blog-card">
+      <div class="blog-card-thumb" style="background: linear-gradient(135deg, #374151, #111827);">
+        <span class="thumb-icon">&#63743;</span>
+      </div>
+      <div class="blog-card-body">
+        <div class="blog-card-tag">شرح تفصيلي</div>
+        <h3 class="blog-card-title">APPLE.COM/BILL في كشف حسابك؟ هذا اللي يعنيه بالضبط</h3>
+        <p class="blog-card-excerpt">كل رسوم Apple تطلع بنفس الاسم. تعلم كيف تعرف وش بالضبط اللي انخصم وكيف تلغيه.</p>
+        <div class="blog-card-meta">
+          <span class="blog-card-date">١ فبراير ٢٠٢٦</span>
+          <span class="blog-card-read">اقرأ المقال &larr;</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Post 10 -->
+    <a href="guide-ilghaa-adobe.html" class="blog-card">
+      <div class="blog-card-thumb" style="background: linear-gradient(135deg, #BE185D, #9F1239);">
+        <span class="thumb-icon">&#127912;</span>
+      </div>
+      <div class="blog-card-body">
+        <div class="blog-card-tag">دليل إلغاء</div>
+        <h3 class="blog-card-title">دليل إلغاء Adobe بدون رسوم إضافية -- الطريقة الصح</h3>
+        <p class="blog-card-excerpt">Adobe مشهورة برسوم الإلغاء المبكر. تعلم الطريقة الصحيحة عشان ما تدفع ولا ريال زيادة.</p>
+        <div class="blog-card-meta">
+          <span class="blog-card-date">٢٨ يناير ٢٠٢٦</span>
+          <span class="blog-card-read">اقرأ المقال &larr;</span>
+        </div>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer-links">
+    <a href="../preview-a.html">الرئيسية</a>
+    <a href="../privacy.html">سياسة الخصوصية</a>
+    <a href="index.html">المدونة</a>
+  </div>
+  <p class="footer-copy">&copy; ٢٠٢٦ Yalla Cancel. جميع الحقوق محفوظة.</p>
+</footer>
+
+</body>
+</html>

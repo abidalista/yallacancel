@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>دليل إلغاء Adobe بدون رسوم إضافية — الطريقة الصح — Yalla Cancel</title>
+  <meta name="description" content="تعلم كيف تلغي اشتراك Adobe Creative Cloud بدون ما تدفع رسوم الإلغاء المبكر. دليل خطوة بخطوة مع نصائح لتوقيت الإلغاء الصح.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://yallacancel.sa/blog/guide-ilghaa-adobe.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=DM+Sans:wght@400;500;700;800;900&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #00A651; --primary-hover: #00C060; --primary-dark: #007A3D;
+      --primary-bg: #F0FBF4; --dark: #0F172A; --dark2: #1E293B; --dark3: #334155;
+      --surface: #F8FAFC; --white: #FFFFFF; --text: #0F172A; --text2: #64748B;
+      --muted: #94A3B8; --border: #E2E8F0; --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: "Noto Sans Arabic", -apple-system, sans-serif; background: var(--white); color: var(--text); -webkit-font-smoothing: antialiased; line-height: 1.6; }
+    a { text-decoration: none; color: inherit; }
+    .nav { background: var(--dark); border-bottom: 1px solid rgba(255,255,255,0.08); position: sticky; top: 0; z-index: 100; }
+    .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-family: "DM Sans", "Inter", sans-serif; font-size: 1.3rem; font-weight: 900; color: white; cursor: pointer; direction: ltr; unicode-bidi: bidi-override; }
+    .nav-logo span { color: var(--primary); }
+    .nav-back { font-size: 0.85rem; color: rgba(255,255,255,0.6); display: flex; align-items: center; gap: 6px; transition: color 0.2s; }
+    .nav-back:hover { color: white; }
+
+    .article-hero {
+      background: linear-gradient(135deg, #BE185D 0%, #9F1239 100%);
+      padding: 80px 32px 56px; text-align: center; position: relative; overflow: hidden;
+    }
+    .article-hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse at 50% 80%, rgba(255,255,255,0.1) 0%, transparent 60%); }
+    .article-hero-content { position: relative; z-index: 2; max-width: 700px; margin: 0 auto; }
+    .article-tag { display: inline-block; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 9999px; padding: 6px 18px; font-size: 0.8rem; font-weight: 700; color: white; margin-bottom: 20px; }
+    .article-hero h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 900; color: white; line-height: 1.35; margin-bottom: 20px; }
+    .article-meta { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; }
+    .article-meta span { font-size: 0.85rem; color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 6px; }
+
+    .article-content { max-width: 740px; margin: 0 auto; padding: 48px 32px 80px; }
+    .article-content h2 { font-size: 1.35rem; font-weight: 900; color: var(--text); margin: 48px 0 20px; padding-bottom: 12px; border-bottom: 2px solid var(--border); }
+    .article-content h2:first-of-type { margin-top: 0; }
+    .article-content h3 { font-size: 1.1rem; font-weight: 800; color: var(--text); margin: 32px 0 12px; }
+    .article-content p { font-size: 0.95rem; color: var(--text2); line-height: 1.9; margin-bottom: 18px; }
+    .article-content ul, .article-content ol { margin: 0 24px 20px 0; padding: 0; }
+    .article-content li { font-size: 0.93rem; color: var(--text2); line-height: 1.9; margin-bottom: 8px; }
+    .article-content strong { color: var(--text); }
+
+    .warning-banner {
+      background: #FFF1F2; border: 2px solid #FECDD3; border-radius: var(--radius);
+      padding: 24px; margin: 24px 0; display: flex; align-items: flex-start; gap: 14px;
+    }
+    .warning-banner .wb-icon { font-size: 1.8rem; flex-shrink: 0; }
+    .warning-banner strong { color: #881337; display: block; font-size: 1rem; margin-bottom: 6px; }
+    .warning-banner p { color: #9F1239; font-size: 0.9rem; margin: 0; line-height: 1.8; }
+
+    .plan-compare {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0;
+    }
+    @media(max-width: 600px) { .plan-compare { grid-template-columns: 1fr; } }
+    .plan-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 22px; text-align: center;
+    }
+    .plan-card.bad { border-color: #FECDD3; background: #FFF1F2; }
+    .plan-card.good { border-color: #BBF7D0; background: var(--primary-bg); }
+    .plan-card .plan-label { font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .plan-card.bad .plan-label { color: #DC2626; }
+    .plan-card.good .plan-label { color: var(--primary); }
+    .plan-card h3 { font-size: 0.95rem; font-weight: 900; margin-bottom: 4px; }
+    .plan-card p { font-size: 0.85rem; color: var(--text2); margin: 0; }
+    .plan-card .plan-fee { font-size: 1.4rem; font-weight: 900; margin: 8px 0; }
+    .plan-card.bad .plan-fee { color: #DC2626; }
+    .plan-card.good .plan-fee { color: var(--primary); }
+
+    .step-guide {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 28px; margin: 24px 0;
+    }
+    .step-guide h3 { margin-top: 0; margin-bottom: 16px; }
+    .step-list { display: flex; flex-direction: column; gap: 0; }
+    .step-item { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .step-item:last-child { border-bottom: none; }
+    .step-num {
+      width: 28px; height: 28px; background: var(--dark); color: white;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem; font-weight: 900; flex-shrink: 0; margin-top: 2px;
+      font-family: "Inter", sans-serif;
+    }
+    .step-item p { font-size: 0.88rem; color: var(--text2); margin: 0; }
+
+    .strategy-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 24px; margin: 20px 0; border-right: 4px solid var(--primary);
+    }
+    .strategy-card h3 { font-size: 1rem; font-weight: 900; margin-bottom: 10px; }
+    .strategy-card p { font-size: 0.9rem; color: var(--text2); line-height: 1.8; margin-bottom: 0; }
+
+    .info-box { background: var(--primary-bg); border: 1px solid #BBF7D0; border-radius: var(--radius); padding: 22px 24px; margin: 24px 0; }
+    .info-box.warn { background: #FFF7ED; border-color: #FED7AA; }
+    .info-box p { margin-bottom: 0; color: #166534; font-size: 0.9rem; }
+    .info-box.warn p { color: #92400E; }
+    .info-box strong { color: #14532D; display: block; margin-bottom: 6px; font-size: 0.95rem; }
+    .info-box.warn strong { color: #78350F; }
+
+    .cta-box { background: linear-gradient(135deg, #00A651, #007A3D); border-radius: 20px; padding: 40px 32px; text-align: center; margin: 48px 0 0; }
+    .cta-box h3 { font-size: 1.3rem; font-weight: 900; color: white; margin-bottom: 10px; }
+    .cta-box p { font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: 24px; }
+    .cta-btn { display: inline-flex; align-items: center; gap: 8px; background: white; color: var(--primary); padding: 14px 32px; border-radius: 12px; font-weight: 900; font-size: 0.95rem; transition: all 0.2s; font-family: inherit; }
+    .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+
+    .related-posts { margin-top: 48px; padding-top: 32px; border-top: 2px solid var(--border); }
+    .related-posts h3 { font-size: 1.1rem; font-weight: 900; margin-bottom: 20px; }
+    .related-links { display: flex; flex-direction: column; gap: 10px; }
+    .related-link { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; transition: all 0.2s; font-size: 0.9rem; font-weight: 700; }
+    .related-link:hover { border-color: var(--primary); background: var(--primary-bg); }
+
+    .footer { background: var(--dark); color: white; padding: 36px 32px; text-align: center; }
+    .footer-links { display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; margin-bottom: 16px; }
+    .footer-links a { font-size: 0.85rem; color: rgba(255,255,255,0.5); transition: color 0.2s; }
+    .footer-links a:hover { color: var(--primary); }
+    .footer-copy { font-size: 0.78rem; color: rgba(255,255,255,0.25); }
+    @media(max-width: 600px) { .article-content { padding: 32px 20px 60px; } .cta-box { padding: 28px 20px; } }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="../preview-a.html">Yalla <span>Cancel</span></a>
+    <a class="nav-back" href="index.html">&larr; المدونة</a>
+  </div>
+</nav>
+
+<div class="article-hero">
+  <div class="article-hero-content">
+    <div class="article-tag">دليل إلغاء</div>
+    <h1>دليل إلغاء Adobe بدون رسوم إضافية -- الطريقة الصح</h1>
+    <div class="article-meta">
+      <span>&#9998; فريق يلا كانسل</span>
+      <span>&#128197; ٢٨ يناير ٢٠٢٦</span>
+      <span>&#9201; ٨ دقائق قراءة</span>
+    </div>
+  </div>
+</div>
+
+<article class="article-content">
+
+  <h2>ليش إلغاء Adobe معقد؟</h2>
+  <p>Adobe مشهورة بشي واحد أكثر من Photoshop نفسه: <strong>رسوم الإلغاء المبكر</strong>. لو اشتركت في خطة سنوية (وهي الافتراضية) وحاولت تلغي قبل نهاية السنة، Adobe بتفرض عليك رسوم إلغاء مبكر ممكن توصل مبالغ كبيرة.</p>
+
+  <div class="warning-banner">
+    <div class="wb-icon">&#128680;</div>
+    <div>
+      <strong>تحذير: رسوم الإلغاء المبكر في Adobe</strong>
+      <p>لو عندك خطة سنوية وتلغي قبل نهاية العقد، Adobe تفرض عليك رسوم تعادل <strong>٥٠٪ من المبالغ المتبقية</strong> في العقد. مثلا لو باقي ٦ شهور بسعر ٢٢٠ ريال/شهر، الرسوم تكون ٦٦٠ ريال!</p>
+    </div>
+  </div>
+
+  <h2>أنواع خطط Adobe والفرق بينها</h2>
+
+  <div class="plan-compare">
+    <div class="plan-card bad">
+      <div class="plan-label">خطة سنوية (دفع شهري)</div>
+      <h3>Annual Plan, Paid Monthly</h3>
+      <div class="plan-fee">٢٢٠ ر.س/شهر</div>
+      <p>التزام سنوي لكن تدفع شهريا. الإلغاء المبكر فيه رسوم ٥٠٪.</p>
+    </div>
+    <div class="plan-card good">
+      <div class="plan-label">خطة شهرية (بدون التزام)</div>
+      <h3>Monthly Plan</h3>
+      <div class="plan-fee">٣٣٠ ر.س/شهر</div>
+      <p>أغلى شهريا لكن بدون أي التزام. تلغي أي وقت بدون رسوم.</p>
+    </div>
+  </div>
+
+  <p>المشكلة إن Adobe تحط الخطة السنوية كـ <strong>الخيار الافتراضي</strong> عند التسجيل. كثير ناس يختارونها بدون ما يقرأون التفاصيل ويكتشفون الرسوم بعدين.</p>
+
+  <h2>٤ طرق لإلغاء Adobe بدون رسوم</h2>
+
+  <div class="strategy-card">
+    <h3>الطريقة ١: انتظر نهاية العقد السنوي</h3>
+    <p>أسهل وأضمن طريقة. شوف متى يخلص عقدك السنوي ولغّي في آخر شهر. Adobe تذكرك قبل التجديد -- حط تنبيه في تقويمك عشان ما تنسى. لو لغيت في آخر شهر من العقد، <strong>ما فيه أي رسوم إلغاء</strong>.</p>
+  </div>
+
+  <div class="strategy-card">
+    <h3>الطريقة ٢: لغّي خلال أول ١٤ يوم</h3>
+    <p>Adobe تعطيك <strong>١٤ يوم ضمان استرجاع</strong> من بداية أي خطة جديدة. لو لغيت خلال أول ١٤ يوم، يرجعون لك كل فلوسك بدون أي رسوم. هالضمان ينطبق على الخطط الجديدة وعلى التجديد السنوي.</p>
+  </div>
+
+  <div class="strategy-card">
+    <h3>الطريقة ٣: تكلم مع دعم Adobe واطلب إعفاء</h3>
+    <p>ابدأ عملية الإلغاء أونلاين وبيوصلونك لموظف الاحتفاظ (retention agent). اشرح له وضعك واطلب إعفاء من رسوم الإلغاء. كثير من الموظفين عندهم صلاحية يعفونك أو يعطونك خصم كبير. كن لطيف لكن ثابت.</p>
+  </div>
+
+  <div class="strategy-card">
+    <h3>الطريقة ٤: حوّل للخطة الشهرية أولا</h3>
+    <p>بدل ما تلغي مباشرة، <strong>حوّل خطتك من سنوية لشهرية</strong> أولا. بعدين لغّي الخطة الشهرية. هالطريقة ممكن تتجنب فيها رسوم الإلغاء المبكر (تحتاج تتأكد من الشروط الحالية).</p>
+  </div>
+
+  <h2>خطوات الإلغاء بالتفصيل</h2>
+
+  <div class="step-guide">
+    <h3>كيف تلغي اشتراك Adobe خطوة بخطوة</h3>
+    <div class="step-list">
+      <div class="step-item">
+        <div class="step-num">١</div>
+        <p>ادخل على <strong>account.adobe.com/plans</strong> وسجل دخول</p>
+      </div>
+      <div class="step-item">
+        <div class="step-num">٢</div>
+        <p>اختر الخطة اللي تبي تلغيها واضغط <strong>"Manage plan"</strong></p>
+      </div>
+      <div class="step-item">
+        <div class="step-num">٣</div>
+        <p>اضغط <strong>"Cancel your plan"</strong></p>
+      </div>
+      <div class="step-item">
+        <div class="step-num">٤</div>
+        <p>Adobe بتعرض عليك <strong>عروض احتفاظ</strong> (خصم أو تجميد مؤقت). لو ما تبيها، اضغط <strong>"No thanks"</strong></p>
+      </div>
+      <div class="step-item">
+        <div class="step-num">٥</div>
+        <p>بتظهر لك <strong>رسوم الإلغاء المبكر</strong> (لو كانت خطة سنوية ولسه ما خلصت). لو المبلغ كبير، فكر في الانتظار</p>
+      </div>
+      <div class="step-item">
+        <div class="step-num">٦</div>
+        <p>اختر سبب الإلغاء واضغط <strong>"Continue"</strong></p>
+      </div>
+      <div class="step-item">
+        <div class="step-num">٧</div>
+        <p>أكد الإلغاء. <strong>بتوصلك رسالة تأكيد</strong> على إيميلك</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <strong>&#128161; نصيحة من موظف Adobe سابق</strong>
+    <p>لما توصل لخطوة عروض الاحتفاظ، لو رفضت أول عرض، غالبا يعطونك عرض أفضل. بعض الناس حصلوا على خصم ٦٠٪ لمدة ٣ شهور بس لأنهم رفضوا العرض الأول. لو تبي تستمر بس بسعر أقل، هالطريقة ممتازة.</p>
+  </div>
+
+  <h2>كيف تتأكد من نوع خطتك</h2>
+  <p>عشان تعرف هل عندك خطة سنوية أو شهرية:</p>
+  <ol>
+    <li>ادخل على <strong>account.adobe.com/plans</strong></li>
+    <li>شوف التفاصيل تحت اسم الخطة</li>
+    <li>لو مكتوب <strong>"Annual plan, paid monthly"</strong> = خطة سنوية (فيها رسوم إلغاء)</li>
+    <li>لو مكتوب <strong>"Monthly plan"</strong> = خطة شهرية (إلغاء بدون رسوم)</li>
+    <li>شوف تاريخ <strong>"Renewal date"</strong> عشان تعرف متى يتجدد</li>
+  </ol>
+
+  <div class="info-box warn">
+    <strong>&#9888;&#65039; تنبيه أخير</strong>
+    <p>بعد الإلغاء، ملفاتك على Adobe Cloud بتبقى متاحة لمدة محدودة. نزل كل شي مهم قبل ما تلغي. وتأكد إنك حفظت ملفاتك بصيغ تشتغل بدون Adobe (مثل PDF بدل AI).</p>
+  </div>
+
+  <p>لمزيد من التفاصيل، شوف <a href="../cancel-adobe.html" style="color:var(--primary); font-weight:700;">دليل إلغاء Adobe الكامل</a> على Yalla Cancel.</p>
+
+  <div class="cta-box">
+    <h3>Adobe مو الاشتراك الوحيد اللي تدفع عليه</h3>
+    <p>اكتشف كل اشتراكاتك المخفية وابدأ وفر</p>
+    <a href="../preview-a.html" class="cta-btn">حلل كشف حسابك مجانا &larr;</a>
+  </div>
+
+  <div class="related-posts">
+    <h3>مقالات ذات صلة</h3>
+    <div class="related-links">
+      <a href="../cancel-adobe.html" class="related-link">&#127912; دليل إلغاء Adobe خطوة بخطوة</a>
+      <a href="dark-patterns-tatbikat.html" class="related-link">&#128065; الأنماط المظلمة: كيف التطبيقات تصعّب الإلغاء</a>
+      <a href="akhta-ilghaa-ishtirakaat.html" class="related-link">&#9888;&#65039; ٥ أخطاء يسوونها الناس لما يلغون اشتراكاتهم</a>
+    </div>
+  </div>
+
+</article>
+
+<footer class="footer">
+  <div class="footer-links">
+    <a href="../preview-a.html">الرئيسية</a>
+    <a href="index.html">المدونة</a>
+    <a href="../privacy.html">سياسة الخصوصية</a>
+  </div>
+  <p class="footer-copy">&copy; ٢٠٢٦ Yalla Cancel. جميع الحقوق محفوظة.</p>
+</footer>
+
+</body>
+</html>
