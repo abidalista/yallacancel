@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 80" width="400" height="80">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@800&amp;display=swap');
+    </style>
+  </defs>
+  <text x="0" y="58" font-family="'DM Sans', sans-serif" font-weight="800" font-size="52" direction="ltr" unicode-bidi="bidi-override">
+    <tspan fill="#FFFFFF">yalla</tspan><tspan fill="#00A651">cancel</tspan>
+  </text>
+</svg>
