@@ -19,14 +19,14 @@ const FAV = (domain: string) =>
 
 const BANKS = [
   { name: "الراجحي", logo: FAV("alrajhibank.com.sa") },
-  { name: "الأهلي", logo: FAV("alahli.com") },
+  { name: "الأهلي", logo: FAV("sab.com") },
   { name: "بنك الرياض", logo: FAV("riyadbank.com") },
   { name: "البلاد", logo: FAV("bankalbilad.com") },
   { name: "الإنماء", logo: FAV("alinma.com") },
   { name: "الأول (ساب)", logo: FAV("sabb.com") },
-  { name: "الفرنسي", logo: FAV("alfransi.com.sa") },
+  { name: "الفرنسي", logo: FAV("banquefrancaise.com.sa") },
   { name: "العربي الوطني", logo: FAV("anb.com.sa") },
-  { name: "stc bank", logo: FAV("stcbank.com.sa") },
+  { name: "stc pay", logo: FAV("stcpay.com.sa") },
 ];
 
 const PROBLEM_STATS = [
@@ -76,7 +76,7 @@ const FEATURES = [
       <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
     ),
     title: "أدلة إلغاء خطوة بخطوة",
-    desc: "٦٠+ دليل إلغاء مفصّل لأشهر الخدمات في السعودية والعالم.",
+    desc: "٢٠٠+ دليل إلغاء مفصّل لأشهر الخدمات في السعودية والعالم.",
   },
 ];
 
@@ -158,26 +158,62 @@ const FAQ_ITEMS = [
 ];
 
 const GUIDE_CHIPS = [
-  { name: "Netflix", slug: "cancel-netflix", domain: "netflix.com" },
-  { name: "Spotify", slug: "cancel-spotify", domain: "spotify.com" },
-  { name: "شاهد", slug: "cancel-shahid", domain: "shahid.mbc.net" },
-  { name: "Disney+", slug: "cancel-disney-plus", domain: "disneyplus.com" },
-  { name: "YouTube Premium", slug: "cancel-youtube-premium", domain: "youtube.com" },
-  { name: "Apple Music", slug: "cancel-apple-music", domain: "apple.com" },
-  { name: "Amazon Prime", slug: "cancel-amazon-prime", domain: "amazon.sa" },
-  { name: "ChatGPT Plus", slug: "cancel-chatgpt", domain: "openai.com" },
-  { name: "Adobe", slug: "cancel-adobe", domain: "adobe.com" },
+  // Saudi services
   { name: "stc", slug: "cancel-stc", domain: "stc.com.sa" },
   { name: "موبايلي", slug: "cancel-mobily", domain: "mobily.com.sa" },
   { name: "زين", slug: "cancel-zain", domain: "sa.zain.com" },
   { name: "هنقرستيشن", slug: "cancel-hungerstation-pro", domain: "hungerstation.com" },
   { name: "جاهز", slug: "cancel-jahez-plus", domain: "jahez.net" },
   { name: "كريم", slug: "cancel-careem-plus", domain: "careem.com" },
+  { name: "نون VIP", slug: "cancel-noon-vip", domain: "noon.com" },
+  { name: "تمارا", slug: "cancel-tamara", domain: "tamara.co" },
+  { name: "تابي", slug: "cancel-tabby", domain: "tabby.ai" },
+  { name: "نانا", slug: "cancel-nana-direct", domain: "nana.sa" },
+  { name: "stc pay", slug: "cancel-stc-pay", domain: "stcpay.com.sa" },
+  { name: "جوّي", slug: "cancel-jawwy", domain: "jawwy.sa" },
+  // Streaming
+  { name: "Netflix", slug: "cancel-netflix", domain: "netflix.com" },
+  { name: "شاهد", slug: "cancel-shahid", domain: "shahid.mbc.net" },
+  { name: "Disney+", slug: "cancel-disney-plus", domain: "disneyplus.com" },
+  { name: "YouTube Premium", slug: "cancel-youtube-premium", domain: "youtube.com" },
+  { name: "Apple TV+", slug: "cancel-apple-tv-plus", domain: "apple.com" },
+  { name: "Amazon Prime", slug: "cancel-amazon-prime", domain: "amazon.sa" },
   { name: "OSN+", slug: "cancel-osn-plus", domain: "osnplus.com" },
+  { name: "Spotify", slug: "cancel-spotify", domain: "spotify.com" },
+  { name: "Apple Music", slug: "cancel-apple-music", domain: "apple.com" },
   { name: "أنغامي", slug: "cancel-anghami", domain: "anghami.com" },
+  { name: "Paramount+", slug: "cancel-paramount-plus", domain: "paramountplus.com" },
+  { name: "Max HBO", slug: "cancel-max-hbo", domain: "max.com" },
+  { name: "beIN", slug: "cancel-bein-connect", domain: "bein.com" },
+  // Productivity & Tech
+  { name: "ChatGPT Plus", slug: "cancel-chatgpt", domain: "openai.com" },
+  { name: "Adobe", slug: "cancel-adobe", domain: "adobe.com" },
+  { name: "Microsoft 365", slug: "cancel-microsoft-365", domain: "microsoft.com" },
   { name: "iCloud+", slug: "cancel-icloud", domain: "icloud.com" },
+  { name: "Dropbox", slug: "cancel-dropbox", domain: "dropbox.com" },
+  { name: "Notion", slug: "cancel-notion", domain: "notion.so" },
+  { name: "Canva Pro", slug: "cancel-canva-pro", domain: "canva.com" },
+  { name: "Grammarly", slug: "cancel-grammarly", domain: "grammarly.com" },
+  { name: "GitHub Copilot", slug: "cancel-github-copilot", domain: "github.com" },
+  { name: "Figma", slug: "cancel-figma-pro", domain: "figma.com" },
+  { name: "Slack", slug: "cancel-slack-pro", domain: "slack.com" },
+  { name: "Zoom", slug: "cancel-zoom", domain: "zoom.us" },
+  // Gaming & VPN
   { name: "Xbox Game Pass", slug: "cancel-xbox-game-pass", domain: "xbox.com" },
+  { name: "PlayStation+", slug: "cancel-playstation-plus", domain: "playstation.com" },
   { name: "NordVPN", slug: "cancel-nordvpn", domain: "nordvpn.com" },
+  { name: "ExpressVPN", slug: "cancel-expressvpn", domain: "expressvpn.com" },
+  // Health & Lifestyle
+  { name: "Headspace", slug: "cancel-headspace", domain: "headspace.com" },
+  { name: "Calm", slug: "cancel-calm", domain: "calm.com" },
+  { name: "Duolingo+", slug: "cancel-duolingo-plus", domain: "duolingo.com" },
+  // Social & Other
+  { name: "LinkedIn Premium", slug: "cancel-linkedin-premium", domain: "linkedin.com" },
+  { name: "X Premium", slug: "cancel-x-premium", domain: "x.com" },
+  { name: "Snapchat+", slug: "cancel-snapchat-plus", domain: "snapchat.com" },
+  { name: "Telegram Premium", slug: "cancel-telegram-premium", domain: "telegram.org" },
+  { name: "Google One", slug: "cancel-google-one", domain: "one.google.com" },
+  { name: "Masterclass", slug: "cancel-masterclass", domain: "masterclass.com" },
 ];
 
 export default function HomePage() {
@@ -495,6 +531,94 @@ export default function HomePage() {
             </div>
           </section>
 
+          {/* ══════ REPORT SHOWCASE ══════ */}
+          <section className="py-20 px-8 overflow-hidden" style={{ background: "var(--color-dark)" }}>
+            <div className="max-w-[1100px] mx-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div className={ar ? "text-right" : "text-left"}>
+                  <span className="section-label" style={{ color: "var(--color-primary)" }}>{ar ? "التقرير" : "The Report"}</span>
+                  <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight mb-4">
+                    {ar ? "شفت كشف حسابك؟ نوريك كل اشتراك مخفي." : "See every hidden subscription in your statement."}
+                  </h2>
+                  <p className="text-base text-white/55 leading-relaxed mb-8">
+                    {ar
+                      ? "ارفع كشف حسابك وفي ثوانٍ نطلع لك تقرير واضح: كل اشتراك، المبلغ الشهري والسنوي، ورابط إلغاء مباشر."
+                      : "Upload your statement and in seconds get a clear report: every subscription, monthly & yearly cost, and a direct cancel link."}
+                  </p>
+                  <ul className="space-y-3 mb-8">
+                    {[
+                      ar ? "المبلغ الشهري والسنوي لكل اشتراك" : "Monthly & yearly cost per subscription",
+                      ar ? "رابط إلغاء مباشر لكل خدمة" : "Direct cancel link for every service",
+                      ar ? "تصنيف: خلّيه أو ألغيه" : "Classify: keep or cancel",
+                      ar ? "إجمالي التوفير المتوقع" : "Total estimated savings",
+                    ].map((item) => (
+                      <li key={item} className="flex items-center gap-3 text-sm text-white/75">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-[var(--color-primary)] flex-shrink-0"><path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                  <button onClick={scrollToTop} className="btn-primary">
+                    {ar ? "جرّب الحين مجاناً" : "Try it free now"}
+                  </button>
+                </div>
+                {/* Phone mockup */}
+                <div className="flex justify-center">
+                  <div
+                    className="relative w-[280px] sm:w-[300px] rounded-[2.5rem] p-3"
+                    style={{
+                      background: "linear-gradient(145deg, #1e293b, #0f172a)",
+                      border: "3px solid rgba(255,255,255,0.08)",
+                      boxShadow: "0 24px 64px rgba(0,0,0,0.4)",
+                    }}
+                  >
+                    {/* Notch */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-[#0f172a] rounded-b-2xl" />
+                    {/* Screen */}
+                    <div className="bg-white rounded-[2rem] overflow-hidden">
+                      <div className="bg-[var(--color-dark)] px-4 py-3 text-center">
+                        <div className="nav-logo text-sm mb-0">yalla<span className="accent">cancel</span></div>
+                      </div>
+                      <div className="px-4 py-3">
+                        <div className="text-xs font-black text-[var(--color-dark)] mb-1">{ar ? "تقرير اشتراكاتك" : "Your Subscription Report"}</div>
+                        <div className="text-[10px] text-[var(--color-text-muted)] mb-3">{ar ? "حللنا ١٢٤ عملية — ٦ اشتراكات" : "124 transactions — 6 subscriptions"}</div>
+                        {/* Sample subscriptions */}
+                        {[
+                          { name: "Netflix", cost: "٤٥ ر.س/شهر", color: "#E50914" },
+                          { name: "Spotify", cost: "٢٧ ر.س/شهر", color: "#1DB954" },
+                          { name: "iCloud+", cost: "١٥ ر.س/شهر", color: "#3693F5" },
+                          { name: "Adobe CC", cost: "١٩٩ ر.س/شهر", color: "#FF0000", warn: true },
+                          { name: "Calm", cost: "١٩ ر.س/شهر", color: "#4A90D9", warn: true },
+                        ].map((sub) => (
+                          <div key={sub.name} className="flex items-center justify-between py-2 border-b border-[var(--color-border)]">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-lg flex items-center justify-center text-white text-[8px] font-bold" style={{ background: sub.color }}>
+                                {sub.name[0]}
+                              </div>
+                              <div>
+                                <div className="text-[10px] font-bold">{sub.name}</div>
+                                <div className="text-[8px] text-[var(--color-text-muted)]">{sub.cost}</div>
+                              </div>
+                            </div>
+                            {sub.warn ? (
+                              <span className="text-[8px] bg-red-50 text-red-500 px-1.5 py-0.5 rounded font-bold">{ar ? "ألغِ" : "Cancel"}</span>
+                            ) : (
+                              <span className="text-[8px] bg-green-50 text-green-600 px-1.5 py-0.5 rounded font-bold">{ar ? "خلّيه" : "Keep"}</span>
+                            )}
+                          </div>
+                        ))}
+                        <div className="mt-3 bg-[var(--color-primary-bg)] rounded-xl p-2.5 text-center">
+                          <div className="text-[10px] text-[var(--color-text-muted)]">{ar ? "التوفير المتوقع" : "Estimated savings"}</div>
+                          <div className="text-base font-black text-[var(--color-primary)]">٢,٦١٦ {ar ? "ر.س/سنة" : "SAR/yr"}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
           {/* ══════ SUBS WE DETECT ══════ */}
           <section className="bg-[var(--color-surface)] py-20 px-8">
             <div className="max-w-[1100px] mx-auto text-center">
@@ -620,21 +744,31 @@ export default function HomePage() {
           <section className="bg-[var(--color-surface)] py-20 px-8">
             <div className="max-w-[1100px] mx-auto text-center">
               <span className="section-label">{ar ? "أدلة الإلغاء" : "Cancel Guides"}</span>
-              <h2 className="section-title">{ar ? "٦٠+ دليل إلغاء خطوة بخطوة" : "60+ step-by-step cancel guides"}</h2>
+              <h2 className="section-title">{ar ? "٢٠٠+ دليل إلغاء خطوة بخطوة" : "200+ step-by-step cancel guides"}</h2>
               <p className="section-sub">
                 {ar ? "اختر الخدمة اللي تبغى تلغيها ونوريك الطريقة بالتفصيل." : "Pick the service you want to cancel and we'll show you how."}
               </p>
-              <div className="flex flex-wrap justify-center gap-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 mt-10">
                 {GUIDE_CHIPS.map((g) => (
-                  <a key={g.slug} href={`/${g.slug}`} className="guide-chip">
-                    <img src={FAV(g.domain)} alt="" className="w-5 h-5 rounded" />
-                    <span>{g.name}</span>
+                  <a
+                    key={g.slug}
+                    href={`/${g.slug}.html`}
+                    className="flex items-center gap-2.5 bg-white border border-[var(--color-border)] rounded-xl px-4 py-3 transition-all hover:border-[var(--color-primary)] hover:-translate-y-0.5 hover:shadow-md text-sm font-semibold no-underline text-[var(--color-text-primary)]"
+                  >
+                    <img src={FAV(g.domain)} alt="" className="w-5 h-5 rounded flex-shrink-0" />
+                    <span className="truncate">{g.name}</span>
                   </a>
                 ))}
               </div>
-              <p className="mt-6 text-sm text-[var(--color-text-secondary)]">
-                {ar ? "وأكثر من ٣٠ خدمة أخرى — ارفع كشفك ونطلعلك أدلة الإلغاء تلقائياً." : "And 30+ more — upload your statement and we'll show relevant guides automatically."}
-              </p>
+              <div className="mt-8">
+                <a
+                  href="/blog/"
+                  className="inline-flex items-center gap-2 bg-[var(--color-dark)] text-white px-8 py-3.5 rounded-xl font-bold text-sm no-underline transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                >
+                  {ar ? "شوف كل ٢٠١ دليل إلغاء" : "See all 201 cancel guides"}
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </a>
+              </div>
             </div>
           </section>
 
