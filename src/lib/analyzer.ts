@@ -8,17 +8,23 @@ import {
 // Known subscription services (Arabic and English names)
 const KNOWN_SUBSCRIPTIONS: Record<string, string> = {
   netflix: "Netflix",
+  "nflx.com": "Netflix",
+  nflx: "Netflix",
   spotify: "Spotify",
+  "spotify ab": "Spotify",
   "apple.com": "Apple",
   "apple.com/bill": "Apple Subscriptions",
   itunes: "Apple iTunes",
   "google play": "Google Play",
   "google storage": "Google One",
   "google one": "Google One",
+  "goog*youtube": "YouTube Premium",
   youtube: "YouTube Premium",
   "amazon prime": "Amazon Prime",
+  "amzn mktp": "Amazon",
   amazon: "Amazon",
   shahid: "شاهد VIP",
+  "shahid.mbc": "شاهد VIP",
   "shahid vip": "شاهد VIP",
   stc: "STC",
   "stc play": "STC Play",
@@ -28,8 +34,10 @@ const KNOWN_SUBSCRIPTIONS: Record<string, string> = {
   anghami: "أنغامي",
   deezer: "Deezer",
   "adobe creative": "Adobe Creative Cloud",
+  "adobe systems": "Adobe",
   adobe: "Adobe",
   microsoft: "Microsoft 365",
+  "msft *": "Microsoft",
   "office 365": "Microsoft 365",
   chatgpt: "ChatGPT Plus",
   openai: "OpenAI",
@@ -55,7 +63,7 @@ const KNOWN_SUBSCRIPTIONS: Record<string, string> = {
   gym: "نادي رياضي",
   fitness: "نادي رياضي",
   "fitness time": "فتنس تايم",
-  "leejam": "لي جام",
+  leejam: "لي جام",
   uber: "Uber",
   careem: "كريم",
   jahez: "جاهز",
@@ -70,7 +78,9 @@ const KNOWN_SUBSCRIPTIONS: Record<string, string> = {
   telfaz: "تلفاز",
   vudu: "Vudu",
   hbo: "HBO",
+  max: "Max (HBO)",
   "disney+": "Disney+",
+  "disney plus": "Disney+",
   disney: "Disney+",
   hulu: "Hulu",
   "paramount+": "Paramount+",
@@ -81,6 +91,7 @@ const KNOWN_SUBSCRIPTIONS: Record<string, string> = {
   duolingo: "Duolingo Plus",
   headspace: "Headspace",
   calm: "Calm",
+  "calm.com": "Calm",
   todoist: "Todoist",
   evernote: "Evernote",
   "1password": "1Password",
@@ -92,8 +103,40 @@ const KNOWN_SUBSCRIPTIONS: Record<string, string> = {
   udemy: "Udemy",
   skillshare: "Skillshare",
   masterclass: "MasterClass",
+  "github copilot": "GitHub Copilot",
+  copilot: "GitHub Copilot",
   "rawabi holding": "رواتب / رقم مرجعي",
+  osn: "OSN+",
+  "bein": "beIN Sports",
+  snapchat: "Snapchat+",
+  telegram: "Telegram Premium",
+  tidal: "TIDAL",
+  audible: "Audible",
+  kindle: "Kindle Unlimited",
+  "prime video": "Prime Video",
 };
+
+// Services that are definitely subscription-based (not one-time purchases)
+// Used for single-occurrence detection
+const DEFINITE_SUBSCRIPTIONS = new Set([
+  "Netflix", "Spotify", "Apple Subscriptions", "Apple iTunes",
+  "Google One", "YouTube Premium", "Amazon Prime",
+  "شاهد VIP", "STC Play", "STC TV",
+  "أنغامي", "Deezer", "Adobe Creative Cloud", "Adobe",
+  "Microsoft 365", "ChatGPT Plus", "OpenAI",
+  "Discord Nitro", "PlayStation Plus", "Xbox Game Pass",
+  "Dropbox", "iCloud+", "Notion", "Figma", "Canva Pro",
+  "Grammarly", "Zoom", "Slack", "LinkedIn Premium", "X Premium",
+  "نادي رياضي", "فتنس تايم", "لي جام",
+  "Disney+", "Hulu", "Paramount+", "Apple TV+",
+  "Crunchyroll", "Duolingo Plus", "Headspace", "Calm",
+  "1Password", "LastPass", "NordVPN", "ExpressVPN", "Surfshark",
+  "Coursera", "Skillshare", "MasterClass",
+  "GitHub Copilot", "OSN+", "beIN Sports",
+  "Snapchat+", "Telegram Premium", "TIDAL", "Audible",
+  "Kindle Unlimited", "Prime Video", "Max (HBO)", "HBO",
+  "Twitch", "Todoist", "Evernote",
+]);
 
 function normalizeDescription(desc: string): string {
   return desc
@@ -174,8 +217,8 @@ function hasConsistentAmount(transactions: Transaction[]): boolean {
   if (transactions.length < 2) return false;
   const amounts = transactions.map((t) => t.amount);
   const avg = amounts.reduce((s, a) => s + a, 0) / amounts.length;
-  // Allow 10% variance
-  return amounts.every((a) => Math.abs(a - avg) / avg < 0.1);
+  // Allow 15% variance
+  return amounts.every((a) => Math.abs(a - avg) / avg < 0.15);
 }
 
 function calculateMonthlyEquivalent(
@@ -203,44 +246,60 @@ export function analyzeTransactions(
   let idCounter = 0;
 
   for (const [key, txs] of groups) {
-    // Need at least 2 occurrences to be a subscription
-    if (txs.length < 2) continue;
-
-    // Check for consistent amounts
-    if (!hasConsistentAmount(txs)) continue;
-
-    // Detect frequency
-    const frequency = detectFrequency(txs);
-    if (!frequency) continue;
-
-    const avgAmount =
-      txs.reduce((sum, t) => sum + t.amount, 0) / txs.length;
-    const monthlyEquivalent = calculateMonthlyEquivalent(
-      avgAmount,
-      frequency
-    );
-
-    const sortedDates = txs
-      .map((t) => t.date)
-      .sort()
-      .filter((d) => d);
-
     const knownName = matchKnownSubscription(txs[0].description);
+    const isKnownSub = knownName && DEFINITE_SUBSCRIPTIONS.has(knownName);
 
-    subscriptions.push({
-      id: `sub_${++idCounter}`,
-      name: knownName || txs[0].description,
-      normalizedName: key,
-      amount: Math.round(avgAmount * 100) / 100,
-      frequency,
-      monthlyEquivalent: Math.round(monthlyEquivalent * 100) / 100,
-      yearlyEquivalent: Math.round(monthlyEquivalent * 12 * 100) / 100,
-      occurrences: txs.length,
-      lastCharge: sortedDates[sortedDates.length - 1] || "",
-      firstCharge: sortedDates[0] || "",
-      status: "investigate",
-      transactions: txs,
-    });
+    if (txs.length >= 2) {
+      // Multiple occurrences: check consistency and frequency
+      const consistent = hasConsistentAmount(txs);
+      const frequency = detectFrequency(txs);
+
+      if (!consistent || !frequency) continue;
+
+      const avgAmount =
+        txs.reduce((sum, t) => sum + t.amount, 0) / txs.length;
+      const monthlyEquivalent = calculateMonthlyEquivalent(avgAmount, frequency);
+
+      const sortedDates = txs
+        .map((t) => t.date)
+        .sort()
+        .filter((d) => d);
+
+      subscriptions.push({
+        id: `sub_${++idCounter}`,
+        name: knownName || txs[0].description,
+        normalizedName: key,
+        amount: Math.round(avgAmount * 100) / 100,
+        frequency,
+        monthlyEquivalent: Math.round(monthlyEquivalent * 100) / 100,
+        yearlyEquivalent: Math.round(monthlyEquivalent * 12 * 100) / 100,
+        occurrences: txs.length,
+        lastCharge: sortedDates[sortedDates.length - 1] || "",
+        firstCharge: sortedDates[0] || "",
+        status: "investigate",
+        transactions: txs,
+      });
+    } else if (isKnownSub && txs.length === 1) {
+      // Single occurrence of a known subscription service
+      // Assume monthly since we can't detect frequency from one charge
+      const tx = txs[0];
+      const amount = tx.amount;
+
+      subscriptions.push({
+        id: `sub_${++idCounter}`,
+        name: knownName!,
+        normalizedName: key,
+        amount: Math.round(amount * 100) / 100,
+        frequency: "monthly",
+        monthlyEquivalent: Math.round(amount * 100) / 100,
+        yearlyEquivalent: Math.round(amount * 12 * 100) / 100,
+        occurrences: 1,
+        lastCharge: tx.date || "",
+        firstCharge: tx.date || "",
+        status: "investigate",
+        transactions: txs,
+      });
+    }
   }
 
   // Sort by monthly equivalent (highest first)

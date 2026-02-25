@@ -8,12 +8,15 @@ import PaywallModal from "@/components/PaywallModal";
 import { parseCSV, detectBank } from "@/lib/banks";
 import { parsePDF } from "@/lib/pdf-parser";
 import { analyzeTransactions } from "@/lib/analyzer";
-import { AuditReport as Report, SubscriptionStatus } from "@/lib/types";
-
-const FREE_UPLOAD_LIMIT = 999; // Free for now — testing phase
-const STORAGE_KEY = "yc_uploads_used";
+import { AuditReport as Report, SubscriptionStatus, Transaction } from "@/lib/types";
 
 type Step = "landing" | "analyzing" | "results";
+
+interface UploadedFileInfo {
+  name: string;
+  size: number;
+  transactionCount: number;
+}
 
 const FAV = (domain: string) =>
   `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
@@ -226,17 +229,14 @@ export default function HomePage() {
   const [report, setReport] = useState<Report | null>(null);
   const [error, setError] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
-  const [uploadsUsed, setUploadsUsed] = useState(0);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [stickyCta, setStickyCta] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFileInfo[]>([]);
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
   const heroRef = useRef<HTMLElement>(null);
 
   const ar = locale === "ar";
-
-  useEffect(() => {
-    const stored = parseInt(localStorage.getItem(STORAGE_KEY) || "0", 10);
-    setUploadsUsed(stored);
-  }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute("dir", ar ? "rtl" : "ltr");
@@ -262,61 +262,86 @@ export default function HomePage() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  async function processCSV(text: string) {
-    setStep("analyzing");
-    setError(false);
-    try {
+  async function parseFile(file: File): Promise<Transaction[]> {
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    if (ext === "pdf") {
+      return await parsePDF(file);
+    } else {
+      const text = await file.text();
       const bankId = detectBank(text);
-      const transactions = parseCSV(text, bankId);
-      if (transactions.length === 0) { setError(true); setStep("landing"); return; }
-      const result = analyzeTransactions(transactions);
-      setReport(result);
-      const newCount = uploadsUsed + 1;
-      setUploadsUsed(newCount);
-      localStorage.setItem(STORAGE_KEY, String(newCount));
-      setStep("results");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch {
-      setError(true);
-      setStep("landing");
+      return parseCSV(text, bankId);
     }
   }
 
-  async function handleFileSelect(file: File) {
-    const ext = file.name.split(".").pop()?.toLowerCase();
-    if (ext === "pdf") {
-      setStep("analyzing");
-      setError(false);
+  async function handleFilesSelect(files: File[]) {
+    setError(false);
+    setIsProcessing(true);
+
+    const newFiles: UploadedFileInfo[] = [];
+    let newTransactions: Transaction[] = [];
+
+    for (const file of files) {
       try {
-        const transactions = await parsePDF(file);
-        if (transactions.length === 0) { setError(true); setStep("landing"); return; }
-        const report = analyzeTransactions(transactions);
-        setReport(report);
-        const used = uploadsUsed + 1;
-        setUploadsUsed(used);
-        try { localStorage.setItem(STORAGE_KEY, String(used)); } catch {}
-        setStep("results");
+        const txs = await parseFile(file);
+        newFiles.push({
+          name: file.name,
+          size: file.size,
+          transactionCount: txs.length,
+        });
+        newTransactions = newTransactions.concat(txs);
       } catch {
-        setError(true);
-        setStep("landing");
+        newFiles.push({
+          name: file.name,
+          size: file.size,
+          transactionCount: 0,
+        });
       }
-    } else {
-      const text = await file.text();
-      processCSV(text);
     }
+
+    const mergedTransactions = [...allTransactions, ...newTransactions];
+    const mergedFiles = [...uploadedFiles, ...newFiles];
+
+    setAllTransactions(mergedTransactions);
+    setUploadedFiles(mergedFiles);
+
+    if (mergedTransactions.length === 0) {
+      setError(true);
+      setIsProcessing(false);
+      return;
+    }
+
+    // Auto-analyze after upload
+    setStep("analyzing");
+    // Small delay so the analyzing spinner is visible
+    await new Promise((r) => setTimeout(r, 800));
+
+    const result = analyzeTransactions(mergedTransactions);
+    setReport(result);
+    setIsProcessing(false);
+    setStep("results");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   async function handleTestStatement() {
-    setStep("analyzing");
+    setIsProcessing(true);
     setError(false);
     try {
       const res = await fetch("/test-statement.csv");
       const text = await res.text();
-      processCSV(text);
+      const bankId = detectBank(text);
+      const transactions = parseCSV(text, bankId);
+      setAllTransactions(transactions);
+      setUploadedFiles([{ name: "test-statement.csv", size: 0, transactionCount: transactions.length }]);
+      setStep("analyzing");
+      await new Promise((r) => setTimeout(r, 800));
+      const result = analyzeTransactions(transactions);
+      setReport(result);
+      setStep("results");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
       setError(true);
-      setStep("landing");
     }
+    setIsProcessing(false);
   }
 
   function handleStatusChange(id: string, status: SubscriptionStatus) {
@@ -329,10 +354,18 @@ export default function HomePage() {
     });
   }
 
+  function handleUploadMore() {
+    setStep("landing");
+    // Keep allTransactions and uploadedFiles — user adds more
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   function handleStartOver() {
     setStep("landing");
     setReport(null);
     setError(false);
+    setAllTransactions([]);
+    setUploadedFiles([]);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -361,10 +394,29 @@ export default function HomePage() {
             </h1>
             <p className="text-sm text-[var(--color-text-muted)] mt-1">
               {ar
-                ? `حللنا ${report.analyzedTransactions} عملية وطلعنا ${report.subscriptions.length} اشتراك متكرر`
-                : `Analyzed ${report.analyzedTransactions} transactions, found ${report.subscriptions.length} recurring subscriptions`}
+                ? `حللنا ${report.analyzedTransactions} عملية من ${uploadedFiles.length} ملف — لقينا ${report.subscriptions.length} اشتراك`
+                : `Analyzed ${report.analyzedTransactions} transactions from ${uploadedFiles.length} file${uploadedFiles.length > 1 ? "s" : ""} — found ${report.subscriptions.length} subscription${report.subscriptions.length !== 1 ? "s" : ""}`}
             </p>
           </div>
+
+          {/* Upload more / Start over buttons */}
+          <div className="flex gap-3 mb-6">
+            <button
+              onClick={handleUploadMore}
+              className="flex-1 flex items-center justify-center gap-2 bg-[var(--color-primary)] text-white py-3 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5"
+              style={{ boxShadow: "0 4px 16px rgba(0,166,81,0.25)" }}
+            >
+              <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              {ar ? "ارفع كشوفات إضافية" : "Upload more statements"}
+            </button>
+            <button
+              onClick={handleStartOver}
+              className="flex items-center justify-center gap-2 border border-[var(--color-border)] text-[var(--color-text-secondary)] px-5 py-3 rounded-xl font-semibold text-sm transition-all hover:bg-[var(--color-surface)]"
+            >
+              {ar ? "ابدأ من جديد" : "Start over"}
+            </button>
+          </div>
+
           <AuditReport
             report={report}
             locale={locale}
@@ -444,11 +496,10 @@ export default function HomePage() {
 
               <UploadZone
                 locale={locale}
-                uploadsUsed={uploadsUsed}
-                freeLimit={FREE_UPLOAD_LIMIT}
-                onFileSelect={handleFileSelect}
+                uploadedFiles={uploadedFiles}
+                isProcessing={isProcessing}
+                onFilesSelect={handleFilesSelect}
                 onTestClick={handleTestStatement}
-                onUpgradeClick={() => setShowPaywall(true)}
               />
 
               <div className="mt-5 text-center">
