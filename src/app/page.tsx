@@ -17,16 +17,20 @@ type Step = "landing" | "analyzing" | "results";
 const FAV = (domain: string) =>
   `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
 
+// Inline SVG bank logos (Google Favicons returns globe icons for most Saudi bank domains)
+const bankLogo = (initial: string, color: string) =>
+  `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${color}"/><text x="32" y="34" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-weight="800" font-size="26" fill="#fff">${initial}</text></svg>`)}`;
+
 const BANKS = [
-  { name: "الراجحي", logo: FAV("alrajhibank.com.sa") },
-  { name: "الأهلي", logo: FAV("sab.com") },
-  { name: "بنك الرياض", logo: FAV("riyadbank.com") },
-  { name: "البلاد", logo: FAV("bankalbilad.com") },
-  { name: "الإنماء", logo: FAV("alinma.com") },
-  { name: "الأول (ساب)", logo: FAV("sabb.com") },
-  { name: "الفرنسي", logo: FAV("banquefrancaise.com.sa") },
-  { name: "العربي الوطني", logo: FAV("anb.com.sa") },
-  { name: "stc pay", logo: FAV("stcpay.com.sa") },
+  { name: "الراجحي", logo: bankLogo("R", "#003B71") },
+  { name: "الأهلي", logo: bankLogo("S", "#006C35") },
+  { name: "بنك الرياض", logo: bankLogo("ر", "#512888") },
+  { name: "البلاد", logo: bankLogo("ب", "#E87722") },
+  { name: "الإنماء", logo: bankLogo("ن", "#009B8D") },
+  { name: "الأول (ساب)", logo: bankLogo("ف", "#00703C") },
+  { name: "الفرنسي", logo: bankLogo("ف", "#00529B") },
+  { name: "العربي الوطني", logo: bankLogo("ع", "#8B1A1A") },
+  { name: "stc pay", logo: bankLogo("S", "#4F008C") },
 ];
 
 const PROBLEM_STATS = [
@@ -762,7 +766,7 @@ export default function HomePage() {
               </div>
               <div className="mt-8">
                 <a
-                  href="/blog/"
+                  href="/guides/"
                   className="inline-flex items-center gap-2 bg-[var(--color-dark)] text-white px-8 py-3.5 rounded-xl font-bold text-sm no-underline transition-all hover:-translate-y-0.5 hover:shadow-lg"
                 >
                   {ar ? "شوف كل ٢٠١ دليل إلغاء" : "See all 201 cancel guides"}
@@ -797,46 +801,78 @@ export default function HomePage() {
           {/* ══════ MEGA FOOTER ══════ */}
           <footer className="py-20 px-8 pb-10" style={{ background: "var(--color-dark)", color: "white" }}>
             <div className="max-w-[1200px] mx-auto">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
-                <div className="lg:col-span-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-10 mb-16">
+                {/* Brand column */}
+                <div className="col-span-2 sm:col-span-3 lg:col-span-2">
                   <div className="nav-logo text-xl mb-3">yalla<span className="accent">cancel</span></div>
-                  <p className="text-sm text-white/50 leading-relaxed mb-5">
-                    {ar ? "أداة سعودية تساعدك تكتشف اشتراكاتك المخفية وتوفر فلوسك." : "A Saudi tool that helps you find hidden subscriptions and save money."}
+                  <p className="text-sm text-white/50 leading-relaxed mb-5 max-w-[320px]">
+                    {ar ? "أداة سعودية تساعدك تكتشف اشتراكاتك المخفية وتوفر فلوسك. ارفع كشف حسابك ونوريك كل اشتراك مع رابط إلغاء مباشر." : "A Saudi tool that helps you find hidden subscriptions and save money. Upload your statement and we show every subscription with a direct cancel link."}
                   </p>
                 </div>
+
+                {/* Tools / الأدوات */}
                 <div>
-                  <h4 className="text-xs font-bold text-white/40 uppercase tracking-widest mb-4">{ar ? "المنتج" : "Product"}</h4>
-                  <ul className="space-y-2.5 text-sm text-white/65">
-                    <li><a href="#" className="hover:text-[var(--color-primary)] transition-colors">{ar ? "كيف يشتغل" : "How it works"}</a></li>
-                    <li><a href="#" className="hover:text-[var(--color-primary)] transition-colors">{ar ? "المميزات" : "Features"}</a></li>
-                    <li><a href="#" className="hover:text-[var(--color-primary)] transition-colors">{ar ? "ابدأ مجاناً" : "Start free"}</a></li>
+                  <h4 className="text-xs font-bold text-white/40 uppercase tracking-widest mb-4">{ar ? "الأدوات" : "Tools"}</h4>
+                  <ul className="space-y-2.5 text-sm text-white/65 list-none p-0">
+                    <li><a href="#" className="hover:text-[var(--color-primary)] transition-colors no-underline">{ar ? "تحليل الكشف" : "Statement Analyzer"}</a></li>
+                    <li><a href="#" className="hover:text-[var(--color-primary)] transition-colors no-underline">{ar ? "فك رموز البنك" : "Descriptor Decoder"}</a></li>
+                    <li><a href="/guides/" className="hover:text-[var(--color-primary)] transition-colors no-underline">{ar ? "أدلة الإلغاء" : "Cancel Guides"}</a></li>
+                    <li><a href="/blog/" className="hover:text-[var(--color-primary)] transition-colors no-underline">{ar ? "المدونة" : "Blog"}</a></li>
+                    <li><a href="#" className="hover:text-[var(--color-primary)] transition-colors no-underline">{ar ? "حاسبة الاشتراكات" : "Subscription Calculator"}</a></li>
                   </ul>
                 </div>
+
+                {/* Popular cancel guides / أدلة إلغاء شائعة */}
                 <div>
-                  <h4 className="text-xs font-bold text-white/40 uppercase tracking-widest mb-4">{ar ? "البنوك المدعومة" : "Supported Banks"}</h4>
-                  <ul className="space-y-2.5 text-sm text-white/65">
-                    <li><a href="#" className="hover:text-[var(--color-primary)] transition-colors">{ar ? "الراجحي" : "Al Rajhi"}</a></li>
-                    <li><a href="#" className="hover:text-[var(--color-primary)] transition-colors">{ar ? "الأهلي" : "SNB"}</a></li>
-                    <li><a href="#" className="hover:text-[var(--color-primary)] transition-colors">{ar ? "بنك الرياض" : "Riyad Bank"}</a></li>
-                    <li><a href="#" className="hover:text-[var(--color-primary)] transition-colors">{ar ? "الإنماء" : "Alinma"}</a></li>
+                  <h4 className="text-xs font-bold text-white/40 uppercase tracking-widest mb-4">{ar ? "أدلة إلغاء شائعة" : "Popular Guides"}</h4>
+                  <ul className="space-y-2.5 text-sm text-white/65 list-none p-0">
+                    <li><a href="/cancel-netflix.html" className="hover:text-[var(--color-primary)] transition-colors no-underline">{ar ? "إلغاء Netflix" : "Cancel Netflix"}</a></li>
+                    <li><a href="/cancel-spotify.html" className="hover:text-[var(--color-primary)] transition-colors no-underline">{ar ? "إلغاء Spotify" : "Cancel Spotify"}</a></li>
+                    <li><a href="/cancel-shahid.html" className="hover:text-[var(--color-primary)] transition-colors no-underline">{ar ? "إلغاء شاهد" : "Cancel Shahid"}</a></li>
+                    <li><a href="/cancel-adobe.html" className="hover:text-[var(--color-primary)] transition-colors no-underline">{ar ? "إلغاء Adobe" : "Cancel Adobe"}</a></li>
+                    <li><a href="/cancel-chatgpt.html" className="hover:text-[var(--color-primary)] transition-colors no-underline">{ar ? "إلغاء ChatGPT" : "Cancel ChatGPT"}</a></li>
+                    <li><a href="/cancel-youtube-premium.html" className="hover:text-[var(--color-primary)] transition-colors no-underline">{ar ? "إلغاء YouTube" : "Cancel YouTube"}</a></li>
+                    <li><a href="/cancel-disney-plus.html" className="hover:text-[var(--color-primary)] transition-colors no-underline">{ar ? "إلغاء Disney+" : "Cancel Disney+"}</a></li>
+                    <li><a href="/cancel-amazon-prime.html" className="hover:text-[var(--color-primary)] transition-colors no-underline">{ar ? "إلغاء Amazon Prime" : "Cancel Amazon Prime"}</a></li>
+                    <li><a href="/cancel-icloud.html" className="hover:text-[var(--color-primary)] transition-colors no-underline">{ar ? "إلغاء iCloud+" : "Cancel iCloud+"}</a></li>
+                    <li><a href="/cancel-microsoft-365.html" className="hover:text-[var(--color-primary)] transition-colors no-underline">{ar ? "إلغاء Microsoft 365" : "Cancel Microsoft 365"}</a></li>
+                    <li><a href="/guides/" className="hover:text-[var(--color-primary)] transition-colors no-underline font-semibold">{ar ? "شوف كل ٢٠١ دليل →" : "See all 201 guides →"}</a></li>
                   </ul>
                 </div>
+
+                {/* Company / الشركة */}
                 <div>
-                  <h4 className="text-xs font-bold text-white/40 uppercase tracking-widest mb-4">{ar ? "أدلة الإلغاء" : "Cancel Guides"}</h4>
-                  <ul className="space-y-2.5 text-sm text-white/65">
-                    <li><a href="/cancel-netflix" className="hover:text-[var(--color-primary)] transition-colors">{ar ? "كيف ألغي Netflix" : "How to cancel Netflix"}</a></li>
-                    <li><a href="/cancel-shahid" className="hover:text-[var(--color-primary)] transition-colors">{ar ? "كيف ألغي شاهد" : "How to cancel Shahid"}</a></li>
-                    <li><a href="/cancel-spotify" className="hover:text-[var(--color-primary)] transition-colors">{ar ? "كيف ألغي Spotify" : "How to cancel Spotify"}</a></li>
-                    <li><a href="/cancel-adobe" className="hover:text-[var(--color-primary)] transition-colors">{ar ? "كيف ألغي Adobe" : "How to cancel Adobe"}</a></li>
+                  <h4 className="text-xs font-bold text-white/40 uppercase tracking-widest mb-4">{ar ? "الشركة" : "Company"}</h4>
+                  <ul className="space-y-2.5 text-sm text-white/65 list-none p-0">
+                    <li><a href="#" className="hover:text-[var(--color-primary)] transition-colors no-underline">{ar ? "عن يلا كانسل" : "About Us"}</a></li>
+                    <li><a href="#" className="hover:text-[var(--color-primary)] transition-colors no-underline">{ar ? "أسئلة شائعة" : "FAQ"}</a></li>
+                    <li><a href="#" className="hover:text-[var(--color-primary)] transition-colors no-underline">{ar ? "سياسة الخصوصية" : "Privacy Policy"}</a></li>
+                    <li><a href="#" className="hover:text-[var(--color-primary)] transition-colors no-underline">{ar ? "الشروط والأحكام" : "Terms of Service"}</a></li>
+                    <li><a href="#" className="hover:text-[var(--color-primary)] transition-colors no-underline">{ar ? "تواصل معنا" : "Contact Us"}</a></li>
+                  </ul>
+
+                  <h4 className="text-xs font-bold text-white/40 uppercase tracking-widest mb-4 mt-8">{ar ? "البنوك المدعومة" : "Supported Banks"}</h4>
+                  <ul className="space-y-2.5 text-sm text-white/65 list-none p-0">
+                    <li><span className="text-white/50">{ar ? "الراجحي" : "Al Rajhi"}</span></li>
+                    <li><span className="text-white/50">{ar ? "الأهلي" : "SNB"}</span></li>
+                    <li><span className="text-white/50">{ar ? "بنك الرياض" : "Riyad Bank"}</span></li>
+                    <li><span className="text-white/50">{ar ? "البلاد" : "Bank Albilad"}</span></li>
+                    <li><span className="text-white/50">{ar ? "الإنماء" : "Alinma"}</span></li>
+                    <li><span className="text-white/50">{ar ? "ساب" : "SABB"}</span></li>
+                    <li><span className="text-white/50">{ar ? "الفرنسي" : "BSF"}</span></li>
+                    <li><span className="text-white/50">{ar ? "العربي الوطني" : "ANB"}</span></li>
+                    <li><span className="text-white/50">{ar ? "stc pay" : "stc pay"}</span></li>
                   </ul>
                 </div>
               </div>
+
+              {/* Bottom bar */}
               <div className="border-t border-white/8 pt-6 flex flex-wrap justify-between items-center gap-4">
-                <p className="text-xs text-white/30">&copy; ٢٠٢٦ Yalla Cancel</p>
+                <p className="text-xs text-white/30">&copy; ٢٠٢٦ Yalla Cancel — {ar ? "صنع في السعودية" : "Made in Saudi Arabia"}</p>
                 <div className="flex gap-6">
-                  <a href="#" className="text-xs text-white/30 hover:text-white/60 transition-colors">{ar ? "سياسة الخصوصية" : "Privacy"}</a>
-                  <a href="#" className="text-xs text-white/30 hover:text-white/60 transition-colors">{ar ? "الشروط والأحكام" : "Terms"}</a>
-                  <a href="#" className="text-xs text-white/30 hover:text-white/60 transition-colors">{ar ? "تواصل معنا" : "Contact"}</a>
+                  <a href="#" className="text-xs text-white/30 hover:text-white/60 transition-colors no-underline">{ar ? "سياسة الخصوصية" : "Privacy"}</a>
+                  <a href="#" className="text-xs text-white/30 hover:text-white/60 transition-colors no-underline">{ar ? "الشروط والأحكام" : "Terms"}</a>
+                  <a href="#" className="text-xs text-white/30 hover:text-white/60 transition-colors no-underline">{ar ? "تواصل معنا" : "Contact"}</a>
                 </div>
               </div>
             </div>
