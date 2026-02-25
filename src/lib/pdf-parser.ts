@@ -46,7 +46,7 @@ export async function parsePDF(file: File): Promise<Transaction[]> {
 const DATE_RE =
   /(?:\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})/;
 
-// Amount: numbers with optional commas and decimals, optional SAR/ر.س
+// Amount: numbers with optional commas and decimals, optional SAR/ريال
 const AMOUNT_RE = /[\d,]+\.\d{2}/;
 
 function parseDate(dateStr: string): string {

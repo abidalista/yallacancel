@@ -55,7 +55,7 @@ export default function SpendingBreakdown({ data, locale }: Props) {
         </div>
         <p className="text-sm text-white/50">
           {ar
-            ? `${data.totalSpend.toLocaleString()} ر.س إجمالي (~${data.monthlyAvg.toLocaleString()} ر.س/شهر) من ${data.transactionCount.toLocaleString()} عملية`
+            ? `${data.totalSpend.toLocaleString()} ريال إجمالي (~${data.monthlyAvg.toLocaleString()} ريال/شهر) من ${data.transactionCount.toLocaleString()} عملية`
             : `${data.totalSpend.toLocaleString()} SAR total (~${data.monthlyAvg.toLocaleString()} SAR/mo) across ${data.transactionCount.toLocaleString()} transactions`}
         </p>
       </div>
@@ -95,7 +95,7 @@ export default function SpendingBreakdown({ data, locale }: Props) {
                 <span className="text-sm font-bold text-white/90">
                   {cat.total.toLocaleString()}
                 </span>
-                <span className="text-[10px] text-white/40 mr-1 ml-1">{ar ? "ر.س" : "SAR"}</span>
+                <span className="text-[10px] text-white/40 mr-1 ml-1">{ar ? "ريال" : "SAR"}</span>
               </div>
 
               {/* Percentage bar */}
@@ -114,7 +114,7 @@ export default function SpendingBreakdown({ data, locale }: Props) {
                 <span className="text-sm text-white/70">
                   {cat.monthlyAvg.toLocaleString()}
                 </span>
-                <span className="text-[10px] text-white/40 mr-1 ml-1">{ar ? "ر.س/شهر" : "/mo"}</span>
+                <span className="text-[10px] text-white/40 mr-1 ml-1">{ar ? "ريال/شهر" : "/mo"}</span>
               </div>
             </div>
           );

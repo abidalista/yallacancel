@@ -46,7 +46,7 @@ export default function AuditReport({
         </div>
         <div className="bg-white border border-[var(--color-border)] rounded-2xl p-5 text-center">
           <div className="text-3xl font-black text-[var(--color-text-primary)]">
-            {report.totalMonthly.toFixed(0)} <span className="text-sm font-semibold text-[var(--color-text-muted)]">{ar ? "ر.س" : "SAR"}</span>
+            {report.totalMonthly.toFixed(0)} <span className="text-sm font-semibold text-[var(--color-text-muted)]">{ar ? "ريال" : "SAR"}</span>
           </div>
           <div className="text-xs text-[var(--color-text-muted)] mt-1">
             {ar ? "المجموع الشهري" : "total per month"}
@@ -54,7 +54,7 @@ export default function AuditReport({
         </div>
         <div className="bg-white border border-[var(--color-border)] rounded-2xl p-5 text-center">
           <div className="text-3xl font-black text-[var(--color-primary)]">
-            {report.totalYearly.toFixed(0)} <span className="text-sm font-semibold text-[var(--color-primary)]/60">{ar ? "ر.س" : "SAR"}</span>
+            {report.totalYearly.toFixed(0)} <span className="text-sm font-semibold text-[var(--color-primary)]/60">{ar ? "ريال" : "SAR"}</span>
           </div>
           <div className="text-xs text-[var(--color-text-muted)] mt-1">
             {ar ? "المجموع السنوي" : "total per year"}
@@ -77,10 +77,10 @@ export default function AuditReport({
             {ar ? "التوفير المتوقع بإلغاء الاشتراكات المختارة" : "Estimated savings from selected cancellations"}
           </p>
           <div className="text-3xl font-black">
-            {(cancelMonthlySavings * 12).toFixed(0)} {ar ? "ر.س/سنة" : "SAR/year"}
+            {(cancelMonthlySavings * 12).toFixed(0)} {ar ? "ريال/سنة" : "SAR/year"}
           </div>
           <p className="text-xs text-white/50 mt-1">
-            = {cancelMonthlySavings.toFixed(0)} {ar ? "ر.س/شهر" : "SAR/month"} ({cancelSubs.length} {ar ? "اشتراك" : "subscriptions"})
+            = {cancelMonthlySavings.toFixed(0)} {ar ? "ريال/شهر" : "SAR/month"} ({cancelSubs.length} {ar ? "اشتراك" : "subscriptions"})
           </p>
         </div>
       )}

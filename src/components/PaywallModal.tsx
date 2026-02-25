@@ -72,7 +72,7 @@ export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
         <div className="px-6 pb-6 space-y-3">
           <div className="bg-[var(--color-primary-bg)] border border-[var(--color-primary)]/20 rounded-xl p-4 text-center">
             <div className="text-3xl font-black text-[var(--color-primary)]">
-              {ar ? "٤٩ ر.س" : "49 SAR"}
+              {ar ? "٤٩ ريال" : "49 SAR"}
             </div>
             <div className="text-sm text-[var(--color-text-secondary)]">
               {ar ? "دفعة واحدة — بدون اشتراك شهري" : "One-time payment — no monthly fee"}
@@ -84,7 +84,7 @@ export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
             className="btn-primary w-full text-center"
             onClick={() => alert(ar ? "قريباً — جاري ربط بوابة الدفع" : "Coming soon — payment gateway integration in progress")}
           >
-            {ar ? "ادفع بمدى أو بطاقة — ٤٩ ر.س" : "Pay with mada or card — 49 SAR"}
+            {ar ? "ادفع بمدى أو بطاقة — ٤٩ ريال" : "Pay with mada or card — 49 SAR"}
           </button>
 
           <p className="text-xs text-center text-[var(--color-text-muted)]">

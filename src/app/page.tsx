@@ -19,25 +19,22 @@ type Step = "landing" | "analyzing" | "identify" | "results";
 const FAV = (domain: string) =>
   `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
 
-const LOGO = (domain: string) =>
-  `https://logo.clearbit.com/${domain}`;
-
 const BANKS = [
-  { name: "الراجحي", logo: LOGO("alrajhibank.com.sa") },
-  { name: "الأهلي", logo: LOGO("alahli.com") },
-  { name: "بنك الرياض", logo: LOGO("riyadbank.com") },
-  { name: "البلاد", logo: LOGO("bankalbilad.com") },
-  { name: "الإنماء", logo: LOGO("alinma.com") },
-  { name: "الأول (ساب)", logo: LOGO("sabb.com") },
-  { name: "الفرنسي", logo: LOGO("alfransi.com.sa") },
-  { name: "العربي الوطني", logo: LOGO("anb.com.sa") },
-  { name: "stc pay", logo: LOGO("stcpay.com.sa") },
+  { name: "الراجحي", logo: FAV("alrajhibank.com.sa") },
+  { name: "الأهلي", logo: FAV("alahli.com") },
+  { name: "بنك الرياض", logo: FAV("riyadbank.com") },
+  { name: "البلاد", logo: FAV("bankalbilad.com") },
+  { name: "الإنماء", logo: FAV("alinma.com") },
+  { name: "الأول (ساب)", logo: FAV("sabb.com") },
+  { name: "الفرنسي", logo: FAV("alfransi.com.sa") },
+  { name: "العربي الوطني", logo: FAV("anb.com.sa") },
+  { name: "stc pay", logo: FAV("stcpay.com.sa") },
 ];
 
 const PROBLEM_STATS = [
-  { num: "٣٨٢ ر.س", text: "متوسط إنفاق السعودي على الاشتراكات شهرياً" },
+  { num: "٣٨٢ ريال", text: "متوسط إنفاق السعودي على الاشتراكات شهرياً" },
   { num: "٧٣٪", text: "من السعوديين ناسين على الأقل اشتراك واحد" },
-  { num: "٤,٥٨٤ ر.س", text: "متوسط التوفير المحتمل سنوياً" },
+  { num: "٤,٥٨٤ ريال", text: "متوسط التوفير المحتمل سنوياً" },
 ];
 
 const FEATURES = [
@@ -286,41 +283,60 @@ export default function HomePage() {
       setAnalyzeTimer(Math.floor((Date.now() - start) / 1000));
     }, 1000);
 
-    let allTx: Transaction[] = [];
+    try {
+      let allTx: Transaction[] = [];
+      let failedFiles: string[] = [];
 
-    for (const file of files) {
-      try {
-        const txs = await parseFile(file);
-        allTx = allTx.concat(txs);
-        setTxCount(allTx.length);
-      } catch { /* skip bad files */ }
-    }
+      for (const file of files) {
+        try {
+          setAnalyzeStatus(
+            ar ? `نقرأ ${file.name}...` : `Reading ${file.name}...`
+          );
+          const txs = await parseFile(file);
+          if (txs.length === 0) {
+            failedFiles.push(file.name);
+          } else {
+            allTx = allTx.concat(txs);
+            setTxCount(allTx.length);
+          }
+        } catch (err) {
+          console.error(`Failed to parse ${file.name}:`, err);
+          failedFiles.push(file.name);
+        }
+      }
 
-    if (allTx.length === 0) {
+      if (allTx.length === 0) {
+        if (timerRef.current) clearInterval(timerRef.current);
+        setError(true);
+        setStep("landing");
+        return;
+      }
+
+      setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
+      await new Promise((r) => setTimeout(r, 1500));
+
+      const result = analyzeTransactions(allTx);
+      const spending = analyzeSpending(allTx);
+      if (timerRef.current) clearInterval(timerRef.current);
+
+      setReport(result);
+      setSpendingData(spending);
+
+      // Check if there are suspicious subscriptions to identify
+      const suspicious = result.subscriptions.filter((s) => s.confidence === "suspicious");
+      if (suspicious.length > 0) {
+        setStep("identify");
+      } else {
+        setStep("results");
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      // Catch-all: don't leave user stuck on analyzing screen
+      console.error("Scan failed:", err);
       if (timerRef.current) clearInterval(timerRef.current);
       setError(true);
       setStep("landing");
-      return;
     }
-
-    setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
-    await new Promise((r) => setTimeout(r, 1500));
-
-    const result = analyzeTransactions(allTx);
-    const spending = analyzeSpending(allTx);
-    if (timerRef.current) clearInterval(timerRef.current);
-
-    setReport(result);
-    setSpendingData(spending);
-
-    // Check if there are suspicious subscriptions to identify
-    const suspicious = result.subscriptions.filter((s) => s.confidence === "suspicious");
-    if (suspicious.length > 0) {
-      setStep("identify");
-    } else {
-      setStep("results");
-    }
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   async function handleTestStatement() {
@@ -465,7 +481,7 @@ export default function HomePage() {
                         )}
                       </div>
                       <span className="font-bold text-base text-[var(--color-text-primary)]">
-                        {sub.amount.toFixed(0)} {ar ? "ر.س/شهر" : "SAR/monthly"}
+                        {sub.amount.toFixed(0)} {ar ? "ريال/شهر" : "SAR/monthly"}
                       </span>
                     </div>
                     {sub.rawDescription && (
@@ -545,7 +561,7 @@ export default function HomePage() {
               {/* Headline */}
               <h1 className="text-3xl sm:text-4xl font-black text-[var(--color-text-primary)] mb-1">
                 {ar
-                  ? `تصرف ${report.totalYearly.toFixed(0)} ر.س/سنة`
+                  ? `تصرف ${report.totalYearly.toFixed(0)} ريال/سنة`
                   : `You're spending ${report.totalYearly.toFixed(0)} SAR/year`}
               </h1>
               <p className="text-sm text-[var(--color-text-muted)] mb-4">
@@ -566,7 +582,7 @@ export default function HomePage() {
                       <span className="text-sm text-[var(--color-text-muted)] w-8 flex-shrink-0">{i + 1}.</span>
                       <span className="font-bold text-sm flex-1">{sub.name}</span>
                       <span className="font-bold text-sm mr-4 ml-4">
-                        {sub.yearlyEquivalent.toFixed(0)} {ar ? "ر.س/سنة" : "SAR/yr"}
+                        {sub.yearlyEquivalent.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"}
                       </span>
                       {info?.cancelUrl ? (
                         <a
@@ -592,7 +608,7 @@ export default function HomePage() {
                     <span className="text-sm text-[var(--color-text-muted)] w-8 flex-shrink-0">{FREE_VISIBLE + i + 1}.</span>
                     <span className="font-bold text-sm flex-1 blur-sm select-none">{sub.name}</span>
                     <span className="font-bold text-sm mr-4 ml-4">
-                      {sub.yearlyEquivalent.toFixed(0)} {ar ? "ر.س/سنة" : "SAR/yr"}
+                      {sub.yearlyEquivalent.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"}
                     </span>
                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" className="text-[var(--color-text-muted)] flex-shrink-0">
                       <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="2"/>
@@ -604,7 +620,7 @@ export default function HomePage() {
                 {/* Footer row */}
                 {hidden.length > 0 && (
                   <div className="px-5 py-3 bg-[var(--color-surface)] text-center text-sm text-[var(--color-text-muted)]">
-                    + {hidden.length} {ar ? "إضافية" : "more"} ({hiddenYearly.toFixed(0)} {ar ? "ر.س/سنة" : "SAR/yr"})
+                    + {hidden.length} {ar ? "إضافية" : "more"} ({hiddenYearly.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"})
                   </div>
                 )}
               </div>
@@ -614,7 +630,7 @@ export default function HomePage() {
                 <>
                   <p className="text-center text-[var(--color-primary)] font-bold text-base mb-4">
                     {ar
-                      ? `ادفع ٤٩ ر.س، ووفر ${hiddenYearly.toFixed(0)} ر.س/سنة — يعني ${Math.round(hiddenYearly / 49)}x عائد`
+                      ? `ادفع ٤٩ ريال، ووفر ${hiddenYearly.toFixed(0)} ريال/سنة — يعني ${Math.round(hiddenYearly / 49)}x عائد`
                       : `Pay 49 SAR, save up to ${hiddenYearly.toFixed(0)} SAR/yr — that's a ${Math.round(hiddenYearly / 49)}x return`}
                   </p>
                   <button
@@ -623,7 +639,7 @@ export default function HomePage() {
                     style={{ boxShadow: "0 4px 24px rgba(0,166,81,0.35)" }}
                   >
                     {ar
-                      ? `اكشف كل ${subs.length} اشتراك — ٤٩ ر.س`
+                      ? `اكشف كل ${subs.length} اشتراك — ٤٩ ريال`
                       : `Unlock all ${subs.length} subscriptions — 49 SAR`}
                   </button>
                   <p className="text-xs text-center text-[var(--color-text-muted)] mb-6">
@@ -636,7 +652,7 @@ export default function HomePage() {
                   <div className="bg-red-50 border border-red-200 rounded-xl p-3.5 text-center mb-6">
                     <span className="text-sm text-red-600 font-semibold">
                       {ar
-                        ? `تخسر ${hiddenMonthly.toFixed(0)} ر.س/شهر على ${hidden.length} اشتراكات مخفية`
+                        ? `تخسر ${hiddenMonthly.toFixed(0)} ريال/شهر على ${hidden.length} اشتراكات مخفية`
                         : `You're losing ${hiddenMonthly.toFixed(0)} SAR/mo to ${hidden.length} hidden subscriptions`}
                     </span>
                   </div>
@@ -687,7 +703,7 @@ export default function HomePage() {
                               <div key={cat.nameEn} className="flex items-center gap-3 text-sm text-white/50">
                                 <div className="w-2.5 h-2.5 rounded-sm bg-white/20" />
                                 <span className="flex-1">{ar ? cat.name : cat.nameEn}</span>
-                                <span>{cat.total.toLocaleString()} {ar ? "ر.س" : "SAR"}</span>
+                                <span>{cat.total.toLocaleString()} {ar ? "ريال" : "SAR"}</span>
                                 <span>{cat.percent}%</span>
                               </div>
                             ))}
@@ -974,11 +990,11 @@ export default function HomePage() {
                         <div className="text-[10px] text-[var(--color-text-muted)] mb-3">{ar ? "حللنا ١٢٤ عملية — ٦ اشتراكات" : "124 transactions — 6 subscriptions"}</div>
                         {/* Sample subscriptions */}
                         {[
-                          { name: "Netflix", cost: "٤٥ ر.س/شهر", color: "#E50914" },
-                          { name: "Spotify", cost: "٢٧ ر.س/شهر", color: "#1DB954" },
-                          { name: "iCloud+", cost: "١٥ ر.س/شهر", color: "#3693F5" },
-                          { name: "Adobe CC", cost: "١٩٩ ر.س/شهر", color: "#FF0000", warn: true },
-                          { name: "Calm", cost: "١٩ ر.س/شهر", color: "#4A90D9", warn: true },
+                          { name: "Netflix", cost: "٤٥ ريال/شهر", color: "#E50914" },
+                          { name: "Spotify", cost: "٢٧ ريال/شهر", color: "#1DB954" },
+                          { name: "iCloud+", cost: "١٥ ريال/شهر", color: "#3693F5" },
+                          { name: "Adobe CC", cost: "١٩٩ ريال/شهر", color: "#FF0000", warn: true },
+                          { name: "Calm", cost: "١٩ ريال/شهر", color: "#4A90D9", warn: true },
                         ].map((sub) => (
                           <div key={sub.name} className="flex items-center justify-between py-2 border-b border-[var(--color-border)]">
                             <div className="flex items-center gap-2">
@@ -999,7 +1015,7 @@ export default function HomePage() {
                         ))}
                         <div className="mt-3 bg-[var(--color-primary-bg)] rounded-xl p-2.5 text-center">
                           <div className="text-[10px] text-[var(--color-text-muted)]">{ar ? "التوفير المتوقع" : "Estimated savings"}</div>
-                          <div className="text-base font-black text-[var(--color-primary)]">٢,٦١٦ {ar ? "ر.س/سنة" : "SAR/yr"}</div>
+                          <div className="text-base font-black text-[var(--color-primary)]">٢,٦١٦ {ar ? "ريال/سنة" : "SAR/yr"}</div>
                         </div>
                       </div>
                     </div>

@@ -93,10 +93,10 @@ export default function SubscriptionCard({
             {/* Amount row */}
             <div className="flex items-baseline gap-3 mb-1.5">
               <span className="text-xl font-black text-[var(--color-text-primary)]">
-                {sub.amount.toLocaleString(ar ? "ar-SA" : "en-SA")} <span className="text-xs font-semibold text-[var(--color-text-muted)]">{ar ? "ر.س" : "SAR"}</span>
+                {sub.amount.toLocaleString(ar ? "ar-SA" : "en-SA")} <span className="text-xs font-semibold text-[var(--color-text-muted)]">{ar ? "ريال" : "SAR"}</span>
               </span>
               <span className="text-xs text-[var(--color-text-muted)]">
-                = {sub.monthlyEquivalent.toFixed(0)} {ar ? "ر.س/شهر" : "SAR/mo"} = {sub.yearlyEquivalent.toFixed(0)} {ar ? "ر.س/سنة" : "SAR/yr"}
+                = {sub.monthlyEquivalent.toFixed(0)} {ar ? "ريال/شهر" : "SAR/mo"} = {sub.yearlyEquivalent.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"}
               </span>
             </div>
 

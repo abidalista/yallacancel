@@ -38,7 +38,7 @@ export const translations = {
     totalSubscriptions: "إجمالي الاشتراكات",
     monthlyTotal: "المجموع الشهري",
     yearlyTotal: "المجموع السنوي",
-    currency: "ر.س",
+    currency: "ريال",
 
     // Categories
     cancelSection: "🚫 الغيها",
