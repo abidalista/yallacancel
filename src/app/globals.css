@@ -165,6 +165,17 @@
     unicode-bidi: bidi-override;
   }
   .nav-logo .accent { color: var(--color-primary); }
+  .nav-logo-light { color: white; }
+  .nav-logo-light .accent { color: #A5B4FC; }
+
+  /* ── Hero gradient ── */
+  .hero-gradient {
+    background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 50%, #312E81 100%);
+  }
+  .section-label-light {
+    background: rgba(255,255,255,0.1);
+    color: #C7D2FE;
+  }
 
   /* ── Privacy blur ── */
   .privacy-blur {

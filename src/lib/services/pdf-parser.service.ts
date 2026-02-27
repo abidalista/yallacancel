@@ -313,9 +313,13 @@ export async function parsePDF(file: File): Promise<Transaction[]> {
 }
 
 export async function parsePDFRobust(file: File): Promise<PDFParseResult> {
+  console.log("[pdf-parser] Starting parse for:", file.name, "size:", file.size);
   const pdfjs = await import("pdfjs-dist");
 
-  pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+  // Try multiple worker paths for resilience
+  if (!pdfjs.GlobalWorkerOptions.workerSrc) {
+    pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+  }
 
   const arrayBuffer = await file.arrayBuffer();
 
@@ -378,7 +382,11 @@ export async function parsePDFRobust(file: File): Promise<PDFParseResult> {
     }
   }
 
+  console.log(`[pdf-parser] Extracted ${allLines.length} lines from ${pdf.numPages} pages`);
+  console.log("[pdf-parser] Sample lines:", allLines.slice(0, 5));
+
   if (allLines.length === 0) {
+    console.warn("[pdf-parser] No text extracted from PDF");
     return {
       transactions: [],
       pageCount: pdf.numPages,
@@ -391,10 +399,12 @@ export async function parsePDFRobust(file: File): Promise<PDFParseResult> {
   // Strategy 1: Structured
   let transactions = extractTransactions(allLines);
   let method: PDFParseResult["parseMethod"] = "structured";
+  console.log(`[pdf-parser] Strategy 1 (structured): ${transactions.length} transactions`);
 
   // Strategy 2: Fallback
   if (transactions.length < 3) {
     const fallback = extractFallback(allLines);
+    console.log(`[pdf-parser] Strategy 2 (fallback): ${fallback.length} transactions`);
     if (fallback.length > transactions.length) {
       transactions = fallback;
       method = "fallback";
@@ -404,6 +414,7 @@ export async function parsePDFRobust(file: File): Promise<PDFParseResult> {
   // Strategy 3: Aggressive
   if (transactions.length < 3) {
     const aggressive = extractAggressive(allLines);
+    console.log(`[pdf-parser] Strategy 3 (aggressive): ${aggressive.length} transactions`);
     if (aggressive.length > transactions.length) {
       transactions = aggressive;
       method = "aggressive";
@@ -412,6 +423,10 @@ export async function parsePDFRobust(file: File): Promise<PDFParseResult> {
 
   if (transactions.length === 0) {
     warnings.push("no_transactions_found");
+    console.warn("[pdf-parser] All strategies failed. Raw lines:", allLines.slice(0, 20));
+  } else {
+    console.log(`[pdf-parser] Final: ${transactions.length} transactions via ${method}`);
+    console.log("[pdf-parser] Sample:", transactions.slice(0, 3));
   }
 
   return {

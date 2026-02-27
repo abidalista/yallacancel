@@ -5,6 +5,8 @@ import { ExternalLink, FileText, AlertTriangle } from "lucide-react";
 import { Subscription, SubscriptionStatus } from "@/lib/types";
 import { getCancelInfo, CancelDifficulty } from "@/lib/cancel-db";
 
+const LOGO = (domain: string) =>
+  `https://logo.clearbit.com/${domain}`;
 const FAV = (domain: string) =>
   `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
 
@@ -71,9 +73,16 @@ export default function SubscriptionCard({
           <div className="flex-shrink-0">
             {domain ? (
               <img
-                src={FAV(domain)}
+                src={LOGO(domain)}
                 alt={sub.name}
-                className="w-11 h-11 rounded-xl bg-slate-50 p-0.5"
+                className="w-11 h-11 rounded-xl bg-slate-50 p-1 object-contain"
+                onError={(e) => {
+                  const img = e.currentTarget;
+                  if (!img.dataset.fallback) {
+                    img.dataset.fallback = "1";
+                    img.src = FAV(domain);
+                  }
+                }}
               />
             ) : (
               <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center text-sm font-bold text-indigo-500">

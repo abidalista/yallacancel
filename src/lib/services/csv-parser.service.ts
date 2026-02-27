@@ -547,10 +547,13 @@ export function parseCSV(content: string, bankId: BankId): Transaction[] {
 }
 
 export function parseCSVRobust(content: string, bankId: BankId): CSVParseResult {
+  console.log(`[csv-parser] Starting parse. bankId=${bankId}, content length=${content.length}`);
   const config = bankConfigs[bankId];
   const lines = content.split(/\r?\n/).filter((line) => line.trim());
+  console.log(`[csv-parser] ${lines.length} non-empty lines. First line:`, lines[0]?.slice(0, 120));
 
   if (lines.length < 2) {
+    console.warn("[csv-parser] File too short:", lines.length, "lines");
     return {
       transactions: [],
       bankId,
@@ -561,9 +564,11 @@ export function parseCSVRobust(content: string, bankId: BankId): CSVParseResult 
   }
 
   const delimiter = detectDelimiter(content);
+  console.log(`[csv-parser] Detected delimiter: "${delimiter === "\t" ? "TAB" : delimiter}"`);
 
   // Strategy 1: Header-based with detected delimiter
   const headerResult = parseCSVWithHeaders(lines, config, delimiter);
+  console.log(`[csv-parser] Strategy 1 (headers + detected delim): ${headerResult.transactions.length} txns, warnings:`, headerResult.warnings);
   if (headerResult.transactions.length > 0) {
     return {
       transactions: headerResult.transactions,

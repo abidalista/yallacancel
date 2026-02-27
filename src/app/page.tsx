@@ -38,19 +38,38 @@ interface ParseError {
   warnings: string[];
 }
 
+const LOGO = (domain: string) =>
+  `https://logo.clearbit.com/${domain}`;
 const FAV = (domain: string) =>
   `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
 
+function BrandLogo({ domain, alt, className }: { domain: string; alt: string; className?: string }) {
+  return (
+    <img
+      src={LOGO(domain)}
+      alt={alt}
+      className={className || "w-5 h-5 rounded-sm object-contain"}
+      onError={(e) => {
+        const img = e.currentTarget;
+        if (!img.dataset.fallback) {
+          img.dataset.fallback = "1";
+          img.src = FAV(domain);
+        }
+      }}
+    />
+  );
+}
+
 const BANKS = [
-  { name: "الراجحي", logo: FAV("alrajhibank.com.sa") },
-  { name: "الأهلي", logo: FAV("alahli.com") },
-  { name: "بنك الرياض", logo: FAV("riyadbank.com") },
-  { name: "البلاد", logo: FAV("bankalbilad.com") },
-  { name: "الإنماء", logo: FAV("alinma.com") },
-  { name: "الأول (ساب)", logo: FAV("sabb.com") },
-  { name: "الفرنسي", logo: FAV("alfransi.com.sa") },
-  { name: "العربي الوطني", logo: FAV("anb.com.sa") },
-  { name: "stc pay", logo: FAV("stcpay.com.sa") },
+  { name: "الراجحي", domain: "alrajhibank.com.sa" },
+  { name: "الأهلي", domain: "alahli.com" },
+  { name: "بنك الرياض", domain: "riyadbank.com" },
+  { name: "البلاد", domain: "bankalbilad.com" },
+  { name: "الإنماء", domain: "alinma.com" },
+  { name: "الأول (ساب)", domain: "sabb.com" },
+  { name: "الفرنسي", domain: "alfransi.com.sa" },
+  { name: "العربي الوطني", domain: "anb.com.sa" },
+  { name: "stc pay", domain: "stcpay.com.sa" },
 ];
 
 const PROBLEM_STATS = [
@@ -93,18 +112,18 @@ const FEATURES = [
 ];
 
 const SUB_CHIPS = [
-  { name: "Netflix", logo: FAV("netflix.com") },
-  { name: "Spotify", logo: FAV("spotify.com") },
-  { name: "شاهد", logo: FAV("shahid.mbc.net") },
-  { name: "Disney+", logo: FAV("disneyplus.com") },
-  { name: "YouTube", logo: FAV("youtube.com") },
-  { name: "Apple", logo: FAV("apple.com") },
-  { name: "Amazon", logo: FAV("amazon.sa") },
-  { name: "Adobe", logo: FAV("adobe.com") },
-  { name: "ChatGPT", logo: FAV("openai.com") },
-  { name: "iCloud", logo: FAV("icloud.com") },
-  { name: "هنقرستيشن", logo: FAV("hungerstation.com") },
-  { name: "stc", logo: FAV("stc.com.sa") },
+  { name: "Netflix", domain: "netflix.com" },
+  { name: "Spotify", domain: "spotify.com" },
+  { name: "شاهد", domain: "shahid.mbc.net" },
+  { name: "Disney+", domain: "disneyplus.com" },
+  { name: "YouTube", domain: "youtube.com" },
+  { name: "Apple", domain: "apple.com" },
+  { name: "Amazon", domain: "amazon.sa" },
+  { name: "Adobe", domain: "adobe.com" },
+  { name: "ChatGPT", domain: "openai.com" },
+  { name: "iCloud", domain: "icloud.com" },
+  { name: "هنقرستيشن", domain: "hungerstation.com" },
+  { name: "stc", domain: "stc.com.sa" },
 ];
 
 const TESTIMONIALS = [
@@ -696,22 +715,22 @@ export default function HomePage() {
       {step === "landing" && (
         <>
           {/* Hero */}
-          <section ref={heroRef} className="bg-white pt-24 pb-20 px-6">
+          <section ref={heroRef} className="hero-gradient pt-24 pb-20 px-6">
             <div className="max-w-[1100px] mx-auto text-center">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <span className="section-label">
+                <span className="section-label-light inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full mb-5">
                   <Shield size={12} strokeWidth={1.5} /> {ar ? "خصوصية ١٠٠٪ — كل شيء على جهازك" : "100% Private — Everything stays on your device"}
                 </span>
-                <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-slate-900 mb-4 max-w-3xl mx-auto leading-[1.1]">
+                <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-white mb-4 max-w-3xl mx-auto leading-[1.1]">
                   {ar
                     ? "وقف النزيف. الغي أي اشتراك بضغطتين."
                     : "Stop the drain. Cancel any subscription in two clicks."}
                 </h1>
-                <p className="section-sub">
+                <p className="text-lg text-indigo-200/70 max-w-[600px] mx-auto mb-12 leading-relaxed">
                   {ar
                     ? "ارفع كشف حسابك البنكي ونكشف لك كل الاشتراكات المخفية — مع روابط إلغاء مباشرة."
                     : "Upload your bank statement and we'll find every hidden subscription — with direct cancel links."}
@@ -783,9 +802,9 @@ export default function HomePage() {
               {/* Bank logos */}
               <div className="mt-12 flex flex-wrap justify-center gap-4">
                 {BANKS.map((bank) => (
-                  <div key={bank.name} className="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-full px-3 py-1.5">
-                    <img src={bank.logo} alt={bank.name} className="w-4 h-4 rounded-sm" />
-                    <span className="text-xs text-slate-500 font-medium">{bank.name}</span>
+                  <div key={bank.name} className="flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-3 py-1.5">
+                    <BrandLogo domain={bank.domain} alt={bank.name} className="w-5 h-5 rounded-sm object-contain" />
+                    <span className="text-xs text-white/70 font-medium">{bank.name}</span>
                   </div>
                 ))}
               </div>
@@ -793,7 +812,7 @@ export default function HomePage() {
           </section>
 
           {/* Stats */}
-          <section className="bg-slate-50 py-16 px-6">
+          <section className="bg-indigo-50/60 py-16 px-6 border-y border-indigo-100/50">
             <div className="max-w-[900px] mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
               {PROBLEM_STATS.map((stat, i) => (
                 <motion.div
@@ -802,7 +821,7 @@ export default function HomePage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: i * 0.1 }}
-                  className="bento-card text-center py-8"
+                  className="bg-white border border-indigo-100 rounded-[24px] shadow-sm text-center py-8 px-4"
                 >
                   <div className="text-3xl font-extrabold tracking-tight text-indigo-600 mb-2">{stat.num}</div>
                   <p className="text-sm text-slate-500">{stat.text}</p>
@@ -853,7 +872,7 @@ export default function HomePage() {
               <div className="flex flex-wrap justify-center gap-3">
                 {SUB_CHIPS.map((chip) => (
                   <div key={chip.name} className="inline-flex items-center gap-2 bg-white border border-slate-100 rounded-full px-4 py-2 shadow-sm">
-                    <img src={chip.logo} alt={chip.name} className="w-4 h-4 rounded-sm" />
+                    <BrandLogo domain={chip.domain} alt={chip.name} className="w-5 h-5 rounded-sm object-contain" />
                     <span className="text-sm font-medium text-slate-600">{chip.name}</span>
                   </div>
                 ))}
@@ -862,7 +881,7 @@ export default function HomePage() {
           </section>
 
           {/* Testimonials */}
-          <section className="bg-white py-20 px-6">
+          <section className="bg-gradient-to-b from-indigo-50/40 to-white py-20 px-6">
             <div className="max-w-[900px] mx-auto text-center">
               <span className="section-label">
                 {ar ? "تجارب المستخدمين" : "What users say"}
@@ -943,13 +962,37 @@ export default function HomePage() {
             </div>
           </section>
 
+          {/* CTA Banner */}
+          <section className="bg-gradient-to-br from-indigo-600 to-violet-700 py-14 px-6 text-center">
+            <div className="max-w-[600px] mx-auto">
+              <h2 className="text-2xl font-extrabold text-white mb-3">
+                {ar ? "تبي تلغي اشتراك معين؟" : "Want to cancel a specific subscription?"}
+              </h2>
+              <p className="text-base text-white/70 mb-6">
+                {ar ? "عندنا أدلة إلغاء مفصلة لأكثر من ٢٠٠ خدمة." : "We have detailed cancellation guides for 200+ services."}
+              </p>
+              <a
+                href="/guides"
+                className="inline-flex items-center gap-2 bg-white text-indigo-700 px-8 py-3.5 rounded-full font-bold text-sm no-underline transition-all hover:-translate-y-0.5 hover:shadow-lg"
+              >
+                <FileText size={16} strokeWidth={1.5} />
+                {ar ? "تصفح أدلة الإلغاء" : "Browse Cancel Guides"}
+              </a>
+            </div>
+          </section>
+
           {/* Footer */}
-          <footer className="bg-white py-10 px-6 border-t border-slate-100">
+          <footer className="bg-slate-900 py-10 px-6">
             <div className="max-w-[1100px] mx-auto text-center">
-              <div className="nav-logo justify-center mb-3">
+              <div className="nav-logo nav-logo-light justify-center mb-3">
                 yalla<span className="accent">cancel</span>
               </div>
-              <p className="text-sm text-slate-400">
+              <div className="flex justify-center gap-6 mb-4">
+                <a href="/guides" className="text-sm text-slate-400 hover:text-white transition-colors no-underline">
+                  {ar ? "أدلة الإلغاء" : "Cancel Guides"}
+                </a>
+              </div>
+              <p className="text-sm text-slate-500">
                 {ar ? "صُنع بحب في السعودية" : "Made with love in Saudi Arabia"}
               </p>
             </div>

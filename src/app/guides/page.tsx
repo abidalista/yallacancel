@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 
+const LOGO = (domain: string) =>
+  `https://logo.clearbit.com/${domain}`;
 const FAV = (domain: string) =>
   `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
 
@@ -282,7 +284,7 @@ export default function GuidesPage() {
       >
         <div className="max-w-[1200px] mx-auto flex items-center justify-between">
           <a href="/" className="no-underline" style={{ direction: "ltr", unicodeBidi: "bidi-override" }}>
-            <span className="nav-logo text-xl">yalla<span className="accent">cancel</span></span>
+            <span className="nav-logo nav-logo-light text-xl">yalla<span className="accent">cancel</span></span>
           </a>
           <a
             href="/"
@@ -296,7 +298,7 @@ export default function GuidesPage() {
       {/* Hero + Search */}
       <section
         className="px-6 py-14 text-center"
-        style={{ background: "linear-gradient(135deg, #0F172A 0%, #1a2744 50%, #0d2618 100%)" }}
+        style={{ background: "linear-gradient(135deg, #0F172A 0%, #1E1B4B 50%, #312E81 100%)" }}
       >
         <div className="max-w-[600px] mx-auto">
           <h1 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-3">
@@ -368,10 +370,17 @@ export default function GuidesPage() {
                 className="flex items-center gap-3 bg-white border border-[var(--color-border)] rounded-2xl px-5 py-4 transition-all hover:border-[var(--color-primary)] hover:-translate-y-0.5 hover:shadow-md no-underline"
               >
                 <img
-                  src={FAV(g.domain)}
+                  src={LOGO(g.domain)}
                   alt=""
-                  className="w-8 h-8 rounded-lg flex-shrink-0"
+                  className="w-8 h-8 rounded-lg flex-shrink-0 object-contain"
                   loading="lazy"
+                  onError={(e) => {
+                    const img = e.currentTarget;
+                    if (!img.dataset.fallback) {
+                      img.dataset.fallback = "1";
+                      img.src = FAV(g.domain);
+                    }
+                  }}
                 />
                 <div className="flex-1 min-w-0">
                   <div className="font-bold text-sm text-[var(--color-text-primary)] truncate">
@@ -425,7 +434,7 @@ export default function GuidesPage() {
       {/* Footer */}
       <footer className="py-8 px-6 text-center" style={{ background: "var(--color-dark)" }}>
         <a href="/" className="no-underline" style={{ direction: "ltr", unicodeBidi: "bidi-override" }}>
-          <span className="nav-logo text-lg">yalla<span className="accent">cancel</span></span>
+          <span className="nav-logo nav-logo-light text-lg justify-center">yalla<span className="accent">cancel</span></span>
         </a>
         <p className="text-xs text-white/30 mt-3">&copy; ٢٠٢٦ Yalla Cancel</p>
       </footer>
