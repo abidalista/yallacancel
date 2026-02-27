@@ -105,8 +105,8 @@ export default function SubscriptionCard({
               </span>
             </div>
 
-            {/* Amount */}
-            <div className="flex items-baseline gap-3 mb-1.5">
+            {/* Amount — always left-aligned */}
+            <div className="flex items-baseline gap-3 mb-1.5" dir="ltr" style={{ textAlign: "left" }}>
               <span className="text-xl font-extrabold text-slate-900">
                 {sub.amount.toLocaleString(ar ? "ar-SA" : "en-SA")} <span className="text-xs font-semibold text-slate-400">{ar ? "ريال" : "SAR"}</span>
               </span>
@@ -115,20 +115,22 @@ export default function SubscriptionCard({
               </span>
             </div>
 
-            {/* Meta */}
-            <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-400">
+            {/* Meta — always left-aligned */}
+            <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-400" dir="ltr" style={{ textAlign: "left" }}>
               <span>
                 {ar ? "آخر خصم:" : "Last:"}{" "}
                 <span className={privacyMode ? "blur-sm" : ""}>
                   {formatDate(sub.lastCharge, locale)}
                 </span>
               </span>
-              <span>
-                {ar ? "مرات الخصم:" : "Charges:"} {sub.occurrences}
-                {sub.occurrences === 1 && (
-                  <span className="text-amber-500 font-semibold"> ({ar ? "خصم واحد" : "single charge"})</span>
-                )}
-              </span>
+              {sub.firstCharge && sub.firstCharge !== sub.lastCharge && (
+                <span>
+                  {ar ? "أول خصم:" : "First:"}{" "}
+                  <span className={privacyMode ? "blur-sm" : ""}>
+                    {formatDate(sub.firstCharge, locale)}
+                  </span>
+                </span>
+              )}
             </div>
           </div>
         </div>

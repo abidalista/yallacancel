@@ -307,12 +307,8 @@ export default function HomePage() {
       setReport(result);
       setSpendingData(spending);
 
-      const suspicious = result.subscriptions.filter((s) => s.confidence === "suspicious");
-      if (suspicious.length > 0) {
-        setStep("identify");
-      } else {
-        setStep("results");
-      }
+      // Go straight to results — everything is a subscription by default
+      setStep("results");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       console.error("Scan failed:", err);
@@ -474,7 +470,8 @@ export default function HomePage() {
 
     setReport(hardcodedReport);
     setSpendingData(hardcodedSpending);
-    setStep("identify");
+    // Go straight to results — everything is a subscription by default
+    setStep("results");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -492,12 +489,7 @@ export default function HomePage() {
   }
 
   function handleFinishIdentify() {
-    if (report) {
-      const filtered = report.subscriptions.filter(
-        (s) => !(s.userConfirmed && s.status === "keep" && s.confidence === "suspicious")
-      );
-      setReport({ ...report, subscriptions: filtered });
-    }
+    // Don't filter out any items — keep all subscriptions visible
     setStep("results");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -621,11 +613,6 @@ export default function HomePage() {
                     <div className="flex items-start justify-between mb-1">
                       <div>
                         <span className="font-bold text-base text-slate-800">{sub.name}</span>
-                        {sub.occurrences > 1 && (
-                          <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full mr-2 ml-2">
-                            x{sub.occurrences}
-                          </span>
-                        )}
                       </div>
                       <span className="font-bold text-base text-slate-900">
                         {sub.amount.toFixed(0)} {ar ? "ريال/شهر" : "SAR/monthly"}
@@ -669,7 +656,7 @@ export default function HomePage() {
                   onClick={handleFinishIdentify}
                   className="btn-primary flex-1"
                 >
-                  {ar ? "شوف المجموع" : "See your total"} <ArrowRight size={16} strokeWidth={1.5} />
+                  {ar ? "شوف تقريري" : "Show my report"} <ArrowRight size={16} strokeWidth={1.5} />
                 </button>
                 <button
                   onClick={handleSkipIdentify}
