@@ -1,60 +1,141 @@
 import { Transaction } from "./types";
 
+export interface PDFParseResult {
+  transactions: Transaction[];
+  pageCount: number;
+  lineCount: number;
+  parseMethod: "structured" | "fallback" | "aggressive";
+  warnings: string[];
+}
+
 /**
  * Parse a PDF bank statement into transactions.
  * Uses pdfjs-dist for client-side PDF text extraction.
  */
 export async function parsePDF(file: File): Promise<Transaction[]> {
+  const result = await parsePDFRobust(file);
+  return result.transactions;
+}
+
+export async function parsePDFRobust(file: File): Promise<PDFParseResult> {
   const pdfjs = await import("pdfjs-dist");
 
   // Use the worker from public directory
   pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
   const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+
+  let pdf;
+  try {
+    pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+  } catch (err) {
+    console.error("[pdf-parser] Failed to open PDF:", err);
+    return {
+      transactions: [],
+      pageCount: 0,
+      lineCount: 0,
+      parseMethod: "structured",
+      warnings: ["pdf_open_failed"],
+    };
+  }
 
   const allLines: string[] = [];
+  const warnings: string[] = [];
 
   for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
+    try {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
 
-    // Group text items into rows by Y position
-    const rows = new Map<number, { x: number; str: string }[]>();
-    for (const item of content.items) {
-      if (!("str" in item) || !item.str.trim()) continue;
-      // Round Y to group items on the same line (within 5px tolerance)
-      const y = Math.round(item.transform[5] / 5) * 5;
-      const x = item.transform[4];
-      if (!rows.has(y)) rows.set(y, []);
-      rows.get(y)!.push({ x, str: item.str.trim() });
-    }
+      // Group text items into rows by Y position
+      // Use adaptive tolerance based on font size
+      const rows = new Map<number, { x: number; str: string }[]>();
+      let avgFontSize = 12;
+      const fontSizes: number[] = [];
 
-    // Sort rows top-to-bottom, items left-to-right
-    const sortedYs = [...rows.keys()].sort((a, b) => b - a);
-    for (const y of sortedYs) {
-      const items = rows.get(y)!.sort((a, b) => a.x - b.x);
-      const line = items.map((i) => i.str).join(" \t ");
-      if (line.trim()) allLines.push(line);
+      for (const item of content.items) {
+        if (!("str" in item) || !item.str.trim()) continue;
+        if ("height" in item && item.height > 0) {
+          fontSizes.push(item.height);
+        }
+      }
+
+      if (fontSizes.length > 0) {
+        avgFontSize = fontSizes.reduce((a, b) => a + b, 0) / fontSizes.length;
+      }
+
+      // Tolerance = half the average font size (minimum 3, maximum 8)
+      const yTolerance = Math.max(3, Math.min(8, Math.round(avgFontSize / 2)));
+
+      for (const item of content.items) {
+        if (!("str" in item) || !item.str.trim()) continue;
+        const y = Math.round(item.transform[5] / yTolerance) * yTolerance;
+        const x = item.transform[4];
+        if (!rows.has(y)) rows.set(y, []);
+        rows.get(y)!.push({ x, str: item.str.trim() });
+      }
+
+      // Sort rows top-to-bottom, items left-to-right
+      const sortedYs = [...rows.keys()].sort((a, b) => b - a);
+      for (const y of sortedYs) {
+        const items = rows.get(y)!.sort((a, b) => a.x - b.x);
+        const line = items.map((i) => i.str).join(" \t ");
+        if (line.trim()) allLines.push(line);
+      }
+    } catch (err) {
+      console.error(`[pdf-parser] Failed to parse page ${i}:`, err);
+      warnings.push(`page_${i}_failed`);
     }
   }
 
   console.log(`[pdf-parser] Extracted ${allLines.length} lines from ${pdf.numPages} pages`);
 
-  // Try structured extraction first
-  let transactions = extractTransactions(allLines);
+  if (allLines.length === 0) {
+    return {
+      transactions: [],
+      pageCount: pdf.numPages,
+      lineCount: 0,
+      parseMethod: "structured",
+      warnings: [...warnings, "no_text_extracted"],
+    };
+  }
 
-  // If structured extraction found very few, try fallback line-by-line
+  // Strategy 1: Structured extraction
+  let transactions = extractTransactions(allLines);
+  let method: PDFParseResult["parseMethod"] = "structured";
+
+  // Strategy 2: Fallback line-by-line (if structured found very few)
   if (transactions.length < 3) {
     console.log(`[pdf-parser] Structured extraction found only ${transactions.length}, trying fallback...`);
     const fallback = extractFallback(allLines);
     if (fallback.length > transactions.length) {
       transactions = fallback;
+      method = "fallback";
     }
   }
 
-  console.log(`[pdf-parser] Final result: ${transactions.length} transactions`);
-  return transactions;
+  // Strategy 3: Aggressive extraction — loosen constraints
+  if (transactions.length < 3) {
+    console.log(`[pdf-parser] Fallback found only ${transactions.length}, trying aggressive...`);
+    const aggressive = extractAggressive(allLines);
+    if (aggressive.length > transactions.length) {
+      transactions = aggressive;
+      method = "aggressive";
+    }
+  }
+
+  if (transactions.length === 0) {
+    warnings.push("no_transactions_found");
+  }
+
+  console.log(`[pdf-parser] Final result: ${transactions.length} transactions (method: ${method})`);
+  return {
+    transactions,
+    pageCount: pdf.numPages,
+    lineCount: allLines.length,
+    parseMethod: method,
+    warnings,
+  };
 }
 
 // ─── Arabic-Indic numeral conversion ───
@@ -68,10 +149,8 @@ function normalizeDigits(str: string): string {
 }
 
 // ─── Date patterns ───
-// DD/MM/YYYY, DD-MM-YYYY, YYYY-MM-DD, DD/MM/YY, DD.MM.YYYY
 const DATE_SLASH = /\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}/;
 const DATE_ISO = /\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}/;
-// DD MMM YYYY or DD-MMM-YYYY (e.g. 15 Jan 2026, 15-Jan-26)
 const DATE_NAMED = /\d{1,2}[\s\-](?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[\s\-]\d{2,4}/i;
 
 function findDate(str: string): string | null {
@@ -86,13 +165,9 @@ function findDate(str: string): string | null {
 }
 
 // ─── Amount patterns ───
-// Matches: 1,234.56  1234.56  1,234.5  1234  1,234  234.00  -1,234.56
-const AMOUNT_RE = /(?:^|[^.\d])(-?[\d,]{1,10}(?:\.\d{1,2})?)\s*(?:SAR|ريال|SR|د\.إ|AED)?(?:[^.\d]|$)/;
-
 function findAmounts(str: string): number[] {
   const normalized = normalizeDigits(str);
   const results: number[] = [];
-  // Find all number-like patterns
   const re = /(-?[\d,]+(?:\.\d{1,2})?)/g;
   let match;
   while ((match = re.exec(normalized)) !== null) {
@@ -173,6 +248,13 @@ const SKIP_PATTERNS = [
   /^المجموع$/,
   /branch/i,
   /iban/i,
+  /customer\s*name/i,
+  /اسم\s*العميل/,
+  /currency/i,
+  /العملة/,
+  /^sr\s*no\.?$/i,
+  /^s\.?no\.?$/i,
+  /^#$/,
 ];
 
 function isJunkLine(text: string): boolean {
@@ -186,15 +268,12 @@ function extractTransactions(lines: string[]): Transaction[] {
   const transactions: Transaction[] = [];
 
   for (const line of lines) {
-    // Split by tab separator (from PDF text extraction)
     const parts = line.split("\t").map((p) => p.trim()).filter(Boolean);
     const fullLine = normalizeDigits(parts.join(" "));
 
-    // Find a date anywhere in the line
     const dateStr = findDate(fullLine);
     if (!dateStr) continue;
 
-    // Find amounts in the line (excluding the date portion)
     const lineWithoutDate = fullLine.replace(dateStr, " ");
     const amounts = findAmounts(lineWithoutDate);
     if (amounts.length === 0) continue;
@@ -203,11 +282,8 @@ function extractTransactions(lines: string[]): Transaction[] {
     let description = "";
     for (const part of parts) {
       const normalized = normalizeDigits(part.trim());
-      // Skip if this part IS the date
       if (findDate(normalized)) continue;
-      // Skip if this part is purely a number (amount)
       if (/^-?[\d,]+(?:\.\d{1,2})?$/.test(normalized.replace(/\s/g, ""))) continue;
-      // Skip currency labels
       if (/^(?:SAR|ريال|SR|د\.إ|AED)$/i.test(normalized)) continue;
       if (normalized.length >= 2) {
         description += (description ? " " : "") + part.trim();
@@ -216,10 +292,8 @@ function extractTransactions(lines: string[]): Transaction[] {
 
     description = description.replace(/\s+/g, " ").trim();
 
-    // Skip header/junk lines
     if (!description || isJunkLine(description)) continue;
 
-    // Use the first reasonable amount
     const amount = amounts[0];
     if (amount < 0.5) continue;
 
@@ -248,7 +322,6 @@ function extractFallback(lines: string[]): Transaction[] {
     const amounts = findAmounts(line.replace(dateStr, " "));
     if (amounts.length === 0) continue;
 
-    // Everything between the date and the first number = description
     const dateIdx = line.indexOf(dateStr);
     let desc = line
       .slice(dateIdx + dateStr.length)
@@ -265,6 +338,96 @@ function extractFallback(lines: string[]): Transaction[] {
       description: desc,
       amount: amounts[0],
     });
+  }
+
+  return transactions;
+}
+
+// ─── Aggressive extraction: combine adjacent lines that might form a transaction ───
+function extractAggressive(lines: string[]): Transaction[] {
+  const transactions: Transaction[] = [];
+
+  // Some bank PDFs split a transaction across 2-3 lines:
+  // Line 1: date
+  // Line 2: description
+  // Line 3: amount
+  // Try combining groups of 2-3 adjacent lines
+  for (let i = 0; i < lines.length; i++) {
+    const line1 = normalizeDigits(lines[i]);
+    if (isJunkLine(line1)) continue;
+
+    const dateStr = findDate(line1);
+    if (!dateStr) continue;
+
+    // Try single line first
+    const amounts1 = findAmounts(line1.replace(dateStr, " "));
+    if (amounts1.length > 0) {
+      let desc = line1
+        .replace(dateStr, " ")
+        .replace(/\t/g, " ")
+        .replace(/-?[\d,]+(?:\.\d{1,2})?/g, " ")
+        .replace(/(?:SAR|ريال|SR)/gi, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (desc && desc.length >= 2 && !isJunkLine(desc)) {
+        transactions.push({
+          date: parseDate(dateStr),
+          description: desc,
+          amount: amounts1[0],
+        });
+        continue;
+      }
+    }
+
+    // Try combining with next line
+    if (i + 1 < lines.length) {
+      const line2 = normalizeDigits(lines[i + 1]);
+      const combined = line1 + " " + line2;
+      const amountsCombined = findAmounts(combined.replace(dateStr, " "));
+      if (amountsCombined.length > 0) {
+        let desc = combined
+          .replace(dateStr, " ")
+          .replace(/\t/g, " ")
+          .replace(/-?[\d,]+(?:\.\d{1,2})?/g, " ")
+          .replace(/(?:SAR|ريال|SR)/gi, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+        if (desc && desc.length >= 2 && !isJunkLine(desc)) {
+          transactions.push({
+            date: parseDate(dateStr),
+            description: desc,
+            amount: amountsCombined[0],
+          });
+          i++; // skip the combined line
+          continue;
+        }
+      }
+
+      // Try combining with next 2 lines
+      if (i + 2 < lines.length) {
+        const line3 = normalizeDigits(lines[i + 2]);
+        const combined3 = line1 + " " + line2 + " " + line3;
+        const amounts3 = findAmounts(combined3.replace(dateStr, " "));
+        if (amounts3.length > 0) {
+          let desc = combined3
+            .replace(dateStr, " ")
+            .replace(/\t/g, " ")
+            .replace(/-?[\d,]+(?:\.\d{1,2})?/g, " ")
+            .replace(/(?:SAR|ريال|SR)/gi, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+          if (desc && desc.length >= 2 && !isJunkLine(desc)) {
+            transactions.push({
+              date: parseDate(dateStr),
+              description: desc,
+              amount: amounts3[0],
+            });
+            i += 2;
+            continue;
+          }
+        }
+      }
+    }
   }
 
   return transactions;

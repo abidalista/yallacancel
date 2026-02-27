@@ -6,15 +6,31 @@ import UploadZone from "@/components/UploadZone";
 import AuditReport from "@/components/AuditReport";
 import PaywallModal from "@/components/PaywallModal";
 import SpendingBreakdownComponent from "@/components/SpendingBreakdown";
-import { parseCSV, detectBank } from "@/lib/banks";
-import { parsePDF } from "@/lib/pdf-parser";
+import { parseCSV, parseCSVRobust, detectBank } from "@/lib/banks";
+import type { ParseResult } from "@/lib/banks";
+import { parsePDF, parsePDFRobust } from "@/lib/pdf-parser";
+import type { PDFParseResult } from "@/lib/pdf-parser";
 import { analyzeTransactions } from "@/lib/analyzer";
 import { analyzeSpending } from "@/lib/spending";
-import { AuditReport as Report, Subscription, SubscriptionStatus, Transaction } from "@/lib/types";
+import { AuditReport as Report, Subscription, SubscriptionStatus, Transaction, BankId } from "@/lib/types";
 import { SpendingBreakdown as SpendingData } from "@/lib/spending";
 import { getCancelInfo } from "@/lib/cancel-db";
 
 type Step = "landing" | "analyzing" | "identify" | "results";
+
+interface ParseError {
+  type: "no_transactions" | "file_error" | "format_error";
+  message: string;
+  messageAr: string;
+  details: string;
+  detailsAr: string;
+  suggestions: string[];
+  suggestionsAr: string[];
+  showBankSelector: boolean;
+  showPasteInput: boolean;
+  failedFiles: string[];
+  warnings: string[];
+}
 
 const FAV = (domain: string) =>
   `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
@@ -222,7 +238,7 @@ export default function HomePage() {
   const [locale, setLocale] = useState<"ar" | "en">("ar");
   const [step, setStep] = useState<Step>("landing");
   const [report, setReport] = useState<Report | null>(null);
-  const [error, setError] = useState(false);
+  const [parseError, setParseError] = useState<ParseError | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [stickyCta, setStickyCta] = useState(false);
@@ -230,6 +246,10 @@ export default function HomePage() {
   const [analyzeTimer, setAnalyzeTimer] = useState(0);
   const [analyzeStatus, setAnalyzeStatus] = useState("");
   const [spendingData, setSpendingData] = useState<SpendingData | null>(null);
+  const [manualBankId, setManualBankId] = useState<BankId | null>(null);
+  const [showPasteInput, setShowPasteInput] = useState(false);
+  const [pasteText, setPasteText] = useState("");
+  const [retryFiles, setRetryFiles] = useState<File[]>([]);
   const heroRef = useRef<HTMLElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -258,19 +278,75 @@ export default function HomePage() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  async function parseFile(file: File): Promise<Transaction[]> {
+  async function parseFile(file: File, bankOverride?: BankId): Promise<{ transactions: Transaction[]; warnings: string[] }> {
     const ext = file.name.split(".").pop()?.toLowerCase();
     if (ext === "pdf") {
-      return await parsePDF(file);
+      const result = await parsePDFRobust(file);
+      return { transactions: result.transactions, warnings: result.warnings };
     } else {
       const text = await file.text();
-      const bankId = detectBank(text);
-      return parseCSV(text, bankId);
+      const bankId = bankOverride || detectBank(text);
+      const result = parseCSVRobust(text, bankId);
+      return { transactions: result.transactions, warnings: result.warnings };
     }
   }
 
-  async function handleScan(files: File[]) {
-    setError(false);
+  function buildParseError(failedFiles: string[], allWarnings: string[]): ParseError {
+    const hasPdfFail = failedFiles.some(f => f.toLowerCase().endsWith(".pdf"));
+    const hasCsvFail = failedFiles.some(f => f.toLowerCase().endsWith(".csv"));
+    const hasHeaderIssue = allWarnings.includes("no_headers") || allWarnings.includes("no_date_desc_columns");
+    const hasColumnIssue = allWarnings.includes("cant_detect_columns") || allWarnings.includes("no_amount_column");
+
+    let type: ParseError["type"] = "no_transactions";
+    let message = "Couldn't find any transactions";
+    let messageAr = "ما قدرنا نلقى أي عمليات";
+    let details = "The file format wasn't recognized. This usually means the columns or layout don't match what we expect.";
+    let detailsAr = "صيغة الملف ما تعرفنا عليها. هذا عادة يعني إن الأعمدة أو التنسيق مختلف عن المتوقع.";
+    const suggestions: string[] = [];
+    const suggestionsAr: string[] = [];
+
+    if (hasPdfFail && !hasCsvFail) {
+      details = "We couldn't extract transaction data from this PDF. Some bank PDFs use image-based formats that we can't read yet.";
+      detailsAr = "ما قدرنا نقرأ بيانات العمليات من ملف PDF. بعض كشوفات البنوك تكون بصيغة صور ما نقدر نقرأها حالياً.";
+      suggestions.push("Try downloading a CSV version instead of PDF from your bank app");
+      suggestionsAr.push("حاول تنزل كشف CSV بدل PDF من تطبيق بنكك");
+      suggestions.push("Make sure the PDF is a bank statement (not a screenshot or scan)");
+      suggestionsAr.push("تأكد إن الملف كشف حساب (مو صورة أو مسح ضوئي)");
+    }
+
+    if (hasCsvFail || hasHeaderIssue) {
+      details = "The CSV columns didn't match any known bank format. Try selecting your bank manually below.";
+      detailsAr = "أعمدة ملف CSV ما تطابقت مع أي بنك معروف. جرب تختار بنكك يدوياً تحت.";
+      suggestions.push("Select your bank manually below and try again");
+      suggestionsAr.push("اختر بنكك يدوياً تحت وجرب مرة ثانية");
+    }
+
+    if (hasColumnIssue) {
+      suggestions.push("Make sure the file has columns for: Date, Description, Amount");
+      suggestionsAr.push("تأكد إن الملف فيه أعمدة: التاريخ، الوصف، المبلغ");
+    }
+
+    // Always suggest paste as alternative
+    suggestions.push("Or copy-paste your transactions text directly");
+    suggestionsAr.push("أو انسخ والصق نص العمليات مباشرة");
+
+    return {
+      type,
+      message,
+      messageAr,
+      details,
+      detailsAr,
+      suggestions,
+      suggestionsAr,
+      showBankSelector: hasCsvFail || hasHeaderIssue || hasColumnIssue,
+      showPasteInput: true,
+      failedFiles,
+      warnings: allWarnings,
+    };
+  }
+
+  async function handleScan(files: File[], bankOverride?: BankId) {
+    setParseError(null);
     setStep("analyzing");
     setAnalyzeTimer(0);
     setTxCount(0);
@@ -286,28 +362,32 @@ export default function HomePage() {
     try {
       let allTx: Transaction[] = [];
       let failedFiles: string[] = [];
+      let allWarnings: string[] = [];
 
       for (const file of files) {
         try {
           setAnalyzeStatus(
             ar ? `نقرأ ${file.name}...` : `Reading ${file.name}...`
           );
-          const txs = await parseFile(file);
-          if (txs.length === 0) {
+          const { transactions, warnings } = await parseFile(file, bankOverride || undefined);
+          allWarnings = allWarnings.concat(warnings);
+          if (transactions.length === 0) {
             failedFiles.push(file.name);
           } else {
-            allTx = allTx.concat(txs);
+            allTx = allTx.concat(transactions);
             setTxCount(allTx.length);
           }
         } catch (err) {
           console.error(`Failed to parse ${file.name}:`, err);
           failedFiles.push(file.name);
+          allWarnings.push("file_exception");
         }
       }
 
       if (allTx.length === 0) {
         if (timerRef.current) clearInterval(timerRef.current);
-        setError(true);
+        setParseError(buildParseError(failedFiles, allWarnings));
+        setRetryFiles(files);
         setStep("landing");
         return;
       }
@@ -331,11 +411,40 @@ export default function HomePage() {
       }
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
-      // Catch-all: don't leave user stuck on analyzing screen
       console.error("Scan failed:", err);
       if (timerRef.current) clearInterval(timerRef.current);
-      setError(true);
+      setParseError({
+        type: "file_error",
+        message: "Something went wrong",
+        messageAr: "صار خطأ غير متوقع",
+        details: "An unexpected error occurred while processing your file.",
+        detailsAr: "صار خطأ غير متوقع أثناء معالجة ملفك.",
+        suggestions: ["Try uploading the file again", "Try a different file format (CSV instead of PDF)"],
+        suggestionsAr: ["جرب ارفع الملف مرة ثانية", "جرب صيغة ملف مختلفة (CSV بدل PDF)"],
+        showBankSelector: true,
+        showPasteInput: true,
+        failedFiles: [],
+        warnings: ["unexpected_error"],
+      });
       setStep("landing");
+    }
+  }
+
+  async function handlePasteAnalyze() {
+    if (!pasteText.trim()) return;
+
+    // Create a fake CSV file from the pasted text
+    const blob = new Blob([pasteText], { type: "text/csv" });
+    const file = new File([blob], "pasted-data.csv", { type: "text/csv" });
+    setShowPasteInput(false);
+    setPasteText("");
+    handleScan([file], manualBankId || undefined);
+  }
+
+  async function handleRetryWithBank(bankId: BankId) {
+    setManualBankId(bankId);
+    if (retryFiles.length > 0) {
+      handleScan(retryFiles, bankId);
     }
   }
 
@@ -343,12 +452,23 @@ export default function HomePage() {
     try {
       const res = await fetch("/test-statement.csv");
       const text = await res.text();
-      // Create a fake File object
       const blob = new Blob([text], { type: "text/csv" });
       const file = new File([blob], "test-statement.csv", { type: "text/csv" });
       handleScan([file]);
     } catch {
-      setError(true);
+      setParseError({
+        type: "file_error",
+        message: "Couldn't load sample data",
+        messageAr: "ما قدرنا نحمل البيانات التجريبية",
+        details: "The test file couldn't be fetched. Try uploading your own file.",
+        detailsAr: "ما قدرنا نجيب الملف التجريبي. جرب ارفع ملفك.",
+        suggestions: [],
+        suggestionsAr: [],
+        showBankSelector: false,
+        showPasteInput: true,
+        failedFiles: [],
+        warnings: ["test_file_fetch_failed"],
+      });
     }
   }
 
@@ -396,7 +516,11 @@ export default function HomePage() {
     setStep("landing");
     setReport(null);
     setSpendingData(null);
-    setError(false);
+    setParseError(null);
+    setManualBankId(null);
+    setShowPasteInput(false);
+    setPasteText("");
+    setRetryFiles([]);
     setTxCount(0);
     setAnalyzeTimer(0);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -784,20 +908,98 @@ export default function HomePage() {
                 </p>
               </div>
 
-              {error && (
-                <div className="mb-4 bg-red-500/10 border border-red-500/30 rounded-2xl p-4 text-center">
-                  <p className="font-bold text-red-400 mb-1">
-                    {ar ? "ما قدرنا نقرأ الملف" : "Couldn't read the file"}
+              {parseError && (
+                <div className="mb-6 bg-red-500/10 border border-red-500/30 rounded-2xl p-5">
+                  <p className="font-bold text-red-400 mb-1 text-center">
+                    {ar ? parseError.messageAr : parseError.message}
                   </p>
-                  <p className="text-sm text-red-400/70">
-                    {ar ? "تأكد إن الملف CSV أو PDF وجرب مرة ثانية" : "Make sure the file is CSV or PDF and try again"}
+                  <p className="text-sm text-red-400/70 text-center mb-3">
+                    {ar ? parseError.detailsAr : parseError.details}
                   </p>
+
+                  {/* Suggestions */}
+                  <ul className="space-y-1.5 mb-4">
+                    {(ar ? parseError.suggestionsAr : parseError.suggestions).map((s, i) => (
+                      <li key={i} className="flex items-start gap-2 text-xs text-white/60">
+                        <span className="text-yellow-400 mt-0.5 flex-shrink-0">&#9679;</span>
+                        {s}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Bank selector */}
+                  {parseError.showBankSelector && (
+                    <div className="mb-4">
+                      <p className="text-xs font-bold text-white/70 mb-2">
+                        {ar ? "اختر بنكك:" : "Select your bank:"}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {BANKS.map((bank, idx) => {
+                          const bankIds: BankId[] = ["alrajhi", "snb", "riyadbank", "albilad", "alinma", "sabb", "bsf", "anb", "other"];
+                          const bid = bankIds[idx] || "other";
+                          return (
+                            <button
+                              key={bank.name}
+                              onClick={() => handleRetryWithBank(bid)}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                                manualBankId === bid
+                                  ? "bg-[var(--color-primary)] text-white"
+                                  : "bg-white/10 border border-white/15 text-white/70 hover:border-white/30 hover:text-white"
+                              }`}
+                            >
+                              <img src={bank.logo} alt={bank.name} className="w-4 h-4 rounded" />
+                              {bank.name}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Paste input toggle */}
+                  {parseError.showPasteInput && !showPasteInput && (
+                    <button
+                      onClick={() => setShowPasteInput(true)}
+                      className="w-full border border-white/15 hover:border-white/30 text-white/60 hover:text-white font-semibold text-xs py-2.5 rounded-xl transition-all bg-white/5 hover:bg-white/10"
+                    >
+                      {ar ? "أو انسخ والصق نص العمليات" : "Or paste your transaction text"}
+                    </button>
+                  )}
+
+                  {/* Paste input area */}
+                  {showPasteInput && (
+                    <div className="mt-3">
+                      <textarea
+                        value={pasteText}
+                        onChange={(e) => setPasteText(e.target.value)}
+                        placeholder={ar
+                          ? "انسخ العمليات من كشف حسابك والصقها هنا...\nمثال:\n01/01/2026  NFLX.COM  45.00\n01/01/2026  SPOTIFY AB  27.00"
+                          : "Paste your transactions here...\nExample:\n01/01/2026  NFLX.COM  45.00\n01/01/2026  SPOTIFY AB  27.00"
+                        }
+                        className="w-full bg-white/5 border border-white/15 rounded-xl p-3 text-sm text-white/80 placeholder:text-white/25 focus:border-[var(--color-primary)] focus:outline-none resize-none"
+                        rows={6}
+                        dir="ltr"
+                      />
+                      <button
+                        onClick={handlePasteAnalyze}
+                        disabled={!pasteText.trim()}
+                        className="mt-2 w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] disabled:opacity-40 disabled:hover:bg-[var(--color-primary)] text-white font-bold text-sm py-3 rounded-xl transition-all"
+                      >
+                        {ar ? "حلّل النص" : "Analyze text"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
               <UploadZone
                 locale={locale}
-                onScan={handleScan}
+                onScan={(files) => {
+                  setParseError(null);
+                  setManualBankId(null);
+                  setShowPasteInput(false);
+                  handleScan(files);
+                }}
                 onTestClick={handleTestStatement}
               />
 
