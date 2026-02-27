@@ -1,6 +1,8 @@
 "use client";
 
-import { SpendingBreakdown as SpendingData, SpendingCategory } from "@/lib/spending";
+import { motion } from "framer-motion";
+import { BarChart3 } from "lucide-react";
+import { SpendingBreakdown as SpendingData } from "@/lib/services";
 
 interface Props {
   data: SpendingData;
@@ -29,7 +31,7 @@ function formatMonth(dateStr: string): string {
   return `${months[d.getMonth()]} '${String(d.getFullYear()).slice(2)}`;
 }
 
-export default function SpendingBreakdown({ data, locale }: Props) {
+export default function SpendingBreakdownComponent({ data, locale }: Props) {
   const ar = locale === "ar";
 
   if (data.categories.length === 0) return null;
@@ -39,21 +41,24 @@ export default function SpendingBreakdown({ data, locale }: Props) {
     : "";
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: "#0F172A" }}>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.1 }}
+      className="bento-card overflow-hidden"
+    >
       {/* Header */}
-      <div className="px-6 pt-6 pb-4 border-b border-white/8">
+      <div className="px-6 pt-6 pb-4 border-b border-slate-100">
         <div className="flex items-center gap-2 mb-1">
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" className="text-[#4A7BF7]">
-            <path d="M18 20V10M12 20V4M6 20v-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <h3 className="text-base font-black text-white">
+          <BarChart3 size={18} strokeWidth={1.5} className="text-indigo-500" />
+          <h3 className="text-base font-extrabold text-slate-800">
             {ar ? "تحليل الإنفاق" : "Spending Breakdown"}
           </h3>
           {dateLabel && (
-            <span className="text-xs text-white/40 font-medium">{dateLabel}</span>
+            <span className="text-xs text-slate-400 font-medium">{dateLabel}</span>
           )}
         </div>
-        <p className="text-sm text-white/50">
+        <p className="text-sm text-slate-500">
           {ar
             ? `${data.totalSpend.toLocaleString()} ريال إجمالي (~${data.monthlyAvg.toLocaleString()} ريال/شهر) من ${data.transactionCount.toLocaleString()} عملية`
             : `${data.totalSpend.toLocaleString()} SAR total (~${data.monthlyAvg.toLocaleString()} SAR/mo) across ${data.transactionCount.toLocaleString()} transactions`}
@@ -62,59 +67,53 @@ export default function SpendingBreakdown({ data, locale }: Props) {
 
       {/* Category table */}
       <div className="px-6 py-4">
-        <p className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
           {ar ? "وين تروح فلوسك" : "Where it goes"}
         </p>
 
-        {/* Table header */}
-        <div className="grid grid-cols-12 gap-2 text-[10px] font-bold text-white/30 uppercase tracking-wider pb-2 border-b border-white/8">
+        <div className="grid grid-cols-12 gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider pb-2 border-b border-slate-100">
           <div className="col-span-4">{ar ? "الفئة" : "Category"}</div>
           <div className="col-span-3 text-left">{ar ? "المجموع" : "Total"}</div>
           <div className="col-span-2 text-center">%</div>
           <div className="col-span-3 text-left">{ar ? "المعدل/شهر" : "Monthly Avg"}</div>
         </div>
 
-        {/* Rows */}
-        {data.categories.map((cat, i) => {
+        {data.categories.map((cat) => {
           const color = CATEGORY_COLORS[cat.nameEn] || "#94A3B8";
           return (
             <div
               key={cat.nameEn}
-              className="grid grid-cols-12 gap-2 items-center py-2.5 border-b border-white/5 last:border-0"
+              className="grid grid-cols-12 gap-2 items-center py-2.5 border-b border-slate-50 last:border-0"
             >
-              {/* Category name */}
               <div className="col-span-4 flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: color }} />
-                <span className="text-sm font-semibold text-white/85 truncate">
+                <span className="text-sm font-semibold text-slate-700 truncate">
                   {ar ? cat.name : cat.nameEn}
                 </span>
               </div>
 
-              {/* Total */}
               <div className="col-span-3">
-                <span className="text-sm font-bold text-white/90">
+                <span className="text-sm font-bold text-slate-800">
                   {cat.total.toLocaleString()}
                 </span>
-                <span className="text-[10px] text-white/40 mr-1 ml-1">{ar ? "ريال" : "SAR"}</span>
+                <span className="text-[10px] text-slate-400 mr-1 ml-1">{ar ? "ريال" : "SAR"}</span>
               </div>
 
-              {/* Percentage bar */}
               <div className="col-span-2 flex items-center gap-1.5">
-                <div className="flex-1 h-1.5 bg-white/8 rounded-full overflow-hidden">
+                <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all"
                     style={{ width: `${Math.min(cat.percent, 100)}%`, background: color }}
                   />
                 </div>
-                <span className="text-xs font-bold text-white/50 w-8 text-left">{cat.percent}%</span>
+                <span className="text-xs font-bold text-slate-500 w-8 text-left">{cat.percent}%</span>
               </div>
 
-              {/* Monthly avg */}
               <div className="col-span-3">
-                <span className="text-sm text-white/70">
+                <span className="text-sm text-slate-600">
                   {cat.monthlyAvg.toLocaleString()}
                 </span>
-                <span className="text-[10px] text-white/40 mr-1 ml-1">{ar ? "ريال/شهر" : "/mo"}</span>
+                <span className="text-[10px] text-slate-400 mr-1 ml-1">{ar ? "ريال/شهر" : "/mo"}</span>
               </div>
             </div>
           );
@@ -124,15 +123,15 @@ export default function SpendingBreakdown({ data, locale }: Props) {
       {/* Key takeaways */}
       {data.takeaways.length > 0 && (
         <div className="px-6 pb-6 pt-2">
-          <p className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
             {ar ? "ملاحظات مهمة" : "Key takeaways"}
           </p>
           <div className="space-y-2.5">
             {data.takeaways.map((t, i) => (
               <div key={i} className="flex items-start gap-2.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#4A7BF7] mt-1.5 flex-shrink-0" />
+                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 flex-shrink-0" />
                 <p
-                  className="text-sm text-white/70 leading-relaxed"
+                  className="text-sm text-slate-600 leading-relaxed"
                   dangerouslySetInnerHTML={{ __html: ar ? t.ar : t.en }}
                 />
               </div>
@@ -140,6 +139,6 @@ export default function SpendingBreakdown({ data, locale }: Props) {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

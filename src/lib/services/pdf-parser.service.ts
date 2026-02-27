@@ -1,4 +1,10 @@
-import { Transaction } from "./types";
+/**
+ * PDF Parser Service
+ * Isolated service for parsing PDF bank statements.
+ * Uses pdfjs-dist for client-side text extraction.
+ */
+
+import { Transaction } from "../types";
 
 export interface PDFParseResult {
   transactions: Transaction[];
@@ -8,137 +14,8 @@ export interface PDFParseResult {
   warnings: string[];
 }
 
-/**
- * Parse a PDF bank statement into transactions.
- * Uses pdfjs-dist for client-side PDF text extraction.
- */
-export async function parsePDF(file: File): Promise<Transaction[]> {
-  const result = await parsePDFRobust(file);
-  return result.transactions;
-}
+// ── Arabic-Indic numeral conversion ──
 
-export async function parsePDFRobust(file: File): Promise<PDFParseResult> {
-  const pdfjs = await import("pdfjs-dist");
-
-  // Use the worker from public directory
-  pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
-
-  const arrayBuffer = await file.arrayBuffer();
-
-  let pdf;
-  try {
-    pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
-  } catch (err) {
-    console.error("[pdf-parser] Failed to open PDF:", err);
-    return {
-      transactions: [],
-      pageCount: 0,
-      lineCount: 0,
-      parseMethod: "structured",
-      warnings: ["pdf_open_failed"],
-    };
-  }
-
-  const allLines: string[] = [];
-  const warnings: string[] = [];
-
-  for (let i = 1; i <= pdf.numPages; i++) {
-    try {
-      const page = await pdf.getPage(i);
-      const content = await page.getTextContent();
-
-      // Group text items into rows by Y position
-      // Use adaptive tolerance based on font size
-      const rows = new Map<number, { x: number; str: string }[]>();
-      let avgFontSize = 12;
-      const fontSizes: number[] = [];
-
-      for (const item of content.items) {
-        if (!("str" in item) || !item.str.trim()) continue;
-        if ("height" in item && item.height > 0) {
-          fontSizes.push(item.height);
-        }
-      }
-
-      if (fontSizes.length > 0) {
-        avgFontSize = fontSizes.reduce((a, b) => a + b, 0) / fontSizes.length;
-      }
-
-      // Tolerance = half the average font size (minimum 3, maximum 8)
-      const yTolerance = Math.max(3, Math.min(8, Math.round(avgFontSize / 2)));
-
-      for (const item of content.items) {
-        if (!("str" in item) || !item.str.trim()) continue;
-        const y = Math.round(item.transform[5] / yTolerance) * yTolerance;
-        const x = item.transform[4];
-        if (!rows.has(y)) rows.set(y, []);
-        rows.get(y)!.push({ x, str: item.str.trim() });
-      }
-
-      // Sort rows top-to-bottom, items left-to-right
-      const sortedYs = [...rows.keys()].sort((a, b) => b - a);
-      for (const y of sortedYs) {
-        const items = rows.get(y)!.sort((a, b) => a.x - b.x);
-        const line = items.map((i) => i.str).join(" \t ");
-        if (line.trim()) allLines.push(line);
-      }
-    } catch (err) {
-      console.error(`[pdf-parser] Failed to parse page ${i}:`, err);
-      warnings.push(`page_${i}_failed`);
-    }
-  }
-
-  console.log(`[pdf-parser] Extracted ${allLines.length} lines from ${pdf.numPages} pages`);
-
-  if (allLines.length === 0) {
-    return {
-      transactions: [],
-      pageCount: pdf.numPages,
-      lineCount: 0,
-      parseMethod: "structured",
-      warnings: [...warnings, "no_text_extracted"],
-    };
-  }
-
-  // Strategy 1: Structured extraction
-  let transactions = extractTransactions(allLines);
-  let method: PDFParseResult["parseMethod"] = "structured";
-
-  // Strategy 2: Fallback line-by-line (if structured found very few)
-  if (transactions.length < 3) {
-    console.log(`[pdf-parser] Structured extraction found only ${transactions.length}, trying fallback...`);
-    const fallback = extractFallback(allLines);
-    if (fallback.length > transactions.length) {
-      transactions = fallback;
-      method = "fallback";
-    }
-  }
-
-  // Strategy 3: Aggressive extraction — loosen constraints
-  if (transactions.length < 3) {
-    console.log(`[pdf-parser] Fallback found only ${transactions.length}, trying aggressive...`);
-    const aggressive = extractAggressive(allLines);
-    if (aggressive.length > transactions.length) {
-      transactions = aggressive;
-      method = "aggressive";
-    }
-  }
-
-  if (transactions.length === 0) {
-    warnings.push("no_transactions_found");
-  }
-
-  console.log(`[pdf-parser] Final result: ${transactions.length} transactions (method: ${method})`);
-  return {
-    transactions,
-    pageCount: pdf.numPages,
-    lineCount: allLines.length,
-    parseMethod: method,
-    warnings,
-  };
-}
-
-// ─── Arabic-Indic numeral conversion ───
 const ARABIC_DIGITS: Record<string, string> = {
   "٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4",
   "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9",
@@ -148,7 +25,8 @@ function normalizeDigits(str: string): string {
   return str.replace(/[٠-٩]/g, (d) => ARABIC_DIGITS[d] || d);
 }
 
-// ─── Date patterns ───
+// ── Date patterns ──
+
 const DATE_SLASH = /\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}/;
 const DATE_ISO = /\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}/;
 const DATE_NAMED = /\d{1,2}[\s\-](?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[\s\-]\d{2,4}/i;
@@ -164,7 +42,8 @@ function findDate(str: string): string | null {
   return null;
 }
 
-// ─── Amount patterns ───
+// ── Amount patterns ──
+
 function findAmounts(str: string): number[] {
   const normalized = normalizeDigits(str);
   const results: number[] = [];
@@ -183,26 +62,22 @@ function findAmounts(str: string): number[] {
 function parseDate(dateStr: string): string {
   const cleaned = normalizeDigits(dateStr.trim());
 
-  // YYYY-MM-DD or YYYY/MM/DD
   if (/^\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}$/.test(cleaned)) {
     const [y, m, d] = cleaned.split(/[\/\-.]/);
     return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
   }
 
-  // DD/MM/YYYY or DD-MM-YYYY or DD.MM.YYYY
   const m1 = cleaned.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
   if (m1) {
     return `${m1[3]}-${m1[2].padStart(2, "0")}-${m1[1].padStart(2, "0")}`;
   }
 
-  // DD/MM/YY
   const m2 = cleaned.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2})$/);
   if (m2) {
     const year = parseInt(m2[3]) > 50 ? `19${m2[3]}` : `20${m2[3]}`;
     return `${year}-${m2[2].padStart(2, "0")}-${m2[1].padStart(2, "0")}`;
   }
 
-  // DD MMM YYYY or DD-MMM-YY
   const MONTHS: Record<string, string> = {
     jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06",
     jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12",
@@ -222,7 +97,8 @@ function parseDate(dateStr: string): string {
   return cleaned;
 }
 
-// ─── Header / junk line detection ───
+// ── Header / junk line detection ──
+
 const SKIP_PATTERNS = [
   /opening\s*balance/i,
   /closing\s*balance/i,
@@ -263,7 +139,8 @@ function isJunkLine(text: string): boolean {
   return SKIP_PATTERNS.some((p) => p.test(lower));
 }
 
-// ─── Main structured extraction ───
+// ── Main structured extraction ──
+
 function extractTransactions(lines: string[]): Transaction[] {
   const transactions: Transaction[] = [];
 
@@ -278,7 +155,6 @@ function extractTransactions(lines: string[]): Transaction[] {
     const amounts = findAmounts(lineWithoutDate);
     if (amounts.length === 0) continue;
 
-    // Build description: everything that's not the date or a pure number
     let description = "";
     for (const part of parts) {
       const normalized = normalizeDigits(part.trim());
@@ -291,7 +167,6 @@ function extractTransactions(lines: string[]): Transaction[] {
     }
 
     description = description.replace(/\s+/g, " ").trim();
-
     if (!description || isJunkLine(description)) continue;
 
     const amount = amounts[0];
@@ -307,7 +182,8 @@ function extractTransactions(lines: string[]): Transaction[] {
   return transactions;
 }
 
-// ─── Fallback: try to parse each line as a whole ───
+// ── Fallback extraction ──
+
 function extractFallback(lines: string[]): Transaction[] {
   const transactions: Transaction[] = [];
 
@@ -343,15 +219,11 @@ function extractFallback(lines: string[]): Transaction[] {
   return transactions;
 }
 
-// ─── Aggressive extraction: combine adjacent lines that might form a transaction ───
+// ── Aggressive extraction ──
+
 function extractAggressive(lines: string[]): Transaction[] {
   const transactions: Transaction[] = [];
 
-  // Some bank PDFs split a transaction across 2-3 lines:
-  // Line 1: date
-  // Line 2: description
-  // Line 3: amount
-  // Try combining groups of 2-3 adjacent lines
   for (let i = 0; i < lines.length; i++) {
     const line1 = normalizeDigits(lines[i]);
     if (isJunkLine(line1)) continue;
@@ -398,7 +270,7 @@ function extractAggressive(lines: string[]): Transaction[] {
             description: desc,
             amount: amountsCombined[0],
           });
-          i++; // skip the combined line
+          i++;
           continue;
         }
       }
@@ -431,4 +303,122 @@ function extractAggressive(lines: string[]): Transaction[] {
   }
 
   return transactions;
+}
+
+// ── Public API ──
+
+export async function parsePDF(file: File): Promise<Transaction[]> {
+  const result = await parsePDFRobust(file);
+  return result.transactions;
+}
+
+export async function parsePDFRobust(file: File): Promise<PDFParseResult> {
+  const pdfjs = await import("pdfjs-dist");
+
+  pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+
+  const arrayBuffer = await file.arrayBuffer();
+
+  let pdf;
+  try {
+    pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+  } catch (err) {
+    console.error("[pdf-parser] Failed to open PDF:", err);
+    return {
+      transactions: [],
+      pageCount: 0,
+      lineCount: 0,
+      parseMethod: "structured",
+      warnings: ["pdf_open_failed"],
+    };
+  }
+
+  const allLines: string[] = [];
+  const warnings: string[] = [];
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    try {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+
+      const rows = new Map<number, { x: number; str: string }[]>();
+      const fontSizes: number[] = [];
+
+      for (const item of content.items) {
+        if (!("str" in item) || !item.str.trim()) continue;
+        if ("height" in item && item.height > 0) {
+          fontSizes.push(item.height);
+        }
+      }
+
+      let avgFontSize = 12;
+      if (fontSizes.length > 0) {
+        avgFontSize = fontSizes.reduce((a, b) => a + b, 0) / fontSizes.length;
+      }
+
+      const yTolerance = Math.max(3, Math.min(8, Math.round(avgFontSize / 2)));
+
+      for (const item of content.items) {
+        if (!("str" in item) || !item.str.trim()) continue;
+        const y = Math.round(item.transform[5] / yTolerance) * yTolerance;
+        const x = item.transform[4];
+        if (!rows.has(y)) rows.set(y, []);
+        rows.get(y)!.push({ x, str: item.str.trim() });
+      }
+
+      const sortedYs = [...rows.keys()].sort((a, b) => b - a);
+      for (const y of sortedYs) {
+        const items = rows.get(y)!.sort((a, b) => a.x - b.x);
+        const line = items.map((i) => i.str).join(" \t ");
+        if (line.trim()) allLines.push(line);
+      }
+    } catch (err) {
+      console.error(`[pdf-parser] Failed to parse page ${i}:`, err);
+      warnings.push(`page_${i}_failed`);
+    }
+  }
+
+  if (allLines.length === 0) {
+    return {
+      transactions: [],
+      pageCount: pdf.numPages,
+      lineCount: 0,
+      parseMethod: "structured",
+      warnings: [...warnings, "no_text_extracted"],
+    };
+  }
+
+  // Strategy 1: Structured
+  let transactions = extractTransactions(allLines);
+  let method: PDFParseResult["parseMethod"] = "structured";
+
+  // Strategy 2: Fallback
+  if (transactions.length < 3) {
+    const fallback = extractFallback(allLines);
+    if (fallback.length > transactions.length) {
+      transactions = fallback;
+      method = "fallback";
+    }
+  }
+
+  // Strategy 3: Aggressive
+  if (transactions.length < 3) {
+    const aggressive = extractAggressive(allLines);
+    if (aggressive.length > transactions.length) {
+      transactions = aggressive;
+      method = "aggressive";
+    }
+  }
+
+  if (transactions.length === 0) {
+    warnings.push("no_transactions_found");
+  }
+
+  return {
+    transactions,
+    pageCount: pdf.numPages,
+    lineCount: allLines.length,
+    parseMethod: method,
+    warnings,
+  };
 }

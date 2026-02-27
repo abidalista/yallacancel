@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { BankId } from "@/lib/types";
 import { Locale, t, TranslationKey } from "@/lib/i18n";
 
@@ -27,8 +28,13 @@ export default function BankSelector({
   onSelect,
 }: BankSelectorProps) {
   return (
-    <div className="mb-8">
-      <h3 className="text-lg font-semibold mb-4 text-[var(--color-text-primary)]">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="mb-8"
+    >
+      <h3 className="text-lg font-bold text-slate-700 mb-4">
         {t(locale, "selectBank")}
       </h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
@@ -36,24 +42,24 @@ export default function BankSelector({
           <button
             key={bank.id}
             onClick={() => onSelect(bank.id)}
-            className={`p-3 rounded-xl border-2 transition-all text-sm font-medium ${
+            className={`p-3 rounded-[20px] border-2 transition-all text-sm font-medium ${
               selectedBank === bank.id
-                ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5 shadow-md"
-                : "border-[var(--color-border)] hover:border-[var(--color-primary)]/30 hover:shadow-sm"
+                ? "border-indigo-400 bg-indigo-50 shadow-sm"
+                : "border-slate-100 hover:border-indigo-200 hover:shadow-sm bg-white"
             }`}
           >
             <div
-              className="w-8 h-8 rounded-lg mb-2 mx-auto flex items-center justify-center text-white text-xs font-bold"
+              className="w-8 h-8 rounded-xl mb-2 mx-auto flex items-center justify-center text-white text-xs font-bold"
               style={{ backgroundColor: bank.color }}
             >
               {t(locale, bank.key).charAt(0)}
             </div>
-            <span className="block text-center text-xs">
+            <span className="block text-center text-xs text-slate-600">
               {t(locale, bank.key)}
             </span>
           </button>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 }

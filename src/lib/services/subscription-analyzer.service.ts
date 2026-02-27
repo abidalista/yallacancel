@@ -1,9 +1,14 @@
+/**
+ * Subscription Analyzer Service
+ * Isolated service for detecting recurring subscriptions from transactions.
+ */
+
 import {
   Transaction,
   Subscription,
   SubscriptionFrequency,
   AuditReport,
-} from "./types";
+} from "../types";
 
 // Known subscription services (Arabic and English names)
 const KNOWN_SUBSCRIPTIONS: Record<string, string> = {
@@ -105,9 +110,8 @@ const KNOWN_SUBSCRIPTIONS: Record<string, string> = {
   masterclass: "MasterClass",
   "github copilot": "GitHub Copilot",
   copilot: "GitHub Copilot",
-  "rawabi holding": "رواتب / رقم مرجعي",
   osn: "OSN+",
-  "bein": "beIN Sports",
+  bein: "beIN Sports",
   snapchat: "Snapchat+",
   telegram: "Telegram Premium",
   tidal: "TIDAL",
@@ -116,8 +120,7 @@ const KNOWN_SUBSCRIPTIONS: Record<string, string> = {
   "prime video": "Prime Video",
 };
 
-// Services that are definitely subscription-based (not one-time purchases)
-// Used for single-occurrence detection
+// Services that are definitely subscription-based
 const DEFINITE_SUBSCRIPTIONS = new Set([
   "Netflix", "Spotify", "Apple Subscriptions", "Apple iTunes",
   "Google One", "YouTube Premium", "Amazon Prime",
@@ -217,7 +220,6 @@ function hasConsistentAmount(transactions: Transaction[]): boolean {
   if (transactions.length < 2) return false;
   const amounts = transactions.map((t) => t.amount);
   const avg = amounts.reduce((s, a) => s + a, 0) / amounts.length;
-  // Allow 15% variance
   return amounts.every((a) => Math.abs(a - avg) / avg < 0.15);
 }
 
@@ -250,11 +252,32 @@ export function analyzeTransactions(
     const isKnownSub = knownName && DEFINITE_SUBSCRIPTIONS.has(knownName);
 
     if (txs.length >= 2) {
-      // Multiple occurrences: check consistency and frequency
       const consistent = hasConsistentAmount(txs);
       const frequency = detectFrequency(txs);
 
-      if (!consistent || !frequency) continue;
+      if (!consistent || !frequency) {
+        // Still include as suspicious if multiple occurrences
+        const avgAmount = txs.reduce((sum, t) => sum + t.amount, 0) / txs.length;
+        const sortedDates = txs.map((t) => t.date).sort().filter((d) => d);
+
+        subscriptions.push({
+          id: `sub_${++idCounter}`,
+          name: knownName || txs[0].description,
+          normalizedName: key,
+          amount: Math.round(avgAmount * 100) / 100,
+          frequency: "monthly",
+          monthlyEquivalent: Math.round(avgAmount * 100) / 100,
+          yearlyEquivalent: Math.round(avgAmount * 12 * 100) / 100,
+          occurrences: txs.length,
+          lastCharge: sortedDates[sortedDates.length - 1] || "",
+          firstCharge: sortedDates[0] || "",
+          status: "investigate",
+          confidence: isKnownSub ? "confirmed" : "suspicious",
+          rawDescription: txs[0].description,
+          transactions: txs,
+        });
+        continue;
+      }
 
       const avgAmount =
         txs.reduce((sum, t) => sum + t.amount, 0) / txs.length;
@@ -301,31 +324,9 @@ export function analyzeTransactions(
         rawDescription: tx.description,
         transactions: txs,
       });
-    } else if (txs.length >= 2) {
-      // Multiple occurrences but failed consistency/frequency — suspicious
-      const avgAmount = txs.reduce((sum, t) => sum + t.amount, 0) / txs.length;
-      const sortedDates = txs.map((t) => t.date).sort().filter((d) => d);
-
-      subscriptions.push({
-        id: `sub_${++idCounter}`,
-        name: txs[0].description,
-        normalizedName: key,
-        amount: Math.round(avgAmount * 100) / 100,
-        frequency: "monthly",
-        monthlyEquivalent: Math.round(avgAmount * 100) / 100,
-        yearlyEquivalent: Math.round(avgAmount * 12 * 100) / 100,
-        occurrences: txs.length,
-        lastCharge: sortedDates[sortedDates.length - 1] || "",
-        firstCharge: sortedDates[0] || "",
-        status: "investigate",
-        confidence: "suspicious",
-        rawDescription: txs[0].description,
-        transactions: txs,
-      });
     }
   }
 
-  // Sort by monthly equivalent (highest first)
   subscriptions.sort((a, b) => b.monthlyEquivalent - a.monthlyEquivalent);
 
   const totalMonthly = subscriptions.reduce(

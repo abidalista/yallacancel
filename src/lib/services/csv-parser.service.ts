@@ -1,4 +1,10 @@
-import { BankId, Transaction } from "./types";
+/**
+ * CSV Parser Service
+ * Isolated service for parsing bank CSV statements.
+ * Supports all Saudi banks + generic formats.
+ */
+
+import { BankId, Transaction } from "../types";
 
 interface BankConfig {
   id: BankId;
@@ -9,15 +15,17 @@ interface BankConfig {
   creditColumn?: string[];
   dateFormats: string[];
   delimiter: string;
-  skipRows?: number;
 }
 
-export interface ParseResult {
+export interface CSVParseResult {
   transactions: Transaction[];
   bankId: BankId;
   parseMethod: "csv-headers" | "csv-headerless" | "csv-fallback";
   warnings: string[];
+  rawLineCount: number;
 }
+
+// ── Bank configurations ──
 
 const bankConfigs: Record<BankId, BankConfig> = {
   alrajhi: {
@@ -35,14 +43,8 @@ const bankConfigs: Record<BankId, BankConfig> = {
   },
   snb: {
     id: "snb",
-    dateColumn: [
-      "Date", "التاريخ", "Transaction Date", "تاريخ العملية", "Posting Date",
-      "Txn Date", "تاريخ المعاملة",
-    ],
-    descriptionColumn: [
-      "Description", "الوصف", "Details", "التفاصيل", "Transaction Description",
-      "Narrative", "البيان", "Particulars", "وصف المعاملة",
-    ],
+    dateColumn: ["Date", "التاريخ", "Transaction Date", "تاريخ العملية", "Posting Date", "Txn Date", "تاريخ المعاملة"],
+    descriptionColumn: ["Description", "الوصف", "Details", "التفاصيل", "Transaction Description", "Narrative", "البيان", "Particulars", "وصف المعاملة"],
     amountColumn: ["Amount", "المبلغ", "Value", "القيمة"],
     debitColumn: ["Debit", "مدين", "Withdrawal", "سحب"],
     creditColumn: ["Credit", "دائن", "Deposit", "إيداع"],
@@ -52,10 +54,7 @@ const bankConfigs: Record<BankId, BankConfig> = {
   riyadbank: {
     id: "riyadbank",
     dateColumn: ["Date", "التاريخ", "Transaction Date", "تاريخ المعاملة", "Txn Date"],
-    descriptionColumn: [
-      "Description", "الوصف", "Particulars", "التفاصيل", "Details",
-      "Narrative", "البيان", "وصف المعاملة",
-    ],
+    descriptionColumn: ["Description", "الوصف", "Particulars", "التفاصيل", "Details", "Narrative", "البيان", "وصف المعاملة"],
     amountColumn: ["Amount", "المبلغ", "Value"],
     debitColumn: ["Debit", "مدين", "Withdrawal", "سحب"],
     creditColumn: ["Credit", "دائن", "Deposit", "إيداع"],
@@ -139,6 +138,7 @@ const bankConfigs: Record<BankId, BankConfig> = {
 };
 
 // ── Arabic-Indic numeral conversion ──
+
 const ARABIC_DIGITS: Record<string, string> = {
   "٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4",
   "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9",
@@ -149,6 +149,7 @@ function normalizeDigits(str: string): string {
 }
 
 // ── Delimiter detection ──
+
 function detectDelimiter(content: string): string {
   const firstLines = content.split(/\r?\n/).slice(0, 10).filter(l => l.trim());
   if (firstLines.length === 0) return ",";
@@ -158,12 +159,10 @@ function detectDelimiter(content: string): string {
   let bestScore = 0;
 
   for (const delim of candidates) {
-    // Count how many lines have the same number of fields with this delimiter
     const counts = firstLines.map(line => parseCSVLine(line, delim).length);
     const mode = counts.sort((a, b) =>
       counts.filter(v => v === b).length - counts.filter(v => v === a).length
     )[0];
-    // Score = consistency (how many lines match the mode) * field count
     if (mode >= 3) {
       const consistency = counts.filter(c => c === mode).length;
       const score = consistency * mode;
@@ -177,7 +176,8 @@ function detectDelimiter(content: string): string {
   return bestDelim;
 }
 
-// ── Exact column match ──
+// ── Column matching ──
+
 function findColumn(headers: string[], possibleNames: string[]): number {
   for (const name of possibleNames) {
     const idx = headers.findIndex(
@@ -188,13 +188,10 @@ function findColumn(headers: string[], possibleNames: string[]): number {
   return -1;
 }
 
-// ── Fuzzy column match (partial/contains) ──
 function findColumnFuzzy(headers: string[], possibleNames: string[]): number {
-  // First try exact match
   const exact = findColumn(headers, possibleNames);
   if (exact !== -1) return exact;
 
-  // Then try contains match
   for (const name of possibleNames) {
     const lower = name.toLowerCase();
     const idx = headers.findIndex(
@@ -206,11 +203,12 @@ function findColumnFuzzy(headers: string[], possibleNames: string[]): number {
   return -1;
 }
 
-// ── Date detection for headerless parsing ──
+// ── Date detection ──
+
 const DATE_PATTERNS = [
-  /^\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}$/,  // YYYY-MM-DD
-  /^\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{4}$/,  // DD/MM/YYYY or MM/DD/YYYY
-  /^\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2}$/,  // DD/MM/YY
+  /^\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}$/,
+  /^\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{4}$/,
+  /^\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2}$/,
   /^\d{1,2}[\s\-](?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[\s\-]\d{2,4}$/i,
 ];
 
@@ -231,27 +229,23 @@ function looksLikeAmount(value: string): boolean {
 function parseDate(dateStr: string): string {
   const cleaned = normalizeDigits(dateStr.trim());
 
-  // Try YYYY-MM-DD
   if (/^\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}/.test(cleaned)) {
     const [y, m, d] = cleaned.split(/[\/\-.]/);
     return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
   }
 
-  // Try DD/MM/YYYY or DD-MM-YYYY
   const match = cleaned.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);
   if (match) {
     const [, day, month, year] = match;
     return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
   }
 
-  // Try DD/MM/YY
   const matchYY = cleaned.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2})$/);
   if (matchYY) {
     const yr = parseInt(matchYY[3]) > 50 ? `19${matchYY[3]}` : `20${matchYY[3]}`;
     return `${yr}-${matchYY[2].padStart(2, "0")}-${matchYY[1].padStart(2, "0")}`;
   }
 
-  // Try named months: DD MMM YYYY or DD-MMM-YY
   const MONTHS: Record<string, string> = {
     jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06",
     jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12",
@@ -306,6 +300,7 @@ function parseCSVLine(line: string, delimiter: string = ","): string[] {
 }
 
 // ── Header-based CSV parsing ──
+
 function parseCSVWithHeaders(
   lines: string[],
   config: BankConfig,
@@ -313,7 +308,6 @@ function parseCSVWithHeaders(
 ): { transactions: Transaction[]; warnings: string[] } {
   const warnings: string[] = [];
 
-  // Find header row (try first 10 rows — some bank exports have metadata rows)
   let headerRowIdx = -1;
   let headers: string[] = [];
 
@@ -366,7 +360,6 @@ function parseCSVWithHeaders(
       amount = parseAmount(fields[amountIdx]);
     }
 
-    // Skip credits/deposits (we only want debits/charges)
     if (amount === 0) continue;
     if (
       creditIdx !== -1 &&
@@ -393,14 +386,14 @@ function parseCSVWithHeaders(
   return { transactions, warnings };
 }
 
-// ── Headerless CSV parsing: detect column roles from data patterns ──
+// ── Headerless CSV parsing ──
+
 function parseCSVHeaderless(
   lines: string[],
   delimiter: string,
 ): { transactions: Transaction[]; warnings: string[] } {
   const warnings: string[] = [];
 
-  // Sample first 20 data rows to detect column patterns
   const sampleSize = Math.min(20, lines.length);
   const allFields: string[][] = [];
 
@@ -413,7 +406,6 @@ function parseCSVHeaderless(
   const colCount = allFields[0].length;
   if (colCount < 2) return { transactions: [], warnings: ["too_few_columns"] };
 
-  // Score each column for being a date, amount, or description
   let dateCol = -1;
   let amountCol = -1;
   let descCol = -1;
@@ -446,7 +438,6 @@ function parseCSVHeaderless(
     }
   }
 
-  // If we found a date and amount column that overlap, find a different amount column
   if (dateCol === amountCol) {
     let secondBest = 0;
     for (let col = 0; col < colCount; col++) {
@@ -462,7 +453,6 @@ function parseCSVHeaderless(
     }
   }
 
-  // If no desc column found yet, use the first column that's not date or amount
   if (descCol === -1) {
     for (let col = 0; col < colCount; col++) {
       if (col !== dateCol && col !== amountCol) {
@@ -478,35 +468,10 @@ function parseCSVHeaderless(
 
   warnings.push("headerless_mode");
 
-  // Now skip any row that looks like a header row
   const transactions: Transaction[] = [];
   const headerPatterns = /^(date|description|amount|debit|credit|balance|التاريخ|الوصف|المبلغ|مدين|دائن|الرصيد)$/i;
 
-  for (const fields of allFields) {
-    if (fields.length <= Math.max(dateCol, descCol, amountCol)) continue;
-
-    const dateVal = (fields[dateCol] || "").trim();
-    const descVal = (fields[descCol] || "").trim();
-    const amountVal = (fields[amountCol] || "").trim();
-
-    // Skip header-like rows
-    if (headerPatterns.test(dateVal) || headerPatterns.test(descVal)) continue;
-
-    if (!looksLikeDate(dateVal)) continue;
-    if (!descVal || descVal.length < 2) continue;
-
-    const amount = parseAmount(amountVal);
-    if (amount === 0) continue;
-
-    transactions.push({
-      date: parseDate(dateVal),
-      description: descVal,
-      amount,
-    });
-  }
-
-  // Continue with remaining lines beyond the sample
-  for (let i = sampleSize; i < lines.length; i++) {
+  for (let i = 0; i < lines.length; i++) {
     const fields = parseCSVLine(lines[i], delimiter);
     if (fields.length <= Math.max(dateCol, descCol, amountCol)) continue;
 
@@ -514,6 +479,7 @@ function parseCSVHeaderless(
     const descVal = (fields[descCol] || "").trim();
     const amountVal = (fields[amountCol] || "").trim();
 
+    if (headerPatterns.test(dateVal) || headerPatterns.test(descVal)) continue;
     if (!looksLikeDate(dateVal)) continue;
     if (!descVal || descVal.length < 2) continue;
 
@@ -530,7 +496,8 @@ function parseCSVHeaderless(
   return { transactions, warnings };
 }
 
-// ── Line-by-line fallback: extract date + amount + description from each line ──
+// ── Line-by-line fallback ──
+
 function parseCSVLineFallback(
   lines: string[],
 ): { transactions: Transaction[]; warnings: string[] } {
@@ -551,7 +518,6 @@ function parseCSVLineFallback(
     const amount = parseAmount(amountMatch[1]);
     if (amount < 0.5) continue;
 
-    // Description = everything that's not the date or amount
     let desc = line
       .replace(dateMatch[0], " ")
       .replace(amountMatch[0], " ")
@@ -559,7 +525,6 @@ function parseCSVLineFallback(
       .replace(/\s+/g, " ")
       .trim();
 
-    // Remove pure numbers
     desc = desc.replace(/\b\d+\b/g, " ").replace(/\s+/g, " ").trim();
 
     if (!desc || desc.length < 2) continue;
@@ -574,20 +539,14 @@ function parseCSVLineFallback(
   return { transactions, warnings: ["line_fallback"] };
 }
 
-// ── Main parseCSV export ──
-export function parseCSV(
-  content: string,
-  bankId: BankId
-): Transaction[] {
+// ── Public API ──
+
+export function parseCSV(content: string, bankId: BankId): Transaction[] {
   const result = parseCSVRobust(content, bankId);
   return result.transactions;
 }
 
-// ── Robust parseCSV with full diagnostics ──
-export function parseCSVRobust(
-  content: string,
-  bankId: BankId
-): ParseResult {
+export function parseCSVRobust(content: string, bankId: BankId): CSVParseResult {
   const config = bankConfigs[bankId];
   const lines = content.split(/\r?\n/).filter((line) => line.trim());
 
@@ -597,13 +556,13 @@ export function parseCSVRobust(
       bankId,
       parseMethod: "csv-headers",
       warnings: ["file_too_short"],
+      rawLineCount: lines.length,
     };
   }
 
-  // Auto-detect delimiter
   const delimiter = detectDelimiter(content);
 
-  // Strategy 1: Try header-based parsing with detected delimiter
+  // Strategy 1: Header-based with detected delimiter
   const headerResult = parseCSVWithHeaders(lines, config, delimiter);
   if (headerResult.transactions.length > 0) {
     return {
@@ -611,10 +570,11 @@ export function parseCSVRobust(
       bankId,
       parseMethod: "csv-headers",
       warnings: headerResult.warnings,
+      rawLineCount: lines.length,
     };
   }
 
-  // Strategy 2: Try header-based with the config's original delimiter (if different)
+  // Strategy 2: Header-based with config's delimiter
   if (delimiter !== config.delimiter) {
     const origResult = parseCSVWithHeaders(lines, config, config.delimiter);
     if (origResult.transactions.length > 0) {
@@ -623,11 +583,12 @@ export function parseCSVRobust(
         bankId,
         parseMethod: "csv-headers",
         warnings: origResult.warnings,
+        rawLineCount: lines.length,
       };
     }
   }
 
-  // Strategy 3: Try with 'other' bank config (broadest column matching)
+  // Strategy 3: Try 'other' bank config (broadest matching)
   if (bankId !== "other") {
     const otherConfig = bankConfigs.other;
     const otherResult = parseCSVWithHeaders(lines, otherConfig, delimiter);
@@ -637,11 +598,12 @@ export function parseCSVRobust(
         bankId: "other",
         parseMethod: "csv-headers",
         warnings: [...otherResult.warnings, "used_generic_config"],
+        rawLineCount: lines.length,
       };
     }
   }
 
-  // Strategy 4: Headerless parsing — detect column roles from data patterns
+  // Strategy 4: Headerless parsing
   const headerlessResult = parseCSVHeaderless(lines, delimiter);
   if (headerlessResult.transactions.length > 0) {
     return {
@@ -649,10 +611,11 @@ export function parseCSVRobust(
       bankId,
       parseMethod: "csv-headerless",
       warnings: headerlessResult.warnings,
+      rawLineCount: lines.length,
     };
   }
 
-  // Strategy 5: Line-by-line fallback — extract date + amount + text from each line
+  // Strategy 5: Line-by-line fallback
   const fallbackResult = parseCSVLineFallback(lines);
   if (fallbackResult.transactions.length > 0) {
     return {
@@ -660,22 +623,21 @@ export function parseCSVRobust(
       bankId,
       parseMethod: "csv-fallback",
       warnings: fallbackResult.warnings,
+      rawLineCount: lines.length,
     };
   }
-
-  // All strategies failed
-  const allWarnings = [
-    ...headerResult.warnings,
-    ...headerlessResult.warnings,
-    ...fallbackResult.warnings,
-    "all_strategies_failed",
-  ];
 
   return {
     transactions: [],
     bankId,
     parseMethod: "csv-headers",
-    warnings: allWarnings,
+    warnings: [
+      ...headerResult.warnings,
+      ...headerlessResult.warnings,
+      ...fallbackResult.warnings,
+      "all_strategies_failed",
+    ],
+    rawLineCount: lines.length,
   };
 }
 
@@ -684,15 +646,9 @@ export function detectBank(content: string): BankId {
   const normalized = normalizeDigits(lower);
   const firstLines = normalized.split(/\r?\n/).slice(0, 15).join(" ");
 
-  // Check for bank-specific keywords in headers/first lines
   if (firstLines.includes("الراجحي") || firstLines.includes("alrajhi") || firstLines.includes("al rajhi"))
     return "alrajhi";
-  if (
-    firstLines.includes("الأهلي") ||
-    firstLines.includes("snb") ||
-    firstLines.includes("الاهلي") ||
-    firstLines.includes("national bank")
-  )
+  if (firstLines.includes("الأهلي") || firstLines.includes("snb") || firstLines.includes("الاهلي") || firstLines.includes("national bank"))
     return "snb";
   if (firstLines.includes("بنك الرياض") || firstLines.includes("riyad") || firstLines.includes("riyadbank"))
     return "riyadbank";
@@ -706,10 +662,8 @@ export function detectBank(content: string): BankId {
     return "bsf";
   if (firstLines.includes("العربي") || firstLines.includes("anb") || firstLines.includes("arab national"))
     return "anb";
-  if (firstLines.includes("stc") || firstLines.includes("اس تي سي"))
-    return "other";
 
-  // Try all bank configs and pick the one that yields the most transactions
+  // Try all bank configs
   let bestBank: BankId = "other";
   let bestCount = 0;
 
@@ -723,8 +677,4 @@ export function detectBank(content: string): BankId {
   }
 
   return bestCount > 0 ? bestBank : "other";
-}
-
-export function getBankConfig(bankId: BankId): BankConfig {
-  return bankConfigs[bankId];
 }

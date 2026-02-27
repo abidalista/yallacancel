@@ -1,4 +1,9 @@
-import { Transaction } from "./types";
+/**
+ * Spending Analyzer Service
+ * Categorizes all transactions by spending type.
+ */
+
+import { Transaction } from "../types";
 
 export interface SpendingCategory {
   name: string;
@@ -20,7 +25,6 @@ export interface SpendingBreakdown {
   takeaways: { ar: string; en: string }[];
 }
 
-// Category keyword matching (Saudi-focused)
 const CATEGORY_RULES: { category: string; categoryEn: string; keywords: string[] }[] = [
   {
     category: "توصيل طعام",
@@ -60,7 +64,7 @@ const CATEGORY_RULES: { category: string; categoryEn: string; keywords: string[]
   {
     category: "سكن",
     categoryEn: "Housing",
-    keywords: ["rent", "إيجار", "ايجار", "ejar", "إيجار", "housing", "سكن", "mortgage", "رهن", "electricity", "كهرباء", "water", "مياه", "sec", "marafiq"],
+    keywords: ["rent", "إيجار", "ايجار", "ejar", "housing", "سكن", "mortgage", "رهن", "electricity", "كهرباء", "water", "مياه", "sec", "marafiq"],
   },
   {
     category: "اشتراكات",
@@ -100,12 +104,10 @@ export function analyzeSpending(transactions: Transaction[]): SpendingBreakdown 
     };
   }
 
-  // Calculate date range
   const dates = transactions.map((t) => t.date).filter(Boolean).sort();
   const from = dates[0] || "";
   const to = dates[dates.length - 1] || "";
 
-  // Estimate months
   let months = 1;
   if (from && to) {
     const d1 = new Date(from);
@@ -113,9 +115,7 @@ export function analyzeSpending(transactions: Transaction[]): SpendingBreakdown 
     months = Math.max(1, Math.round((d2.getTime() - d1.getTime()) / (30.44 * 24 * 60 * 60 * 1000)));
   }
 
-  // Group by category
   const catMap = new Map<string, { categoryEn: string; total: number; count: number; merchants: Map<string, number> }>();
-
   let totalSpend = 0;
 
   for (const tx of transactions) {
@@ -129,12 +129,10 @@ export function analyzeSpending(transactions: Transaction[]): SpendingBreakdown 
     cat.total += tx.amount;
     cat.count += 1;
 
-    // Track merchant names (simplified)
     const merchantName = tx.description.split(/[,\-\/]/)[0].trim().slice(0, 30);
     cat.merchants.set(merchantName, (cat.merchants.get(merchantName) || 0) + tx.amount);
   }
 
-  // Build categories sorted by total
   const categories: SpendingCategory[] = [...catMap.entries()]
     .map(([name, data]) => {
       const topMerchants = [...data.merchants.entries()]
@@ -153,7 +151,6 @@ export function analyzeSpending(transactions: Transaction[]): SpendingBreakdown 
     })
     .sort((a, b) => b.total - a.total);
 
-  // Generate takeaways
   const takeaways: { ar: string; en: string }[] = [];
 
   if (categories.length > 0) {
@@ -190,11 +187,10 @@ export function analyzeSpending(transactions: Transaction[]): SpendingBreakdown 
     });
   }
 
-  // Biggest month
   const monthTotals = new Map<string, number>();
   for (const tx of transactions) {
     if (!tx.date) continue;
-    const key = tx.date.slice(0, 7); // YYYY-MM
+    const key = tx.date.slice(0, 7);
     monthTotals.set(key, (monthTotals.get(key) || 0) + tx.amount);
   }
   if (monthTotals.size > 1) {

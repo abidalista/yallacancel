@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Upload, X, FileText, Sparkles } from "lucide-react";
 
 interface SelectedFile {
   file: File;
@@ -64,23 +66,31 @@ export default function UploadZone({
   }
 
   return (
-    <div className="w-full max-w-[600px] mx-auto">
-      {/* Drop zone — matches JustCancel exactly */}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="w-full max-w-[560px] mx-auto"
+    >
+      {/* Drop zone */}
       <div
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className="cursor-pointer rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center py-14 px-6"
-        style={{
-          borderColor: dragging ? "var(--color-primary)" : "rgba(255,255,255,0.2)",
-          background: dragging ? "rgba(0,166,81,0.06)" : "rgba(255,255,255,0.03)",
-        }}
+        className={`cursor-pointer bento-card border-2 border-dashed flex flex-col items-center justify-center py-12 px-6 transition-all ${
+          dragging
+            ? "border-indigo-400 bg-indigo-50/50"
+            : "border-slate-200 hover:border-indigo-300 hover:bg-slate-50/50"
+        }`}
       >
-        <p className="font-bold text-white text-lg mb-1.5">
+        <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center mb-4">
+          <Upload size={22} strokeWidth={1.5} className="text-indigo-500" />
+        </div>
+        <p className="font-bold text-slate-800 text-base mb-1">
           {ar ? "حط آخر ٢-٣ أشهر من كشف حسابك" : "Drop your last 2-3 months of statements"}
         </p>
-        <p className="text-sm text-white/50">
+        <p className="text-sm text-slate-400">
           {ar ? "CSV أو PDF من أي بنك · أقل من ٩٠ ثانية" : "CSV or PDF from any bank · Takes under 90 seconds"}
         </p>
         <input
@@ -94,67 +104,75 @@ export default function UploadZone({
       </div>
 
       {/* Privacy notice */}
-      <p className="text-xs text-white/30 text-center mt-4">
+      <p className="text-xs text-slate-400 text-center mt-4">
         {ar
           ? "ملفاتك تتحلل وتنحذف فوراً. ما نخزن أي شيء."
           : "Your files are analyzed and immediately discarded. Nothing is stored."}
       </p>
 
       {/* File list + scan button */}
-      {selectedFiles.length > 0 && (
-        <div className="mt-5 bg-white/8 border border-white/12 rounded-2xl p-5">
-          <p className="text-sm font-bold text-white mb-4">
-            {ar
-              ? `${selectedFiles.length} ملف تم اختياره`
-              : `${selectedFiles.length} file(s) selected`}
-          </p>
-
-          <div className="space-y-3 mb-5">
-            {selectedFiles.map((f, i) => (
-              <div
-                key={`${f.name}-${i}`}
-                className="flex items-center justify-between"
-              >
-                <span className="text-sm text-white/80">
-                  {f.name} <span className="text-white/40">({formatSize(f.size)})</span>
-                </span>
-                <button
-                  onClick={(e) => { e.stopPropagation(); removeFile(i); }}
-                  className="text-white/40 hover:text-white/80 transition-colors text-lg font-bold px-2"
-                >
-                  &times;
-                </button>
-              </div>
-            ))}
-          </div>
-
-          {/* Scan button */}
-          <button
-            onClick={handleScan}
-            className="bg-[#4A7BF7] hover:bg-[#3A6AE6] text-white font-bold text-sm px-6 py-3 rounded-xl transition-all hover:-translate-y-0.5"
+      <AnimatePresence>
+        {selectedFiles.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mt-5 bento-card p-5"
           >
-            {ar ? "ابحث عن الاشتراكات" : "Scan for subscriptions"}
-          </button>
-        </div>
-      )}
+            <p className="text-sm font-bold text-slate-700 mb-4">
+              {ar
+                ? `${selectedFiles.length} ملف تم اختياره`
+                : `${selectedFiles.length} file(s) selected`}
+            </p>
+
+            <div className="space-y-3 mb-5">
+              {selectedFiles.map((f, i) => (
+                <div
+                  key={`${f.name}-${i}`}
+                  className="flex items-center justify-between"
+                >
+                  <span className="flex items-center gap-2 text-sm text-slate-600">
+                    <FileText size={14} strokeWidth={1.5} className="text-slate-400" />
+                    {f.name} <span className="text-slate-400">({formatSize(f.size)})</span>
+                  </span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); removeFile(i); }}
+                    className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-100"
+                  >
+                    <X size={14} strokeWidth={1.5} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={handleScan}
+              className="btn-primary w-full"
+            >
+              <Sparkles size={16} strokeWidth={1.5} />
+              {ar ? "ابحث عن الاشتراكات" : "Scan for subscriptions"}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Divider + test button */}
       {selectedFiles.length === 0 && (
         <>
           <div className="flex items-center gap-3 mt-5 mb-4">
-            <div className="flex-1 h-px bg-white/10" />
-            <span className="text-xs text-white/30">{ar ? "أو" : "or"}</span>
-            <div className="flex-1 h-px bg-white/10" />
+            <div className="flex-1 h-px bg-slate-200" />
+            <span className="text-xs text-slate-400">{ar ? "أو" : "or"}</span>
+            <div className="flex-1 h-px bg-slate-200" />
           </div>
 
           <button
             onClick={onTestClick}
-            className="w-full border border-white/15 hover:border-white/30 text-white/70 hover:text-white font-semibold text-sm py-3.5 rounded-xl transition-all bg-white/5 hover:bg-white/10 flex items-center justify-center gap-2"
+            className="btn-ghost w-full"
           >
             {ar ? "جرّب بمثال جاهز" : "Try with sample data"}
           </button>
         </>
       )}
-    </div>
+    </motion.div>
   );
 }
