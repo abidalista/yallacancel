@@ -8,7 +8,7 @@
   --color-dark: #0F172A;
   --color-dark2: #1E293B;
   --color-dark3: #334155;
-  --color-surface: #F9FAFB;
+  --color-surface: #F8FAFF;
   --color-surface-card: #FFFFFF;
   --color-danger: #EF4444;
   --color-danger-bg: #FEF2F2;
@@ -36,7 +36,7 @@
   }
 
   body {
-    background-color: #FFFFFF;
+    background-color: #F8FAFF;
     color: var(--color-text-primary);
     -webkit-font-smoothing: antialiased;
     line-height: 1.6;
@@ -50,14 +50,14 @@
   /* ── Bento Card ── */
   .bento-card {
     background-color: white;
-    border: 1px solid #E2E8F0;
+    border: 1px solid #F1F5F9;
     border-radius: 24px;
     padding: 1.5rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 8px 30px rgb(0 0 0 / 0.04);
     transition: all 0.2s ease;
   }
   .bento-card:hover {
-    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 8px 30px rgb(0 0 0 / 0.08);
   }
 
   /* ── Buttons (pill shape) ── */
@@ -66,7 +66,7 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    background-color: var(--color-primary);
+    background: linear-gradient(135deg, #6366F1 0%, #7C3AED 100%);
     color: white;
     padding: 0.75rem 1.75rem;
     border-radius: 9999px;
@@ -75,11 +75,12 @@
     cursor: pointer;
     border: none;
     transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
   }
   .btn-primary:hover {
-    background-color: var(--color-primary-hover);
+    background: linear-gradient(135deg, #5558E6 0%, #6D28D9 100%);
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
   }
 
   .btn-ghost {

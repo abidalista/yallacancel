@@ -432,7 +432,7 @@ export default function HomePage() {
   // ── Render ──
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#F8FAFF]">
       <Header
         locale={locale}
         onLocaleChange={setLocale}
