@@ -9,12 +9,12 @@ import { useState } from "react";
 const LOCAL_LOGOS: [RegExp, string][] = [
   // Saudi Banks
   [/الراجحي|alrajhi/i, "/logos/alrajhi.png"],
-  [/الأهلي|الاهلي|alahli|snb/i, "/logos/alahli.png"],
-  [/بنك الرياض|riyadbank|riyad bank/i, "/logos/riyadbank.png"],
-  [/البلاد|albilad/i, "/logos/albilad.png"],
+  [/الأهلي|الاهلي|alahli|snb/i, "/logos/banks/alahli.png"],
+  [/بنك الرياض|riyadbank|riyad bank/i, "/logos/banks/riyadbank.png"],
+  [/البلاد|albilad/i, "/logos/banks/albilad.png"],
   [/الإنماء|الانماء|alinma/i, "/logos/alinma.png"],
-  [/ساب|sabb|الأول/i, "/logos/sabb.png"],
-  [/الفرنسي|alfransi|bsf/i, "/logos/alfransi.png"],
+  [/ساب|sabb|sab|الأول/i, "/logos/banks/sabb.png"],
+  [/الفرنسي|alfransi|bsf/i, "/logos/banks/alfransi.png"],
   [/العربي الوطني|anb/i, "/logos/anb.png"],
   [/stc pay|stcpay/i, "/logos/stcpay.png"],
   [/^stc(?!\s*pay)/i, "/logos/stc.png"],
