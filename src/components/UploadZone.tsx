@@ -72,107 +72,93 @@ export default function UploadZone({
       transition={{ duration: 0.5 }}
       className="w-full max-w-[560px] mx-auto"
     >
-      {/* One unified card */}
+      {/* Upload dropzone — self-contained clickable area */}
       <div
-        className="bento-card overflow-hidden"
+        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={handleDrop}
+        onClick={() => fileInputRef.current?.click()}
+        className="cursor-pointer flex flex-col items-center justify-center py-10 px-6 rounded-2xl hover:bg-[#F5FAF8] transition-colors"
         style={{
-          border: dragging ? "2px solid #00A651" : "2px solid #C5DDD9",
+          border: dragging ? "2px dashed #00A651" : "2px dashed #C5DDD9",
           background: dragging ? "#E8F7EE" : "white",
           transition: "border-color 0.2s, background 0.2s",
         }}
       >
-        {/* Drop area — clickable */}
         <div
-          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-          className="cursor-pointer flex flex-col items-center justify-center py-10 px-6 hover:bg-[#F5FAF8] transition-colors"
+          className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
+          style={{ background: "#E8F7EE" }}
         >
-          <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
-            style={{ background: "#E8F7EE" }}
+          <Upload size={22} strokeWidth={1.5} style={{ color: "#00A651" }} />
+        </div>
+        <p className="font-bold text-base mb-1" style={{ color: "#1A3A35" }}>
+          {ar ? "حط اخر ٢-٣ اشهر من كشف حسابك" : "Drop your last 2–3 months of statements"}
+        </p>
+        <p className="text-sm" style={{ color: "#8AADA8" }}>
+          {ar ? "PDF او CSV من اي بنك، وبس." : "PDF or CSV from any bank — that's it."}
+        </p>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".csv,.pdf"
+          multiple
+          className="hidden"
+          onChange={(e) => addFiles(e.target.files)}
+        />
+      </div>
+
+      {/* File list (when files selected) */}
+      <AnimatePresence>
+        {selectedFiles.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-4 bento-card px-6 pt-5 pb-5 overflow-hidden"
           >
-            <Upload size={22} strokeWidth={1.5} style={{ color: "#00A651" }} />
-          </div>
-          <p className="font-bold text-base mb-1" style={{ color: "#1A3A35" }}>
-            {ar ? "حط اخر ٢-٣ اشهر من كشف حسابك" : "Drop your last 2–3 months of statements"}
-          </p>
-          <p className="text-sm" style={{ color: "#8AADA8" }}>
-            {ar ? "PDF او CSV من اي بنك، وبس." : "PDF or CSV from any bank — that's it."}
-          </p>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".csv,.pdf"
-            multiple
-            className="hidden"
-            onChange={(e) => addFiles(e.target.files)}
-          />
-        </div>
-
-        {/* Divider — visual separator between upload and sample */}
-        <div className="relative" style={{ height: 1, background: "#E5EFED" }}>
-          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-          </div>
-        </div>
-
-        {/* File list (when files selected) */}
-        <AnimatePresence>
-          {selectedFiles.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="px-6 pt-5 overflow-hidden"
-            >
-              <p className="text-sm font-bold mb-4" style={{ color: "#1A3A35" }}>
-                {ar ? `${selectedFiles.length} ملف تم اختياره` : `${selectedFiles.length} file(s) selected`}
-              </p>
-              <div className="space-y-3 mb-5">
-                {selectedFiles.map((f, i) => (
-                  <div key={`${f.name}-${i}`} className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-sm" style={{ color: "#4A6862" }}>
-                      <FileText size={14} strokeWidth={1.5} style={{ color: "#8AADA8" }} />
-                      {f.name} <span style={{ color: "#8AADA8" }}>({formatSize(f.size)})</span>
-                    </span>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); removeFile(i); }}
-                      className="p-1 rounded-full transition-colors"
-                      style={{ color: "#8AADA8" }}
-                      onMouseEnter={e => (e.currentTarget.style.color = "#1A3A35")}
-                      onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
-                    >
-                      <X size={14} strokeWidth={1.5} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Action buttons area */}
-        <div className="px-6 pb-6">
-          {selectedFiles.length > 0 ? (
-            /* Scan button */
+            <p className="text-sm font-bold mb-4" style={{ color: "#1A3A35" }}>
+              {ar ? `${selectedFiles.length} ملف تم اختياره` : `${selectedFiles.length} file(s) selected`}
+            </p>
+            <div className="space-y-3 mb-5">
+              {selectedFiles.map((f, i) => (
+                <div key={`${f.name}-${i}`} className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-sm" style={{ color: "#4A6862" }}>
+                    <FileText size={14} strokeWidth={1.5} style={{ color: "#8AADA8" }} />
+                    {f.name} <span style={{ color: "#8AADA8" }}>({formatSize(f.size)})</span>
+                  </span>
+                  <button
+                    onClick={() => removeFile(i)}
+                    className="p-1 rounded-full transition-colors"
+                    style={{ color: "#8AADA8", cursor: "pointer" }}
+                    onMouseEnter={e => (e.currentTarget.style.color = "#1A3A35")}
+                    onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
+                  >
+                    <X size={14} strokeWidth={1.5} />
+                  </button>
+                </div>
+              ))}
+            </div>
             <button onClick={handleScan} className="btn-primary w-full">
               <Sparkles size={16} strokeWidth={1.5} />
               {ar ? "ابحث عن الاشتراكات" : "Scan for subscriptions"}
             </button>
-          ) : (
-            /* OR + sample button */
-            <>
-              <div className="flex items-center justify-center mb-4">
-                <span className="text-xs" style={{ color: "#8AADA8" }}>{ar ? "او" : "or"}</span>
-              </div>
-              <button onClick={(e) => { e.stopPropagation(); onTestClick(); }} className="text-sm font-medium py-2 px-5 rounded-full mx-auto block hover:bg-[#D6EBE5] transition-colors" style={{ background: "#E5F5EE", color: "#00A651", cursor: "pointer" }}>
-                {ar ? "جرب بمثال جاهز" : "Try with sample data"}
-              </button>
-            </>
-          )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* OR + Try sample — completely outside the dropzone */}
+      {selectedFiles.length === 0 && (
+        <div className="mt-4 text-center">
+          <span className="text-xs" style={{ color: "#8AADA8" }}>{ar ? "او" : "or"}</span>
+          <button
+            onClick={onTestClick}
+            className="text-sm font-medium py-2 px-5 rounded-full mx-auto block mt-3 hover:bg-[#D6EBE5] transition-colors"
+            style={{ background: "#E5F5EE", color: "#00A651", cursor: "pointer" }}
+          >
+            {ar ? "جرب بمثال جاهز" : "Try with sample data"}
+          </button>
         </div>
-      </div>
+      )}
 
       {/* Privacy notice */}
       <p className="text-xs text-center mt-3" style={{ color: "#8AADA8" }}>
