@@ -3,11 +3,7 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, ArrowLeft } from "lucide-react";
-
-const FAV = (domain: string, sz = 64) =>
-  `https://www.google.com/s2/favicons?domain=${domain}&sz=${sz}`;
-const DDG = (domain: string) =>
-  `https://icons.duckduckgo.com/ip3/${domain}.ico`;
+import MerchantLogo from "@/components/MerchantLogo";
 
 type Difficulty = "easy" | "medium" | "hard";
 
@@ -441,21 +437,7 @@ export default function GuidesPage() {
                     }}
                     whileHover={{ y: -2, boxShadow: "0 8px 24px rgba(0,166,81,0.1)", borderColor: "#00A651" }}
                   >
-                    <img
-                      src={FAV(g.domain, 64)}
-                      alt=""
-                      style={{ width: 36, height: 36, borderRadius: 10, objectFit: "contain", flexShrink: 0, background: "#F5FAF8" }}
-                      loading="lazy"
-                      onError={(e) => {
-                        const img = e.currentTarget;
-                        if (!img.dataset.fallback) {
-                          img.dataset.fallback = "1";
-                          img.src = DDG(g.domain);
-                        } else {
-                          img.style.display = "none";
-                        }
-                      }}
-                    />
+                    <MerchantLogo name={g.nameAr || g.name} domain={g.domain} size={36} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontWeight: 700, fontSize: 14, color: "#1A3A35", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {g.nameAr}

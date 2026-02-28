@@ -23,6 +23,7 @@ import {
 import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, SubscriptionStatus, Transaction, BankId } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
+import MerchantLogo from "@/components/MerchantLogo";
 
 type Step = "landing" | "analyzing" | "identify" | "results";
 
@@ -38,51 +39,6 @@ interface ParseError {
   showPasteInput: boolean;
   failedFiles: string[];
   warnings: string[];
-}
-
-const FAV = (domain: string, sz = 64) =>
-  `https://www.google.com/s2/favicons?domain=${domain}&sz=${sz}`;
-const DDG = (domain: string) =>
-  `https://icons.duckduckgo.com/ip3/${domain}.ico`;
-
-function BrandLogo({ domain, alt, className }: { domain: string; alt: string; className?: string }) {
-  const [src, setSrc] = useState<string>(FAV(domain, 128));
-  const [failed, setFailed] = useState(false);
-
-  if (failed) {
-    // Permanent fallback: colored letter — never crashes
-    const letter = (alt.trim().replace(/^(ال|al-?)/i, "")[0] || alt[0] || "?").toUpperCase();
-    return (
-      <span
-        className={className}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#D6EBE5",
-          borderRadius: 4,
-          fontSize: 9,
-          fontWeight: 800,
-          color: "#1A3A35",
-          flexShrink: 0,
-        }}
-      >
-        {letter}
-      </span>
-    );
-  }
-
-  return (
-    <img
-      src={src}
-      alt={alt}
-      className={className || "w-5 h-5 rounded-sm object-contain"}
-      onError={() => {
-        if (src === FAV(domain, 128)) setSrc(DDG(domain));
-        else setFailed(true);
-      }}
-    />
-  );
 }
 
 const BANKS = [
@@ -839,7 +795,7 @@ export default function HomePage() {
               <div className="mt-12 flex flex-wrap justify-center gap-4">
                 {BANKS.map((bank) => (
                   <div key={bank.name} className="flex items-center gap-2 bg-white border border-[#E5EFED] rounded-full px-3 py-1.5">
-                    <BrandLogo domain={bank.domain} alt={bank.name} className="w-5 h-5 rounded-sm object-contain" />
+                    <MerchantLogo name={bank.name} domain={bank.domain} size={20} />
                     <span className="text-xs font-medium" style={{ color: "#4A6862" }}>{bank.name}</span>
                   </div>
                 ))}
@@ -930,7 +886,7 @@ export default function HomePage() {
               <div className="flex flex-wrap justify-center gap-3">
                 {SUB_CHIPS.map((chip) => (
                   <div key={chip.name} className="inline-flex items-center gap-2 bg-white border border-[#E5EFED] rounded-full px-4 py-2 shadow-sm">
-                    <BrandLogo domain={chip.domain} alt={chip.name} className="w-5 h-5 rounded-sm object-contain" />
+                    <MerchantLogo name={chip.name} domain={chip.domain} size={20} />
                     <span className="text-sm font-medium" style={{ color: "#4A6862" }}>{chip.name}</span>
                   </div>
                 ))}

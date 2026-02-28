@@ -4,11 +4,7 @@ import { motion } from "framer-motion";
 import { ExternalLink, FileText, AlertTriangle } from "lucide-react";
 import { Subscription, SubscriptionStatus } from "@/lib/types";
 import { getCancelInfo, CancelDifficulty } from "@/lib/cancel-db";
-
-const FAV = (domain: string, sz = 128) =>
-  `https://www.google.com/s2/favicons?domain=${domain}&sz=${sz}`;
-const DDG = (domain: string) =>
-  `https://icons.duckduckgo.com/ip3/${domain}.ico`;
+import MerchantLogo from "@/components/MerchantLogo";
 
 const FREQ_LABELS: Record<string, { ar: string; en: string }> = {
   weekly:    { ar: "أسبوعي",    en: "Weekly" },
@@ -70,27 +66,7 @@ export default function SubscriptionCard({
       <div className="p-5">
         <div className="flex items-start gap-4">
           {/* Logo */}
-          <div className="flex-shrink-0">
-            {domain ? (
-              <img
-                src={FAV(domain)}
-                alt={sub.name}
-                className="w-11 h-11 rounded-xl p-1 object-contain"
-                style={{ background: "#EDF5F3" }}
-                onError={(e) => {
-                  const img = e.currentTarget;
-                  if (!img.dataset.fallback) {
-                    img.dataset.fallback = "1";
-                    img.src = DDG(domain);
-                  }
-                }}
-              />
-            ) : (
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold" style={{ background: "#E5EFED", color: "#1A3A35" }}>
-                {sub.name[0]}
-              </div>
-            )}
-          </div>
+          <MerchantLogo name={sub.name} domain={domain} size={44} />
 
           {/* Details */}
           <div className="flex-1 min-w-0">
