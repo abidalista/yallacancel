@@ -41,7 +41,7 @@ export default function Header({ locale, onLocaleChange, onLogoClick }: HeaderPr
             onMouseEnter={(e) => { e.currentTarget.style.color = "#1A3A35"; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = "#4A6862"; }}
           >
-            {locale === "ar" ? "المدونة" : "Blog"}
+            {locale === "ar" ? "المقالات" : "Articles"}
           </a>
           <button
             onClick={() => onLocaleChange(locale === "ar" ? "en" : "ar")}

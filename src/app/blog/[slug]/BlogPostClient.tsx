@@ -110,7 +110,7 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
       <div dir="rtl" style={{ background: "#EDF5F3", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Noto Sans Arabic', 'Plus Jakarta Sans', sans-serif" }}>
         <div style={{ textAlign: "center" }}>
           <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1A3A35", marginBottom: 12 }}>المقال مو موجود</h1>
-          <a href="/blog" style={{ color: "#00A651", fontWeight: 700, textDecoration: "none" }}>ارجع للمدونة</a>
+          <a href="/blog" style={{ color: "#00A651", fontWeight: 700, textDecoration: "none" }}>ارجع للمقالات</a>
         </div>
       </div>
     );
@@ -131,7 +131,7 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <a href="/blog" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}>
             <ArrowLeft size={16} color="#1A3A35" strokeWidth={2.5} style={{ transform: "scaleX(-1)" }} />
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#4A6862" }}>المدونة</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#4A6862" }}>المقالات</span>
           </a>
           <a href="/" style={{ textDecoration: "none" }}>
             <span className="nav-logo" style={{ color: "#1A3A35" }}>yallacancel</span>

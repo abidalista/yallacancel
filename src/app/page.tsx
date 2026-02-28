@@ -1010,7 +1010,7 @@ export default function HomePage() {
                         onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
                         onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
                       >
-                        {ar ? "المدونة" : "Blog"}
+                        {ar ? "المقالات" : "Articles"}
                       </a>
                     </div>
                   </div>

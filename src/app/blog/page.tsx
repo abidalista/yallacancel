@@ -66,7 +66,7 @@ export default function BlogPage() {
             padding: "5px 14px", marginBottom: 20,
           }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#00A651", display: "inline-block" }} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: "#1A3A35" }}>مدونة يلا كنسل</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#1A3A35" }}>مقالات يلا كنسل</span>
           </div>
           <h1 style={{
             fontSize: "clamp(2rem, 5vw, 3rem)",
