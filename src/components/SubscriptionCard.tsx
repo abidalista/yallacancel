@@ -14,9 +14,8 @@ const FREQ_LABELS: Record<string, { ar: string; en: string }> = {
 };
 
 const DIFFICULTY_CONFIG: Record<CancelDifficulty, { ar: string; en: string; cls: string }> = {
-  easy:   { ar: "سهل",   en: "Easy",   cls: "bg-emerald-50 text-emerald-600 border-emerald-200" },
-  medium: { ar: "متوسط", en: "Medium", cls: "bg-amber-50 text-amber-600 border-amber-200" },
-  hard:   { ar: "صعب",   en: "Hard",   cls: "bg-red-50 text-red-600 border-red-200" },
+  easy: { ar: "سهل", en: "Easy", cls: "bg-emerald-50 text-emerald-600 border-emerald-200" },
+  hard: { ar: "صعب", en: "Hard", cls: "bg-red-50 text-red-600 border-red-200" },
 };
 
 interface SubscriptionCardProps {
@@ -49,7 +48,7 @@ export default function SubscriptionCard({
   const ar = locale === "ar";
   const freq = FREQ_LABELS[sub.frequency];
   const cancelInfo = getCancelInfo(sub.name);
-  const difficulty = cancelInfo?.difficulty || "medium";
+  const difficulty = cancelInfo?.difficulty || "easy";
   const diffCfg = DIFFICULTY_CONFIG[difficulty];
   const domain = cancelInfo?.domain || "";
   const hasCancelLink = cancelInfo?.cancelUrl;

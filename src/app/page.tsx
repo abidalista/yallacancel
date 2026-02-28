@@ -803,6 +803,40 @@ export default function HomePage() {
             </div>
           </section>
 
+          {/* Cancel guides + subscription chips */}
+          <section className="py-16 px-6" style={{ background: "#EDF5F3" }}>
+            <div className="max-w-[800px] mx-auto text-center">
+              <h2 className="text-xl font-extrabold tracking-tight mb-2" style={{ color: "#1A3A35" }}>
+                {ar ? "تبي تلغي اشتراك؟" : "Want to cancel a subscription?"}
+              </h2>
+              <p className="text-sm mb-6" style={{ color: "#8AADA8" }}>
+                {ar ? "عندنا اكثر من ٢٠٠ دليل الغاء خطوة بخطوة" : "200+ step-by-step cancellation guides"}
+              </p>
+              <div className="flex flex-wrap justify-center gap-3 mb-8">
+                {SUB_CHIPS.map((chip) => (
+                  <div key={chip.name} className="inline-flex items-center gap-2 bg-white border border-[#E5EFED] rounded-full px-4 py-2 shadow-sm">
+                    <MerchantLogo name={chip.name} domain={chip.domain} size={20} />
+                    <span className="text-sm font-medium" style={{ color: "#4A6862" }}>{chip.name}</span>
+                  </div>
+                ))}
+              </div>
+              <a
+                href="/guides"
+                className="inline-flex items-center gap-2 font-bold text-sm py-3 px-7 rounded-full transition-all hover:-translate-y-0.5 no-underline"
+                style={{
+                  background: "#00A651",
+                  color: "white",
+                  boxShadow: "0 2px 8px rgba(0,166,81,0.25)",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = "#009147"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,166,81,0.35)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "#00A651"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,166,81,0.25)"; }}
+              >
+                <Search size={16} strokeWidth={1.5} />
+                {ar ? "ابحث في أدلة الإلغاء" : "Search cancel guides"}
+              </a>
+            </div>
+          </section>
+
           {/* Stats */}
           <section className="py-16 px-6 border-y" style={{ background: "#E5EFED", borderColor: "#C5DDD9" }}>
             <div className="max-w-[900px] mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -852,40 +886,6 @@ export default function HomePage() {
                   );
                 })}
               </div>
-            </div>
-          </section>
-
-          {/* Cancel guides + subscription chips */}
-          <section className="py-16 px-6" style={{ background: "#EDF5F3" }}>
-            <div className="max-w-[800px] mx-auto text-center">
-              <h2 className="text-xl font-extrabold tracking-tight mb-2" style={{ color: "#1A3A35" }}>
-                {ar ? "تبي تلغي اشتراك؟" : "Want to cancel a subscription?"}
-              </h2>
-              <p className="text-sm mb-6" style={{ color: "#8AADA8" }}>
-                {ar ? "عندنا اكثر من ٢٠٠ دليل الغاء خطوة بخطوة" : "200+ step-by-step cancellation guides"}
-              </p>
-              <div className="flex flex-wrap justify-center gap-3 mb-8">
-                {SUB_CHIPS.map((chip) => (
-                  <div key={chip.name} className="inline-flex items-center gap-2 bg-white border border-[#E5EFED] rounded-full px-4 py-2 shadow-sm">
-                    <MerchantLogo name={chip.name} domain={chip.domain} size={20} />
-                    <span className="text-sm font-medium" style={{ color: "#4A6862" }}>{chip.name}</span>
-                  </div>
-                ))}
-              </div>
-              <a
-                href="/guides"
-                className="inline-flex items-center gap-2 font-bold text-sm py-3 px-7 rounded-full transition-all hover:-translate-y-0.5 no-underline"
-                style={{
-                  background: "#00A651",
-                  color: "white",
-                  boxShadow: "0 2px 8px rgba(0,166,81,0.25)",
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = "#009147"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,166,81,0.35)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "#00A651"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,166,81,0.25)"; }}
-              >
-                <Search size={16} strokeWidth={1.5} />
-                {ar ? "ابحث في أدلة الإلغاء" : "Search cancel guides"}
-              </a>
             </div>
           </section>
 
@@ -982,7 +982,7 @@ export default function HomePage() {
                     {ar ? "اداة مجانية لكشف الاشتراكات المنسية" : "Free tool to find forgotten subscriptions"}
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-x-10 gap-y-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-10 gap-y-8">
                   <div>
                     <p className="text-xs font-bold mb-3 uppercase tracking-widest" style={{ color: "#4A6862" }}>
                       {ar ? "الخدمة" : "Product"}
@@ -1017,9 +1017,35 @@ export default function HomePage() {
                         { slug: "cancel-netflix", label: ar ? "الغاء Netflix" : "Cancel Netflix" },
                         { slug: "cancel-spotify", label: ar ? "الغاء Spotify" : "Cancel Spotify" },
                         { slug: "cancel-shahid", label: ar ? "الغاء شاهد" : "Cancel Shahid" },
-                        { slug: "cancel-stc", label: ar ? "الغاء stc" : "Cancel stc" },
+                        { slug: "cancel-adobe", label: ar ? "الغاء Adobe" : "Cancel Adobe" },
+                        { slug: "cancel-chatgpt", label: ar ? "الغاء ChatGPT" : "Cancel ChatGPT" },
+                        { slug: "cancel-amazon-prime", label: ar ? "الغاء Amazon Prime" : "Cancel Amazon Prime" },
+                        { slug: "cancel-disney-plus", label: ar ? "الغاء Disney+" : "Cancel Disney+" },
                       ].map(({ slug, label }) => (
-                        <a key={slug} href={`/guides/${slug}`} className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
+                        <a key={slug} href={`/${slug}.html`} className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
+                          onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
+                          onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
+                        >
+                          {label}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold mb-3 uppercase tracking-widest" style={{ color: "#4A6862" }}>
+                      {ar ? "المزيد من الأدلة" : "More Guides"}
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      {[
+                        { slug: "cancel-stc", label: ar ? "الغاء stc" : "Cancel stc" },
+                        { slug: "cancel-youtube-premium", label: ar ? "الغاء YouTube Premium" : "Cancel YouTube Premium" },
+                        { slug: "cancel-icloud", label: ar ? "الغاء iCloud" : "Cancel iCloud" },
+                        { slug: "cancel-microsoft-365", label: ar ? "الغاء Microsoft 365" : "Cancel Microsoft 365" },
+                        { slug: "cancel-nordvpn", label: ar ? "الغاء NordVPN" : "Cancel NordVPN" },
+                        { slug: "cancel-linkedin-premium", label: ar ? "الغاء LinkedIn" : "Cancel LinkedIn" },
+                        { slug: "cancel-apple-tv-plus", label: ar ? "الغاء Apple TV+" : "Cancel Apple TV+" },
+                      ].map(({ slug, label }) => (
+                        <a key={slug} href={`/${slug}.html`} className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
                           onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
                           onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
                         >
@@ -1033,7 +1059,7 @@ export default function HomePage() {
                       {ar ? "بنوك مدعومة" : "Supported Banks"}
                     </p>
                     <div className="flex flex-col gap-2">
-                      {["الراجحي", "الاهلي", "بنك الرياض", "الانماء"].map((bank) => (
+                      {["الراجحي", "الاهلي", "بنك الرياض", "الانماء", "البلاد", "ساب"].map((bank) => (
                         <span key={bank} className="text-sm" style={{ color: "#8AADA8" }}>{bank}</span>
                       ))}
                     </div>

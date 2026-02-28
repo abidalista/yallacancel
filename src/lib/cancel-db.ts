@@ -1,7 +1,7 @@
 // Cancel links database: URLs, difficulty ratings, and domains for logos
 // Based on 200+ services commonly found in Saudi bank statements
 
-export type CancelDifficulty = "easy" | "medium" | "hard";
+export type CancelDifficulty = "easy" | "hard";
 
 export interface CancelInfo {
   cancelUrl: string;
@@ -27,7 +27,7 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   },
   "شاهد VIP": {
     cancelUrl: "https://shahid.mbc.net/en/my-account/subscription",
-    difficulty: "medium",
+    difficulty: "hard",
     domain: "shahid.mbc.net",
     darkPattern: "يلزمك تلغي من الموقع مو من التطبيق",
     guideSlug: "cancel-shahid",
@@ -46,21 +46,21 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   },
   "Apple TV+": {
     cancelUrl: "https://support.apple.com/en-us/HT202039",
-    difficulty: "medium",
+    difficulty: "hard",
     domain: "apple.com",
     darkPattern: "لازم تلغي من إعدادات الجهاز مو من الموقع",
     guideSlug: "cancel-apple-tv-plus",
   },
   "Amazon Prime": {
     cancelUrl: "https://www.amazon.sa/gp/primecentral",
-    difficulty: "medium",
+    difficulty: "hard",
     domain: "amazon.sa",
     darkPattern: "أمازون يعرض عليك عروض كثيرة عشان ما تلغي",
     guideSlug: "cancel-amazon-prime",
   },
   "Prime Video": {
     cancelUrl: "https://www.amazon.sa/gp/primecentral",
-    difficulty: "medium",
+    difficulty: "hard",
     domain: "amazon.sa",
     darkPattern: "أمازون يعرض عليك عروض كثيرة عشان ما تلغي",
     guideSlug: "cancel-amazon-prime",
@@ -90,7 +90,7 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   },
   "OSN+": {
     cancelUrl: "https://stream.osn.com/account",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "osnplus.com",
     guideSlug: "cancel-osn-plus",
   },
@@ -113,7 +113,7 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   },
   "Audible": {
     cancelUrl: "https://www.audible.com/account/cancelPlan",
-    difficulty: "medium",
+    difficulty: "hard",
     domain: "audible.com",
     darkPattern: "أمازون يعرض عليك عروض كثيرة عشان ما تلغي",
   },
@@ -121,25 +121,25 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   // ── Apple / Google ──
   "Apple": {
     cancelUrl: "https://support.apple.com/en-us/HT202039",
-    difficulty: "medium",
+    difficulty: "hard",
     domain: "apple.com",
     darkPattern: "لازم تلغي من إعدادات الجهاز مو من الموقع",
   },
   "Apple Subscriptions": {
     cancelUrl: "https://support.apple.com/en-us/HT202039",
-    difficulty: "medium",
+    difficulty: "hard",
     domain: "apple.com",
     darkPattern: "لازم تلغي من إعدادات الجهاز مو من الموقع",
   },
   "Apple iTunes": {
     cancelUrl: "https://support.apple.com/en-us/HT202039",
-    difficulty: "medium",
+    difficulty: "hard",
     domain: "apple.com",
     darkPattern: "لازم تلغي من إعدادات الجهاز مو من الموقع",
   },
   "iCloud+": {
     cancelUrl: "https://support.apple.com/en-us/HT207594",
-    difficulty: "medium",
+    difficulty: "hard",
     domain: "icloud.com",
     darkPattern: "تنبيه: إلغاء iCloud يمكن يمسح ملفاتك",
     guideSlug: "cancel-icloud",
@@ -173,13 +173,13 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   },
   "Microsoft 365": {
     cancelUrl: "https://account.microsoft.com/services/",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "microsoft.com",
     guideSlug: "cancel-microsoft-365",
   },
   "Microsoft": {
     cancelUrl: "https://account.microsoft.com/services/",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "microsoft.com",
     guideSlug: "cancel-microsoft-365",
   },
@@ -215,13 +215,13 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   },
   "Grammarly": {
     cancelUrl: "https://account.grammarly.com/subscription",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "grammarly.com",
     guideSlug: "cancel-grammarly",
   },
   "Dropbox": {
     cancelUrl: "https://www.dropbox.com/account/plan",
-    difficulty: "medium",
+    difficulty: "hard",
     domain: "dropbox.com",
     darkPattern: "Dropbox ينزل خطتك بدل ما يلغيها مباشرة",
     guideSlug: "cancel-dropbox",
@@ -234,7 +234,7 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   },
   "Slack": {
     cancelUrl: "https://slack.com/intl/en-sa/pricing",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "slack.com",
     guideSlug: "cancel-slack-pro",
   },
@@ -245,7 +245,7 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   },
   "Evernote": {
     cancelUrl: "https://www.evernote.com/Settings.action",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "evernote.com",
   },
   "GitHub Copilot": {
@@ -258,13 +258,13 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   // ── Gaming ──
   "PlayStation Plus": {
     cancelUrl: "https://store.playstation.com/en-sa/category/subscriptions",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "playstation.com",
     guideSlug: "cancel-playstation-plus",
   },
   "Xbox Game Pass": {
     cancelUrl: "https://account.microsoft.com/services/",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "xbox.com",
     guideSlug: "cancel-xbox-game-pass",
   },
@@ -306,7 +306,7 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   },
   "Surfshark": {
     cancelUrl: "https://my.surfshark.com/account/subscription",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "surfshark.com",
   },
   "1Password": {
@@ -316,7 +316,7 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   },
   "LastPass": {
     cancelUrl: "https://lastpass.com/update_billing.php",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "lastpass.com",
   },
 
@@ -329,7 +329,7 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   },
   "Calm": {
     cancelUrl: "https://www.calm.com/account",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "calm.com",
     guideSlug: "cancel-calm",
   },
@@ -361,7 +361,7 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   // ── Social ──
   "LinkedIn Premium": {
     cancelUrl: "https://www.linkedin.com/mypreferences/d/manage-subscription",
-    difficulty: "medium",
+    difficulty: "hard",
     domain: "linkedin.com",
     darkPattern: "LinkedIn يعرض عليك خطة أرخص بدل الإلغاء",
     guideSlug: "cancel-linkedin-premium",
@@ -380,7 +380,7 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   },
   "Telegram Premium": {
     cancelUrl: "https://telegram.org/blog/premium",
-    difficulty: "medium",
+    difficulty: "hard",
     domain: "telegram.org",
     darkPattern: "لازم تلغي من إعدادات متجر التطبيقات",
     guideSlug: "cancel-telegram-premium",
@@ -394,36 +394,36 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   },
   "Skillshare": {
     cancelUrl: "https://www.skillshare.com/settings/payments",
-    difficulty: "medium",
+    difficulty: "hard",
     domain: "skillshare.com",
     darkPattern: "Skillshare يعرض شهر مجاني عشان ما تلغي",
   },
   "MasterClass": {
     cancelUrl: "https://www.masterclass.com/settings/subscriptions",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "masterclass.com",
     guideSlug: "cancel-masterclass",
   },
   "Kindle Unlimited": {
     cancelUrl: "https://www.amazon.com/hz/mycd/myx#/home/settings/payment",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "amazon.com",
   },
 
   // ── Saudi Services ──
   "STC": {
     cancelUrl: "https://www.stc.com.sa/personal/myaccount",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "stc.com.sa",
   },
   "STC Play": {
     cancelUrl: "https://play.stc.com.sa/account",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "stc.com.sa",
   },
   "STC TV": {
     cancelUrl: "https://tv.stc.com.sa/account",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "stc.com.sa",
   },
   "أنغامي": {
@@ -433,7 +433,7 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   },
   "هنقرستيشن": {
     cancelUrl: "https://www.hungerstation.com/",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "hungerstation.com",
     guideSlug: "cancel-hungerstation-pro",
   },
@@ -462,13 +462,13 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   },
   "تمارا": {
     cancelUrl: "https://www.tamara.co/",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "tamara.co",
     guideSlug: "cancel-tamara",
   },
   "تابي": {
     cancelUrl: "https://tabby.ai/",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "tabby.ai",
     guideSlug: "cancel-tabby",
   },
@@ -484,7 +484,7 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   },
   "Amazon": {
     cancelUrl: "https://www.amazon.sa/gp/primecentral",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "amazon.sa",
   },
   "Deezer": {
@@ -494,7 +494,7 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   },
   "Uber": {
     cancelUrl: "https://help.uber.com/riders/article/cancel-uber-one",
-    difficulty: "medium",
+    difficulty: "easy",
     domain: "uber.com",
   },
 };
@@ -510,7 +510,7 @@ export function getCancelUrl(serviceName: string): string | null {
 
 export function getDifficulty(serviceName: string): CancelDifficulty {
   const info = CANCEL_DB[serviceName];
-  return info?.difficulty || "medium";
+  return info?.difficulty || "easy";
 }
 
 export function getDomain(serviceName: string): string {
