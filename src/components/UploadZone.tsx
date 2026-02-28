@@ -148,14 +148,21 @@ export default function UploadZone({
 
       {/* OR + Try sample — completely outside the dropzone */}
       {selectedFiles.length === 0 && (
-        <div className="mt-4 text-center">
-          <span className="text-xs" style={{ color: "#8AADA8" }}>{ar ? "او" : "or"}</span>
+        <div className="mt-5 text-center">
+          <span className="text-xs font-medium" style={{ color: "#8AADA8" }}>{ar ? "او" : "or"}</span>
           <button
             onClick={onTestClick}
-            className="text-sm font-medium py-2 px-5 rounded-full mx-auto block mt-3 hover:bg-[#D6EBE5] transition-colors"
-            style={{ background: "#E5F5EE", color: "#00A651", cursor: "pointer" }}
+            className="font-bold text-sm py-3 px-7 rounded-full mx-auto block mt-3 transition-all hover:-translate-y-0.5"
+            style={{
+              background: "#00A651",
+              color: "white",
+              cursor: "pointer",
+              boxShadow: "0 2px 8px rgba(0,166,81,0.25)",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "#009147"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,166,81,0.35)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "#00A651"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,166,81,0.25)"; }}
           >
-            {ar ? "جرب بمثال جاهز" : "Try with sample data"}
+            {ar ? "جرب بمثال جاهز — مجاناً" : "Try with sample data — free"}
           </button>
         </div>
       )}

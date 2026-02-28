@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Shield, Zap, Link2, BarChart3, FileText, ArrowRight,
   Lock, ChevronDown, ChevronUp, Clock, CheckCircle2,
-  RotateCcw, Loader2,
+  RotateCcw, Loader2, Search,
 } from "lucide-react";
 import Header from "@/components/Header";
 import UploadZone from "@/components/UploadZone";
@@ -890,6 +890,43 @@ export default function HomePage() {
                     <span className="text-sm font-medium" style={{ color: "#4A6862" }}>{chip.name}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Cancel Guides CTA */}
+          <section className="bg-white py-16 px-6">
+            <div className="max-w-[520px] mx-auto text-center">
+              <div
+                className="bento-card p-8 sm:p-10"
+                style={{ border: "1px solid #E5EFED" }}
+              >
+                <div
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                  style={{ background: "#E8F7EE" }}
+                >
+                  <FileText size={22} strokeWidth={1.5} style={{ color: "#00A651" }} />
+                </div>
+                <h2 className="text-xl font-extrabold tracking-tight mb-2" style={{ color: "#1A3A35" }}>
+                  {ar ? "تبي تلغي اشتراك؟" : "Want to cancel a subscription?"}
+                </h2>
+                <p className="text-sm mb-6" style={{ color: "#8AADA8" }}>
+                  {ar ? "عندنا أكثر من ٢٠٠ دليل إلغاء خطوة بخطوة — مجاناً" : "We have 200+ step-by-step cancel guides — free"}
+                </p>
+                <a
+                  href="/guides"
+                  className="inline-flex items-center gap-2 font-bold text-sm py-3 px-7 rounded-full transition-all hover:-translate-y-0.5 no-underline"
+                  style={{
+                    background: "#00A651",
+                    color: "white",
+                    boxShadow: "0 2px 8px rgba(0,166,81,0.25)",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "#009147"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,166,81,0.35)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "#00A651"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,166,81,0.25)"; }}
+                >
+                  <Search size={16} strokeWidth={1.5} />
+                  {ar ? "ابحث في أدلة الإلغاء" : "Search cancel guides"}
+                </a>
               </div>
             </div>
           </section>
