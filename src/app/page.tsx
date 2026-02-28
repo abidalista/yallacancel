@@ -803,28 +803,6 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Guides CTA — visible early */}
-          <section className="py-10 px-6" style={{ background: "#1A3A35" }}>
-            <div className="max-w-[900px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-5">
-              <div className="text-center sm:text-right">
-                <p className="text-white font-extrabold text-lg mb-1">
-                  {ar ? "تبي تلغي خدمة بعينها؟" : "Want to cancel a specific service?"}
-                </p>
-                <p className="text-sm" style={{ color: "rgba(197,221,217,0.8)" }}>
-                  {ar ? "عندنا اكثر من ٢٠٠ دليل الغاء خطوة بخطوة." : "200+ step-by-step cancellation guides."}
-                </p>
-              </div>
-              <a
-                href="/guides"
-                className="inline-flex items-center gap-2 bg-white px-7 py-3 rounded-full font-bold text-sm no-underline transition-all hover:-translate-y-0.5 hover:shadow-lg flex-shrink-0"
-                style={{ color: "#1A3A35" }}
-              >
-                <FileText size={15} strokeWidth={1.5} />
-                {ar ? "تصفح ادلة الالغاء" : "Browse Cancel Guides"}
-              </a>
-            </div>
-          </section>
-
           {/* Stats */}
           <section className="py-16 px-6 border-y" style={{ background: "#E5EFED", borderColor: "#C5DDD9" }}>
             <div className="max-w-[900px] mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -877,13 +855,16 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Subscription chips */}
+          {/* Cancel guides + subscription chips */}
           <section className="py-16 px-6" style={{ background: "#EDF5F3" }}>
             <div className="max-w-[800px] mx-auto text-center">
-              <h2 className="text-xl font-extrabold tracking-tight mb-6" style={{ color: "#1A3A35" }}>
-                {ar ? "نتعرف على أكثر من ١٢٠ خدمة" : "We recognise 120+ services"}
+              <h2 className="text-xl font-extrabold tracking-tight mb-2" style={{ color: "#1A3A35" }}>
+                {ar ? "تبي تلغي اشتراك؟" : "Want to cancel a subscription?"}
               </h2>
-              <div className="flex flex-wrap justify-center gap-3">
+              <p className="text-sm mb-6" style={{ color: "#8AADA8" }}>
+                {ar ? "عندنا اكثر من ٢٠٠ دليل الغاء خطوة بخطوة" : "200+ step-by-step cancellation guides"}
+              </p>
+              <div className="flex flex-wrap justify-center gap-3 mb-8">
                 {SUB_CHIPS.map((chip) => (
                   <div key={chip.name} className="inline-flex items-center gap-2 bg-white border border-[#E5EFED] rounded-full px-4 py-2 shadow-sm">
                     <MerchantLogo name={chip.name} domain={chip.domain} size={20} />
@@ -891,43 +872,20 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
-            </div>
-          </section>
-
-          {/* Cancel Guides CTA */}
-          <section className="bg-white py-16 px-6">
-            <div className="max-w-[520px] mx-auto text-center">
-              <div
-                className="bento-card p-8 sm:p-10"
-                style={{ border: "1px solid #E5EFED" }}
+              <a
+                href="/guides"
+                className="inline-flex items-center gap-2 font-bold text-sm py-3 px-7 rounded-full transition-all hover:-translate-y-0.5 no-underline"
+                style={{
+                  background: "#00A651",
+                  color: "white",
+                  boxShadow: "0 2px 8px rgba(0,166,81,0.25)",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = "#009147"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,166,81,0.35)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "#00A651"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,166,81,0.25)"; }}
               >
-                <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                  style={{ background: "#E8F7EE" }}
-                >
-                  <FileText size={22} strokeWidth={1.5} style={{ color: "#00A651" }} />
-                </div>
-                <h2 className="text-xl font-extrabold tracking-tight mb-2" style={{ color: "#1A3A35" }}>
-                  {ar ? "تبي تلغي اشتراك؟" : "Want to cancel a subscription?"}
-                </h2>
-                <p className="text-sm mb-6" style={{ color: "#8AADA8" }}>
-                  {ar ? "عندنا أكثر من ٢٠٠ دليل إلغاء خطوة بخطوة" : "We have 200+ step-by-step cancel guides"}
-                </p>
-                <a
-                  href="/guides"
-                  className="inline-flex items-center gap-2 font-bold text-sm py-3 px-7 rounded-full transition-all hover:-translate-y-0.5 no-underline"
-                  style={{
-                    background: "#00A651",
-                    color: "white",
-                    boxShadow: "0 2px 8px rgba(0,166,81,0.25)",
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "#009147"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,166,81,0.35)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = "#00A651"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,166,81,0.25)"; }}
-                >
-                  <Search size={16} strokeWidth={1.5} />
-                  {ar ? "ابحث في أدلة الإلغاء" : "Search cancel guides"}
-                </a>
-              </div>
+                <Search size={16} strokeWidth={1.5} />
+                {ar ? "ابحث في أدلة الإلغاء" : "Search cancel guides"}
+              </a>
             </div>
           </section>
 
