@@ -181,7 +181,7 @@ export default function SampleReportPage() {
               </div>
               <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs" style={{ background: "#E5EFED", color: "#8AADA8" }}>
                 <Clock size={12} strokeWidth={1.5} />
-                {ar ? "تقريباً خلصنا — لا تطلع من الصفحة" : "Almost there – stay on this page"}
+                {ar ? "تقريبا خلصنا — لا تطلع من الصفحة" : "Almost there – stay on this page"}
               </div>
             </motion.div>
           </motion.div>

@@ -196,7 +196,7 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
             fontWeight: 700, fontSize: 14, textDecoration: "none",
             boxShadow: "0 4px 16px rgba(0,166,81,0.3)",
           }}>
-            حلل كشفك مجاناً <ArrowRight size={14} strokeWidth={2.5} style={{ transform: "scaleX(-1)" }} />
+            حلل كشفك مجانا <ArrowRight size={14} strokeWidth={2.5} style={{ transform: "scaleX(-1)" }} />
           </a>
         </div>
 

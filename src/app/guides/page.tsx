@@ -29,10 +29,10 @@ const ALL_GUIDES: Guide[] = [
   { name: "Tabby", nameAr: "تابي", slug: "cancel-tabby", domain: "tabby.ai", difficulty: "easy", category: "سعودية" },
   { name: "Nana Direct", nameAr: "نانا", slug: "cancel-nana-direct", domain: "nana.sa", difficulty: "easy", category: "سعودية" },
   { name: "stc pay", nameAr: "stc pay", slug: "cancel-stc-pay", domain: "stcpay.com.sa", difficulty: "easy", category: "سعودية" },
-  { name: "Jawwy", nameAr: "جوّي", slug: "cancel-jawwy", domain: "jawwy.sa", difficulty: "easy", category: "سعودية" },
+  { name: "Jawwy", nameAr: "جوي", slug: "cancel-jawwy", domain: "jawwy.sa", difficulty: "easy", category: "سعودية" },
   { name: "Mrsool", nameAr: "مرسول", slug: "cancel-mrsool", domain: "mrsool.com", difficulty: "easy", category: "سعودية" },
   { name: "ToYou", nameAr: "ToYou", slug: "cancel-toyou", domain: "toyou.io", difficulty: "easy", category: "سعودية" },
-  { name: "Wssel", nameAr: "وصّل", slug: "cancel-wssel", domain: "wssel.com", difficulty: "easy", category: "سعودية" },
+  { name: "Wssel", nameAr: "وصل", slug: "cancel-wssel", domain: "wssel.com", difficulty: "easy", category: "سعودية" },
   { name: "Extra Rewards", nameAr: "اكسترا", slug: "cancel-extra-rewards", domain: "extra.com", difficulty: "easy", category: "سعودية" },
   { name: "Salam Mobile", nameAr: "سلام موبايل", slug: "cancel-salam-mobile", domain: "salam.sa", difficulty: "easy", category: "سعودية" },
   { name: "Virgin Mobile SA", nameAr: "فيرجن موبايل", slug: "cancel-virgin-mobile-sa", domain: "virginmobile.sa", difficulty: "easy", category: "سعودية" },
@@ -318,7 +318,7 @@ export default function GuidesPage() {
             padding: "5px 14px", marginBottom: 20,
           }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#00A651", display: "inline-block" }} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: "#1A3A35" }}>محدّث ٢٠٢٦</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#1A3A35" }}>محدث ٢٠٢٦</span>
           </div>
 
           <h1 style={{
@@ -474,14 +474,14 @@ export default function GuidesPage() {
                 <Search size={28} color="#8AADA8" />
               </div>
               <p style={{ fontSize: 18, fontWeight: 800, color: "#1A3A35", marginBottom: 8 }}>ما لقينا الخدمة</p>
-              <p style={{ fontSize: 14, color: "#8AADA8", marginBottom: 28 }}>ارفع كشف حسابك ونكتشف اشتراكاتك تلقائياً</p>
+              <p style={{ fontSize: 14, color: "#8AADA8", marginBottom: 28 }}>ارفع كشف حسابك ونكتشف اشتراكاتك تلقائيا</p>
               <a href="/" style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
                 background: "#1A3A35", color: "#fff",
                 padding: "12px 28px", borderRadius: 999,
                 fontWeight: 700, fontSize: 14, textDecoration: "none",
               }}>
-                ارفع كشفك مجاناً
+                ارفع كشفك مجانا
               </a>
             </motion.div>
           )}
@@ -508,7 +508,7 @@ export default function GuidesPage() {
             مو لاقي الخدمة؟
           </h2>
           <p style={{ fontSize: 16, color: "rgba(255,255,255,0.65)", marginBottom: 36, lineHeight: 1.7 }}>
-            ارفع كشف حسابك ونكتشف كل اشتراكاتك المخفية تلقائياً — مع روابط الإلغاء.
+            ارفع كشف حسابك ونكتشف كل اشتراكاتك المخفية تلقائيا — مع روابط الإلغاء.
           </p>
           <a href="/" style={{
             display: "inline-flex", alignItems: "center", gap: 10,
@@ -527,7 +527,7 @@ export default function GuidesPage() {
               e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,166,81,0.35)";
             }}
           >
-            ارفع كشفك مجاناً
+            ارفع كشفك مجانا
           </a>
           <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 14 }}>لا بريد إلكتروني · لا تسجيل · ١٠٠٪ مجاني</p>
         </div>

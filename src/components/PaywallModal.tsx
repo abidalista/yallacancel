@@ -96,7 +96,7 @@ export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
 
             <button
               className="btn-primary w-full text-center"
-              onClick={() => alert(ar ? "قريباً — جاري ربط بوابة الدفع" : "Coming soon — payment gateway integration in progress")}
+              onClick={() => alert(ar ? "قريبا — جاري ربط بوابة الدفع" : "Coming soon — payment gateway integration in progress")}
             >
               {ar ? "ادفع بمدى أو بطاقة — ٤٩ ريال" : "Pay with mada or card — 49 SAR"}
             </button>

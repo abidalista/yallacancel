@@ -157,7 +157,7 @@ export default function SubscriptionCard({
               ? { background: "#10B981", color: "white", borderColor: "#10B981" }
               : { background: "white", color: "#8AADA8", borderColor: "#E5EFED" }}
           >
-            {ar ? "خلّيه" : "Keep"}
+            {ar ? "خليه" : "Keep"}
           </button>
           <button
             onClick={() => onStatusChange(sub.id, "cancel")}

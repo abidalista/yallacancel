@@ -147,7 +147,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "هل يلا كنسل يلغي الاشتراكات عني؟",
-    a: "حالياً نوفر لك تقرير تفصيلي مع روابط إلغاء مباشرة. الإلغاء نفسه تسويه بنفسك عبر الرابط — عادة يأخذ أقل من دقيقة لكل اشتراك.",
+    a: "حاليا نوفر لك تقرير تفصيلي مع روابط إلغاء مباشرة. الإلغاء نفسه تسويه بنفسك عبر الرابط — عادة يأخذ أقل من دقيقة لكل اشتراك.",
   },
 ];
 
@@ -227,7 +227,7 @@ export default function HomePage() {
 
     if (hasCsvFail || hasHeaderIssue) {
       suggestions.push("Select your bank manually below and try again");
-      suggestionsAr.push("اختر بنكك يدوياً تحت وجرب مرة ثانية");
+      suggestionsAr.push("اختر بنكك يدويا تحت وجرب مرة ثانية");
     }
 
     if (hasColumnIssue) {
@@ -470,7 +470,7 @@ export default function HomePage() {
               </div>
               <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs" style={{ background: "#E5EFED", color: "#8AADA8" }}>
                 <Clock size={12} strokeWidth={1.5} />
-                {ar ? "تقريباً خلصنا — لا تطلع من الصفحة" : "Almost there – stay on this page"}
+                {ar ? "تقريبا خلصنا — لا تطلع من الصفحة" : "Almost there – stay on this page"}
               </div>
             </motion.div>
           </motion.div>

@@ -122,8 +122,8 @@ export default function AuditReport({
           const labels: Record<string, { ar: string; en: string }> = {
             all:         { ar: "الكل", en: "All" },
             investigate: { ar: "مراجعة", en: "Review" },
-            cancel:      { ar: "يُلغى", en: "Cancel" },
-            keep:        { ar: "يُبقى", en: "Keep" },
+            cancel:      { ar: "يلغى", en: "Cancel" },
+            keep:        { ar: "يبقى", en: "Keep" },
           };
           const counts: Record<string, number> = {
             all: report.subscriptions.length,
@@ -157,7 +157,7 @@ export default function AuditReport({
           {privacyMode ? <Eye size={14} strokeWidth={1.5} /> : <EyeOff size={14} strokeWidth={1.5} />}
           {privacyMode
             ? (ar ? "اظهر الأسماء" : "Show names")
-            : (ar ? "اخفِ الأسماء" : "Hide names")}
+            : (ar ? "اخف الأسماء" : "Hide names")}
         </button>
       </div>
 

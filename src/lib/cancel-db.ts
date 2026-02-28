@@ -343,13 +343,13 @@ const CANCEL_DB: Record<string, CancelInfo> = {
     cancelUrl: "https://www.leejam.com/",
     difficulty: "hard",
     domain: "leejam.com",
-    darkPattern: "لازم تزور الفرع شخصياً للإلغاء",
+    darkPattern: "لازم تزور الفرع شخصيا للإلغاء",
   },
   "لي جام": {
     cancelUrl: "https://www.leejam.com/",
     difficulty: "hard",
     domain: "leejam.com",
-    darkPattern: "لازم تزور الفرع شخصياً للإلغاء",
+    darkPattern: "لازم تزور الفرع شخصيا للإلغاء",
   },
   "نادي رياضي": {
     cancelUrl: "",

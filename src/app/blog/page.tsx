@@ -157,7 +157,7 @@ export default function BlogPage() {
             fontWeight: 800, fontSize: 14, textDecoration: "none",
             boxShadow: "0 4px 20px rgba(0,166,81,0.35)",
           }}>
-            حلل كشفك مجاناً <ArrowRight size={14} strokeWidth={2.5} style={{ transform: "scaleX(-1)" }} />
+            حلل كشفك مجانا <ArrowRight size={14} strokeWidth={2.5} style={{ transform: "scaleX(-1)" }} />
           </a>
         </div>
       </section>
