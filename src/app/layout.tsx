@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Yalla Cancel | ا س — اتش اشتراات اخة",
+  title: "Yalla Cancel | يلا كنسل — اكتشف اشتراكاتك المخفية",
   description:
-    "ارع ش حساب اب اتش  ااشتراات اتررة ا تسحب س بد ا تدر. دع جع اب اسعدة.",
+    "ارفع كشف حسابك البنكي واكتشف كل الاشتراكات المتكررة اللي تسحب فلوسك بدون ما تدري. يدعم جميع البنوك السعودية.",
   keywords:
-    "اشتراات, ب سعدة, اغاء اشتراات, ش حساب, اراجح, اأ, ا س, yalla cancel, cancel subscription saudi",
+    "اشتراكات, بنوك سعودية, الغاء اشتراكات, كشف حساب, الراجحي, الأهلي, يلا كنسل, yalla cancel, cancel subscription saudi",
   openGraph: {
-    title: "Yalla Cancel — اشتراات تحت اسطرة",
-    description: "ا تتر تطبات تسحب  رصد. تابع اغ اشتراات  ا احد.",
+    title: "Yalla Cancel — اشتراكاتك تحت السيطرة",
+    description: "لا تترك تطبيقاتك تسحب من رصيدك. تابع والغي اشتراكاتك من مكان واحد.",
     type: "website",
     locale: "ar_SA",
     siteName: "Yalla Cancel",
@@ -19,14 +19,14 @@ export const metadata: Metadata = {
         url: "https://yallacancel.com/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Yalla Cancel — اشتراات تحت اسطرة",
+        alt: "Yalla Cancel — اشتراكاتك تحت السيطرة",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Yalla Cancel — اشتراات تحت اسطرة",
-    description: "ا تتر تطبات تسحب  رصد. تابع اغ اشتراات  ا احد.",
+    title: "Yalla Cancel — اشتراكاتك تحت السيطرة",
+    description: "لا تترك تطبيقاتك تسحب من رصيدك. تابع والغي اشتراكاتك من مكان واحد.",
     images: ["https://yallacancel.com/og-image.png"],
   },
   icons: {
@@ -65,42 +65,42 @@ export default function RootLayout({
               "mainEntity": [
                 {
                   "@type": "Question",
-                  "name": " باات آة؟",
+                  "name": "هل بياناتي آمنة؟",
                   "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "ع.  اتح ت داخ تصح —  ا ت رع أ سرر. ا حتظ بأ باات."
+                    "text": "نعم. كل التحليل يتم داخل متصفحك — ملفك ما يتم رفعه لأي سيرفر. ما نحتفظ بأي بيانات."
                   }
                 },
                 {
                   "@type": "Question",
-                  "name": "أ ب تدع؟",
+                  "name": "أي بنوك تدعمون؟",
                   "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "دع جع اب اسعدة: اراجح اأ ب اراض اباد اإاء ساب ارس اعرب اط  stc bank."
+                    "text": "ندعم جميع البنوك السعودية: الراجحي، الأهلي، بنك الرياض، البلاد، الإنماء، ساب، الفرنسي، العربي الوطني، و stc bank."
                   }
                 },
                 {
                   "@type": "Question",
-                  "name": " از ش حساب؟",
+                  "name": "كيف انزل كشف حسابي؟",
                   "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "اتح تطب ب  احسابات  ش احساب  اختر اخر - اشر  ز  CSV ا PDF."
+                    "text": "افتح تطبيق بنكك → الحسابات → كشف الحساب → اختر اخر ٣-٦ اشهر → نزله كـ CSV او PDF."
                   }
                 },
                 {
                   "@type": "Question",
-                  "name": " اأداة جاة؟",
+                  "name": "هل الأداة مجانية؟",
                   "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "اتح اأ جا. بعدا تدر تتر ب  را رة احدة — بد اشترا شر."
+                    "text": "التحليل الأول مجاني. بعدها تقدر تترقى بـ ٤٩ ريال لمرة واحدة — بدون اشتراك شهري."
                   }
                 },
                 {
                   "@type": "Question",
-                  "name": " ا س غ ااشتراات ع؟",
+                  "name": "هل يلا كنسل يلغي الاشتراكات عني؟",
                   "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "حاا ر  ترر تص ع رابط إغاء باشرة. اإغاء س تس بس عبر ارابط — عادة أخذ أ  دة  اشترا."
+                    "text": "حالياً نوفر لك تقرير تفصيلي مع روابط إلغاء مباشرة. الإلغاء نفسه تسويه بنفسك عبر الرابط — عادة يأخذ أقل من دقيقة لكل اشتراك."
                   }
                 }
               ]

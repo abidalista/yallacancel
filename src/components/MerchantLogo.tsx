@@ -3,26 +3,26 @@
 import { useState } from "react";
 
 /**
- * Local logo map: merchant name patterns  local file in /public/logos/
+ * Local logo map: merchant name patterns → local file in /public/logos/
  * Patterns are matched case-insensitively against the merchant name.
  */
 const LOCAL_LOGOS: [RegExp, string][] = [
   // Saudi Banks
-  [/اراجح|alrajhi/i, "/logos/alrajhi.png"],
-  [/اأ|اا|alahli|snb/i, "/logos/banks/alahli.png"],
-  [/ب اراض|riyadbank|riyad bank/i, "/logos/banks/riyadbank.png"],
-  [/اباد|albilad/i, "/logos/banks/albilad.png"],
-  [/اإاء|اااء|alinma/i, "/logos/alinma.png"],
-  [/ساب|sabb|sab|اأ/i, "/logos/banks/sabb.png"],
-  [/ارس|alfransi|bsf/i, "/logos/banks/alfransi.png"],
-  [/اعرب اط|anb/i, "/logos/anb.png"],
+  [/الراجحي|alrajhi/i, "/logos/alrajhi.png"],
+  [/الأهلي|الاهلي|alahli|snb/i, "/logos/banks/alahli.png"],
+  [/بنك الرياض|riyadbank|riyad bank/i, "/logos/banks/riyadbank.png"],
+  [/البلاد|albilad/i, "/logos/banks/albilad.png"],
+  [/الإنماء|الانماء|alinma/i, "/logos/alinma.png"],
+  [/ساب|sabb|sab|الأول/i, "/logos/banks/sabb.png"],
+  [/الفرنسي|alfransi|bsf/i, "/logos/banks/alfransi.png"],
+  [/العربي الوطني|anb/i, "/logos/anb.png"],
   [/stc pay|stcpay/i, "/logos/stcpay.png"],
   [/^stc(?!\s*pay)/i, "/logos/stc.png"],
 
   // Streaming & Entertainment
   [/spotify/i, "/logos/spotify.png"],
   [/netflix/i, "/logos/netflix.png"],
-  [/شاد|shahid/i, "/logos/shahid.png"],
+  [/شاهد|shahid/i, "/logos/shahid.png"],
   [/disney/i, "/logos/disney.png"],
   [/youtube/i, "/logos/youtube.png"],
   [/apple\s*(tv|music|arcade)|apple/i, "/logos/apple.png"],
@@ -43,21 +43,21 @@ const LOCAL_LOGOS: [RegExp, string][] = [
   [/calm/i, "/logos/calm.png"],
 
   // Delivery & Transport
-  [/رستش|hungerstation/i, "/logos/hungerstation.png"],
-  [/ر|careem/i, "/logos/careem.png"],
+  [/هنقرستيشن|hungerstation/i, "/logos/hungerstation.png"],
+  [/كريم|careem/i, "/logos/careem.png"],
   [/uber/i, "/logos/uber.png"],
-  [/جاز|jahez/i, "/logos/jahez.png"],
-  [/رس|mrsool/i, "/logos/mrsool.png"],
-  [/طبات|talabat/i, "/logos/talabat.png"],
+  [/جاهز|jahez/i, "/logos/jahez.png"],
+  [/مرسول|mrsool/i, "/logos/mrsool.png"],
+  [/طلبات|talabat/i, "/logos/talabat.png"],
 
   // Shopping
-  [/amazon|ااز/i, "/logos/amazon.png"],
-  [/|noon/i, "/logos/noon.png"],
-  [/جرر|jarir/i, "/logos/jarir.png"],
+  [/amazon|امازون/i, "/logos/amazon.png"],
+  [/نون|noon/i, "/logos/noon.png"],
+  [/جرير|jarir/i, "/logos/jarir.png"],
 
   // Saudi Merchants
-  [/بد|panda/i, "/logos/panda.png"],
-  [/aramco|ارا/i, "/logos/aramco.png"],
+  [/بنده|panda/i, "/logos/panda.png"],
+  [/aramco|ارامكو/i, "/logos/aramco.png"],
 ];
 
 /**
@@ -90,7 +90,7 @@ function nameToColor(name: string): string {
  * Get the display letter for a merchant name (skips Arabic articles).
  */
 function getDisplayLetter(name: string): string {
-  const cleaned = name.trim().replace(/^(ا|al[\s-]?)/i, "");
+  const cleaned = name.trim().replace(/^(ال|al[\s-]?)/i, "");
   return (cleaned[0] || name[0] || "?").toUpperCase();
 }
 
@@ -157,16 +157,16 @@ export default function MerchantLogo({ name, domain, size = 44, className }: Mer
       }}
       onError={() => {
         if (stage === "local" && domain) {
-          // Tier 1 failed  try remote
+          // Tier 1 failed → try remote
           setStage("remote");
         } else if (stage === "local") {
-          // Tier 1 failed, no domain  letter
+          // Tier 1 failed, no domain → letter
           setStage("letter");
         } else if (stage === "remote" && remoteSrc.includes("google.com")) {
-          // Google failed  try DuckDuckGo
+          // Google failed → try DuckDuckGo
           setRemoteSrc(`https://icons.duckduckgo.com/ip3/${domain}.ico`);
         } else {
-          // All remote failed  letter
+          // All remote failed → letter
           setStage("letter");
         }
       }}

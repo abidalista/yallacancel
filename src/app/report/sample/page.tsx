@@ -48,7 +48,7 @@ export default function SampleReportPage() {
       setStep("analyzing");
       setAnalyzeTimer(0);
       setTxCount(0);
-      setAnalyzeStatus(ar ? "رأ اات..." : "Reading files...");
+      setAnalyzeStatus(ar ? "نقرأ الملفات..." : "Reading files...");
 
       const start = Date.now();
       const timer = setInterval(() => {
@@ -68,7 +68,7 @@ export default function SampleReportPage() {
 
         if (!cancelled) {
           setTxCount(parsed.transactions.length);
-          setAnalyzeStatus(ar ? "بحث ع ااشتراات اخة..." : "Looking for hidden subscriptions...");
+          setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
         }
         await new Promise(r => setTimeout(r, 1200));
 
@@ -86,7 +86,7 @@ export default function SampleReportPage() {
         clearInterval(timer);
         if (!cancelled) {
           setTxCount(72);
-          setAnalyzeStatus(ar ? "بحث ع ااشتراات اخة..." : "Looking for hidden subscriptions...");
+          setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
         }
         await new Promise(r => setTimeout(r, 1500));
         if (!cancelled) {
@@ -170,7 +170,7 @@ export default function SampleReportPage() {
                 {txCount.toLocaleString()}
               </div>
               <div className="text-sm mb-6" style={{ color: "#8AADA8" }}>
-                {ar ? "عة" : "transactions"}
+                {ar ? "عملية" : "transactions"}
               </div>
               <div className="flex items-center justify-center gap-2 mb-4">
                 <Loader2 size={14} strokeWidth={1.5} className="animate-spin" style={{ color: "#00A651" }} />
@@ -181,7 +181,7 @@ export default function SampleReportPage() {
               </div>
               <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs" style={{ background: "#E5EFED", color: "#8AADA8" }}>
                 <Clock size={12} strokeWidth={1.5} />
-                {ar ? "تربا خصا — ا تطع  اصحة" : "Almost there – stay on this page"}
+                {ar ? "تقريباً خلصنا — لا تطلع من الصفحة" : "Almost there – stay on this page"}
               </div>
             </motion.div>
           </motion.div>
@@ -197,17 +197,17 @@ export default function SampleReportPage() {
             <div className="max-w-[700px] mx-auto">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 <p className="font-bold text-sm mb-2" style={{ color: "#00A651" }}>
-                  {ar ? `ا ${confirmed.length} اشتراات ؤدة` : `Found ${confirmed.length} clear subscriptions`}
+                  {ar ? `لقينا ${confirmed.length} اشتراكات مؤكدة` : `Found ${confirmed.length} clear subscriptions`}
                 </p>
                 <h1 className="text-3xl font-extrabold tracking-tight mb-2" style={{ color: "#1A3A35" }}>
-                  {ar ? `ساعدا تعر ع ${suspicious.length} إضاة` : `Help identify ${suspicious.length} more`}
+                  {ar ? `ساعدنا نتعرف على ${suspicious.length} إضافية` : `Help identify ${suspicious.length} more`}
                 </h1>
                 <div className="h-1 rounded-full mb-6" style={{ background: "#C5DDD9" }}>
                   <div className="h-1 rounded-full" style={{ width: "60%", background: "#1A3A35" }} />
                 </div>
                 <p className="text-sm mb-8" style={{ color: "#4A6862" }}>
                   {ar
-                    ? "ا بعض اعات اتررة  تأد ا. ساعدا ضا جع:"
+                    ? "لقينا بعض العمليات المتكررة مو متأكدين منها. ساعدنا نضيفها لمجموعك:"
                     : "We found some recurring charges we're not sure about. Help us include them in your total:"}
                 </p>
               </motion.div>
@@ -226,7 +226,7 @@ export default function SampleReportPage() {
                         <span className="font-bold text-base" style={{ color: "#1A3A35" }}>{sub.name}</span>
                       </div>
                       <span className="font-bold text-base" style={{ color: "#1A3A35" }}>
-                        {sub.amount.toFixed(0)} {ar ? "را/شر" : "SAR/monthly"}
+                        {sub.amount.toFixed(0)} {ar ? "ريال/شهر" : "SAR/monthly"}
                       </span>
                     </div>
                     {sub.rawDescription && (
@@ -235,9 +235,9 @@ export default function SampleReportPage() {
                     <div className="flex gap-2.5">
                       {(["subscription", "not", "unknown"] as const).map((choice) => {
                         const labels = {
-                          subscription: ar ? "اشترا" : "Subscription",
-                          not: ar ? " اشترا" : "Not a sub",
-                          unknown: ar ? "ا أدر" : "Don't know",
+                          subscription: ar ? "اشتراك" : "Subscription",
+                          not: ar ? "مو اشتراك" : "Not a sub",
+                          unknown: ar ? "ما أدري" : "Don't know",
                         };
                         const isActive =
                           (choice === "subscription" && sub.userConfirmed && sub.confidence === "confirmed") ||
@@ -266,13 +266,13 @@ export default function SampleReportPage() {
                   onClick={handleFinishIdentify}
                   className="btn-primary flex-1"
                 >
-                  {ar ? "ش ترر" : "Show my report"} <ArrowRight size={16} strokeWidth={1.5} />
+                  {ar ? "شوف تقريري" : "Show my report"} <ArrowRight size={16} strokeWidth={1.5} />
                 </button>
                 <button
                   onClick={handleSkipIdentify}
                   className="btn-ghost"
                 >
-                  {ar ? `تخط (${confirmed.length})` : `Skip (${confirmed.length})`}
+                  {ar ? `تخطى (${confirmed.length})` : `Skip (${confirmed.length})`}
                 </button>
               </div>
             </div>
@@ -294,11 +294,11 @@ export default function SampleReportPage() {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-1" style={{ color: "#1A3A35" }}>
                   {ar
-                    ? `تصر ${report.totalYearly.toFixed(0)} را/سة`
+                    ? `تصرف ${report.totalYearly.toFixed(0)} ريال/سنة`
                     : `You're spending ${report.totalYearly.toFixed(0)} SAR/year`}
                 </h1>
                 <p className="text-sm mb-4" style={{ color: "#8AADA8" }}>
-                  {ar ? ` ${subs.length} اشترا` : `across ${subs.length} subscriptions`}
+                  {ar ? `من ${subs.length} اشتراك` : `across ${subs.length} subscriptions`}
                 </p>
                 <div className="h-1 rounded-full mb-8" style={{ background: "#C5DDD9" }}>
                   <div className="h-1 rounded-full w-full" style={{ background: "#1A3A35" }} />
@@ -319,7 +319,7 @@ export default function SampleReportPage() {
                       <span className="text-sm w-8 flex-shrink-0" style={{ color: "#8AADA8" }}>{i + 1}.</span>
                       <span className="font-bold text-sm flex-1" style={{ color: "#1A3A35" }}>{sub.name}</span>
                       <span className="font-bold text-sm mr-4 ml-4" style={{ color: "#1A3A35" }}>
-                        {sub.yearlyEquivalent.toFixed(0)} {ar ? "را/سة" : "SAR/yr"}
+                        {sub.yearlyEquivalent.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"}
                       </span>
                       {info?.cancelUrl ? (
                         <a
@@ -329,11 +329,11 @@ export default function SampleReportPage() {
                           className="font-bold text-sm no-underline hover:underline flex-shrink-0"
                           style={{ color: "#00A651" }}
                         >
-                          {ar ? "اغ" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
+                          {ar ? "الغي" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
                         </a>
                       ) : (
                         <span className="font-bold text-sm flex-shrink-0" style={{ color: "#00A651" }}>
-                          {ar ? "اغ" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
+                          {ar ? "الغي" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
                         </span>
                       )}
                     </div>
@@ -345,7 +345,7 @@ export default function SampleReportPage() {
                     <span className="text-sm w-8 flex-shrink-0" style={{ color: "#8AADA8" }}>{FREE_VISIBLE + i + 1}.</span>
                     <span className="font-bold text-sm flex-1 blur-sm select-none" style={{ color: "#1A3A35" }}>{sub.name}</span>
                     <span className="font-bold text-sm mr-4 ml-4" style={{ color: "#1A3A35" }}>
-                      {sub.yearlyEquivalent.toFixed(0)} {ar ? "را/سة" : "SAR/yr"}
+                      {sub.yearlyEquivalent.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"}
                     </span>
                     <Lock size={14} strokeWidth={1.5} style={{ color: "#C5DDD9" }} className="flex-shrink-0" />
                   </div>
@@ -353,7 +353,7 @@ export default function SampleReportPage() {
 
                 {hidden.length > 0 && (
                   <div className="px-5 py-3 text-center text-sm" style={{ background: "#EDF5F3", color: "#8AADA8" }}>
-                    + {hidden.length} {ar ? "إضاة" : "more"} ({hiddenYearly.toFixed(0)} {ar ? "را/سة" : "SAR/yr"})
+                    + {hidden.length} {ar ? "إضافية" : "more"} ({hiddenYearly.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"})
                   </div>
                 )}
               </motion.div>
@@ -367,7 +367,7 @@ export default function SampleReportPage() {
                 >
                   <p className="text-center font-bold text-base mb-4" style={{ color: "#1A3A35" }}>
                     {ar
-                      ? `ادع  را ر ${hiddenYearly.toFixed(0)} را/سة — ع ${Math.round(hiddenYearly / 49)}x عائد`
+                      ? `ادفع ٤٩ ريال، ووفر ${hiddenYearly.toFixed(0)} ريال/سنة — يعني ${Math.round(hiddenYearly / 49)}x عائد`
                       : `Pay 49 SAR, save up to ${hiddenYearly.toFixed(0)} SAR/yr — that's a ${Math.round(hiddenYearly / 49)}x return`}
                   </p>
                   <button
@@ -375,12 +375,12 @@ export default function SampleReportPage() {
                     className="btn-primary w-full text-base py-4 mb-3"
                   >
                     {ar
-                      ? `اش  ${subs.length} اشترا —  را`
+                      ? `اكشف كل ${subs.length} اشتراك — ٤٩ ريال`
                       : `Unlock all ${subs.length} subscriptions — 49 SAR`}
                   </button>
                   <p className="text-xs text-center mb-8" style={{ color: "#8AADA8" }}>
                     {ar
-                      ? "دعة احدة · بد حساب · ضا استرداد ا"
+                      ? "دفعة واحدة · بدون حساب · ضمان استرداد كامل"
                       : "One-time payment · No account needed · 100% money-back guarantee"}
                   </p>
                 </motion.div>
@@ -406,7 +406,7 @@ export default function SampleReportPage() {
               <div className="text-center mt-8">
                 <button onClick={handleStartOver} className="btn-ghost">
                   <RotateCcw size={14} strokeWidth={1.5} />
-                  {ar ? "ابدأ  جدد" : "Start Over"}
+                  {ar ? "ابدأ من جديد" : "Start Over"}
                 </button>
               </div>
             </div>

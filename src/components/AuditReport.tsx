@@ -48,24 +48,24 @@ export default function AuditReport({
             {report.subscriptions.length}
           </div>
           <div className="text-xs mt-1" style={{ color: "#8AADA8" }}>
-            {ar ? "اشترا تش" : "subscriptions found"}
+            {ar ? "اشتراك مكتشف" : "subscriptions found"}
           </div>
         </div>
         <div className="bento-card p-5 text-center">
           <TrendingDown size={20} strokeWidth={1.5} className="mx-auto mb-2" style={{ color: "#00A651" }} />
           <div className="text-3xl font-extrabold tracking-tight" style={{ color: "#1A3A35" }}>
-            {report.totalMonthly.toFixed(0)} <span className="text-sm font-semibold" style={{ color: "#8AADA8" }}>{ar ? "را" : "SAR"}</span>
+            {report.totalMonthly.toFixed(0)} <span className="text-sm font-semibold" style={{ color: "#8AADA8" }}>{ar ? "ريال" : "SAR"}</span>
           </div>
           <div className="text-xs mt-1" style={{ color: "#8AADA8" }}>
-            {ar ? "اجع اشر" : "total per month"}
+            {ar ? "المجموع الشهري" : "total per month"}
           </div>
         </div>
         <div className="bento-card p-5 text-center">
           <div className="text-3xl font-extrabold tracking-tight" style={{ color: "#1A3A35" }}>
-            {report.totalYearly.toFixed(0)} <span className="text-sm font-semibold" style={{ color: "#8AADA8" }}>{ar ? "را" : "SAR"}</span>
+            {report.totalYearly.toFixed(0)} <span className="text-sm font-semibold" style={{ color: "#8AADA8" }}>{ar ? "ريال" : "SAR"}</span>
           </div>
           <div className="text-xs mt-1" style={{ color: "#8AADA8" }}>
-            {ar ? "اجع اس" : "total per year"}
+            {ar ? "المجموع السنوي" : "total per year"}
           </div>
         </div>
         <div className="bento-card p-5 text-center">
@@ -74,7 +74,7 @@ export default function AuditReport({
             {report.analyzedTransactions}
           </div>
           <div className="text-xs mt-1" style={{ color: "#8AADA8" }}>
-            {ar ? "عة ت تحا" : "transactions analyzed"}
+            {ar ? "عملية تم تحليلها" : "transactions analyzed"}
           </div>
         </div>
       </div>
@@ -88,13 +88,13 @@ export default function AuditReport({
           style={{ background: "#1A3A35" }}
         >
           <p className="text-sm mb-1" style={{ color: "rgba(197,221,217,0.8)" }}>
-            {ar ? "اتر اتع بإغاء ااشتراات اختارة" : "Estimated savings from selected cancellations"}
+            {ar ? "التوفير المتوقع بإلغاء الاشتراكات المختارة" : "Estimated savings from selected cancellations"}
           </p>
           <div className="text-4xl font-extrabold tracking-tight">
-            {(cancelMonthlySavings * 12).toFixed(0)} {ar ? "را/سة" : "SAR/year"}
+            {(cancelMonthlySavings * 12).toFixed(0)} {ar ? "ريال/سنة" : "SAR/year"}
           </div>
           <p className="text-xs mt-1" style={{ color: "rgba(197,221,217,0.5)" }}>
-            = {cancelMonthlySavings.toFixed(0)} {ar ? "را/شر" : "SAR/month"} ({cancelSubs.length} {ar ? "اشترا" : "subscriptions"})
+            = {cancelMonthlySavings.toFixed(0)} {ar ? "ريال/شهر" : "SAR/month"} ({cancelSubs.length} {ar ? "اشتراك" : "subscriptions"})
           </p>
         </motion.div>
       )}
@@ -105,11 +105,11 @@ export default function AuditReport({
           <Info size={18} strokeWidth={1.5} className="flex-shrink-0 mt-0.5" style={{ color: "#00A651" }} />
           <div>
             <p className="text-sm font-bold mb-0.5" style={{ color: "#1A3A35" }}>
-              {ar ? "صحة: راجع  اشترا" : "Tip: Review each subscription"}
+              {ar ? "نصيحة: راجع كل اشتراك" : "Tip: Review each subscription"}
             </p>
             <p className="text-xs" style={{ color: "#4A6862" }}>
               {ar
-                ? "اضغط \"اغ\" ع ااشتراات ا ا تحتاجا بحسب  اتر اتع."
+                ? "اضغط \"الغيه\" على الاشتراكات اللي ما تحتاجها وبنحسب لك التوفير المتوقع."
                 : "Click \"Cancel\" on subscriptions you don't need and we'll calculate your potential savings."}
             </p>
           </div>
@@ -120,10 +120,10 @@ export default function AuditReport({
       <div className="flex flex-wrap items-center gap-2">
         {(["all", "investigate", "cancel", "keep"] as const).map((f) => {
           const labels: Record<string, { ar: string; en: string }> = {
-            all:         { ar: "ا", en: "All" },
-            investigate: { ar: "راجعة", en: "Review" },
-            cancel:      { ar: "غ", en: "Cancel" },
-            keep:        { ar: "ب", en: "Keep" },
+            all:         { ar: "الكل", en: "All" },
+            investigate: { ar: "مراجعة", en: "Review" },
+            cancel:      { ar: "يُلغى", en: "Cancel" },
+            keep:        { ar: "يُبقى", en: "Keep" },
           };
           const counts: Record<string, number> = {
             all: report.subscriptions.length,
@@ -156,8 +156,8 @@ export default function AuditReport({
         >
           {privacyMode ? <Eye size={14} strokeWidth={1.5} /> : <EyeOff size={14} strokeWidth={1.5} />}
           {privacyMode
-            ? (ar ? "اظر اأساء" : "Show names")
-            : (ar ? "اخ اأساء" : "Hide names")}
+            ? (ar ? "اظهر الأسماء" : "Show names")
+            : (ar ? "اخفِ الأسماء" : "Hide names")}
         </button>
       </div>
 
@@ -166,16 +166,16 @@ export default function AuditReport({
         <div className="bento-card text-center py-16 px-6">
           <Search size={40} strokeWidth={1.5} className="mx-auto mb-4" style={{ color: "#C5DDD9" }} />
           <p className="font-bold text-lg mb-2" style={{ color: "#1A3A35" }}>
-            {ar ? "ا ا اشتراات تررة" : "No recurring subscriptions found"}
+            {ar ? "ما لقينا اشتراكات متكررة" : "No recurring subscriptions found"}
           </p>
           <p className="text-sm mb-1" style={{ color: "#8AADA8" }}>
             {ar
-              ? "جرب ارع ش حساب أط (- أشر) عشا  ااشتراات اتررة."
+              ? "جرب ارفع كشف حساب أطول (٢-٣ أشهر) عشان نلقى الاشتراكات المتكررة."
               : "Try uploading a longer statement (2-3 months) so we can detect recurring charges."}
           </p>
           <p className="text-sm" style={{ color: "#8AADA8" }}>
             {ar
-              ? "أ جرب  ثا — بعض اشات تحتاج صغة CSV بد PDF."
+              ? "أو جرب ملف ثاني — بعض الكشوفات تحتاج صيغة CSV بدل PDF."
               : "Or try a different file — some statements work better as CSV instead of PDF."}
           </p>
         </div>
@@ -193,7 +193,7 @@ export default function AuditReport({
           ))}
           {filtered.length === 0 && (
             <div className="text-center py-8 text-sm" style={{ color: "#8AADA8" }}>
-              {ar ? "ا تجد اشتراات  ذ ائة" : "No subscriptions in this category"}
+              {ar ? "لا توجد اشتراكات في هذه الفئة" : "No subscriptions in this category"}
             </div>
           )}
         </div>
@@ -202,7 +202,7 @@ export default function AuditReport({
       {/* ── Date Range ── */}
       {report.dateRange.from && report.dateRange.to && (
         <p className="text-xs text-center" style={{ color: "#8AADA8" }}>
-          {ar ? "ترة اتح:" : "Analysis period:"} {report.dateRange.from} — {report.dateRange.to}
+          {ar ? "فترة التحليل:" : "Analysis period:"} {report.dateRange.from} — {report.dateRange.to}
         </p>
       )}
     </motion.div>

@@ -7,14 +7,14 @@ import { getCancelInfo, CancelDifficulty } from "@/lib/cancel-db";
 import MerchantLogo from "@/components/MerchantLogo";
 
 const FREQ_LABELS: Record<string, { ar: string; en: string }> = {
-  weekly:    { ar: "أسبع",    en: "Weekly" },
-  monthly:   { ar: "شر",      en: "Monthly" },
-  quarterly: { ar: "ربع س", en: "Quarterly" },
-  yearly:    { ar: "س",      en: "Yearly" },
+  weekly:    { ar: "أسبوعي",    en: "Weekly" },
+  monthly:   { ar: "شهري",      en: "Monthly" },
+  quarterly: { ar: "ربع سنوي", en: "Quarterly" },
+  yearly:    { ar: "سنوي",      en: "Yearly" },
 };
 
 const DIFFICULTY_CONFIG: Record<CancelDifficulty, { ar: string; en: string; cls: string }> = {
-  easy: { ar: "س", en: "Easy", cls: "bg-emerald-50 text-emerald-600 border-emerald-200" },
+  easy: { ar: "سهل", en: "Easy", cls: "bg-emerald-50 text-emerald-600 border-emerald-200" },
   hard: { ar: "صعب", en: "Hard", cls: "bg-red-50 text-red-600 border-red-200" },
 };
 
@@ -84,24 +84,24 @@ export default function SubscriptionCard({
             {/* Amount — always left-aligned */}
             <div className="flex items-baseline gap-3 mb-1.5" dir="ltr" style={{ textAlign: "left" }}>
               <span className="text-xl font-extrabold" style={{ color: "#1A3A35" }}>
-                {sub.amount.toLocaleString(ar ? "ar-SA" : "en-SA")} <span className="text-xs font-semibold" style={{ color: "#8AADA8" }}>{ar ? "را" : "SAR"}</span>
+                {sub.amount.toLocaleString(ar ? "ar-SA" : "en-SA")} <span className="text-xs font-semibold" style={{ color: "#8AADA8" }}>{ar ? "ريال" : "SAR"}</span>
               </span>
               <span className="text-xs" style={{ color: "#8AADA8" }}>
-                = {sub.monthlyEquivalent.toFixed(0)} {ar ? "را/شر" : "SAR/mo"} = {sub.yearlyEquivalent.toFixed(0)} {ar ? "را/سة" : "SAR/yr"}
+                = {sub.monthlyEquivalent.toFixed(0)} {ar ? "ريال/شهر" : "SAR/mo"} = {sub.yearlyEquivalent.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"}
               </span>
             </div>
 
             {/* Meta — always left-aligned */}
             <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs" dir="ltr" style={{ textAlign: "left", color: "#8AADA8" }}>
               <span>
-                {ar ? "آخر خص:" : "Last:"}{" "}
+                {ar ? "آخر خصم:" : "Last:"}{" "}
                 <span className={privacyMode ? "blur-sm" : ""}>
                   {formatDate(sub.lastCharge, locale)}
                 </span>
               </span>
               {sub.firstCharge && sub.firstCharge !== sub.lastCharge && (
                 <span>
-                  {ar ? "أ خص:" : "First:"}{" "}
+                  {ar ? "أول خصم:" : "First:"}{" "}
                   <span className={privacyMode ? "blur-sm" : ""}>
                     {formatDate(sub.firstCharge, locale)}
                   </span>
@@ -130,7 +130,7 @@ export default function SubscriptionCard({
             className="inline-flex items-center gap-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-4 py-2 rounded-full transition-all hover:-translate-y-0.5 no-underline"
           >
             <ExternalLink size={12} strokeWidth={1.5} />
-            {ar ? "اغ اآ" : "Cancel Now"}
+            {ar ? "الغي الآن" : "Cancel Now"}
           </a>
         )}
 
@@ -143,7 +143,7 @@ export default function SubscriptionCard({
             onMouseLeave={e => { e.currentTarget.style.borderColor = "#E5EFED"; e.currentTarget.style.color = "#4A6862"; }}
           >
             <FileText size={12} strokeWidth={1.5} />
-            {ar ? "د اإغاء" : "Cancel Guide"}
+            {ar ? "دليل الإلغاء" : "Cancel Guide"}
           </a>
         )}
 
@@ -157,7 +157,7 @@ export default function SubscriptionCard({
               ? { background: "#10B981", color: "white", borderColor: "#10B981" }
               : { background: "white", color: "#8AADA8", borderColor: "#E5EFED" }}
           >
-            {ar ? "خ" : "Keep"}
+            {ar ? "خلّيه" : "Keep"}
           </button>
           <button
             onClick={() => onStatusChange(sub.id, "cancel")}
@@ -166,7 +166,7 @@ export default function SubscriptionCard({
               ? { background: "#EF4444", color: "white", borderColor: "#EF4444" }
               : { background: "white", color: "#8AADA8", borderColor: "#E5EFED" }}
           >
-            {ar ? "اغ" : "Cancel"}
+            {ar ? "الغيه" : "Cancel"}
           </button>
         </div>
       </div>

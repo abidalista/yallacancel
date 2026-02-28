@@ -25,11 +25,11 @@ const CANCEL_DB: Record<string, CancelInfo> = {
     domain: "spotify.com",
     guideSlug: "cancel-spotify",
   },
-  "شاد VIP": {
+  "شاهد VIP": {
     cancelUrl: "https://shahid.mbc.net/en/my-account/subscription",
     difficulty: "hard",
     domain: "shahid.mbc.net",
-    darkPattern: "ز تغ  اع   اتطب",
+    darkPattern: "يلزمك تلغي من الموقع مو من التطبيق",
     guideSlug: "cancel-shahid",
   },
   "Disney+": {
@@ -48,21 +48,21 @@ const CANCEL_DB: Record<string, CancelInfo> = {
     cancelUrl: "https://support.apple.com/en-us/HT202039",
     difficulty: "hard",
     domain: "apple.com",
-    darkPattern: "از تغ  إعدادات اجاز   اع",
+    darkPattern: "لازم تلغي من إعدادات الجهاز مو من الموقع",
     guideSlug: "cancel-apple-tv-plus",
   },
   "Amazon Prime": {
     cancelUrl: "https://www.amazon.sa/gp/primecentral",
     difficulty: "hard",
     domain: "amazon.sa",
-    darkPattern: "أاز عرض ع عرض ثرة عشا ا تغ",
+    darkPattern: "أمازون يعرض عليك عروض كثيرة عشان ما تلغي",
     guideSlug: "cancel-amazon-prime",
   },
   "Prime Video": {
     cancelUrl: "https://www.amazon.sa/gp/primecentral",
     difficulty: "hard",
     domain: "amazon.sa",
-    darkPattern: "أاز عرض ع عرض ثرة عشا ا تغ",
+    darkPattern: "أمازون يعرض عليك عروض كثيرة عشان ما تلغي",
     guideSlug: "cancel-amazon-prime",
   },
   "Hulu": {
@@ -103,7 +103,7 @@ const CANCEL_DB: Record<string, CancelInfo> = {
     cancelUrl: "https://www.bein.com/en/subscriptions/",
     difficulty: "hard",
     domain: "bein.com",
-    darkPattern: "از تتص بخدة اعاء إغاء",
+    darkPattern: "لازم تتصل بخدمة العملاء للإلغاء",
     guideSlug: "cancel-bein-connect",
   },
   "TIDAL": {
@@ -115,7 +115,7 @@ const CANCEL_DB: Record<string, CancelInfo> = {
     cancelUrl: "https://www.audible.com/account/cancelPlan",
     difficulty: "hard",
     domain: "audible.com",
-    darkPattern: "أاز عرض ع عرض ثرة عشا ا تغ",
+    darkPattern: "أمازون يعرض عليك عروض كثيرة عشان ما تلغي",
   },
 
   // ── Apple / Google ──
@@ -123,25 +123,25 @@ const CANCEL_DB: Record<string, CancelInfo> = {
     cancelUrl: "https://support.apple.com/en-us/HT202039",
     difficulty: "hard",
     domain: "apple.com",
-    darkPattern: "از تغ  إعدادات اجاز   اع",
+    darkPattern: "لازم تلغي من إعدادات الجهاز مو من الموقع",
   },
   "Apple Subscriptions": {
     cancelUrl: "https://support.apple.com/en-us/HT202039",
     difficulty: "hard",
     domain: "apple.com",
-    darkPattern: "از تغ  إعدادات اجاز   اع",
+    darkPattern: "لازم تلغي من إعدادات الجهاز مو من الموقع",
   },
   "Apple iTunes": {
     cancelUrl: "https://support.apple.com/en-us/HT202039",
     difficulty: "hard",
     domain: "apple.com",
-    darkPattern: "از تغ  إعدادات اجاز   اع",
+    darkPattern: "لازم تلغي من إعدادات الجهاز مو من الموقع",
   },
   "iCloud+": {
     cancelUrl: "https://support.apple.com/en-us/HT207594",
     difficulty: "hard",
     domain: "icloud.com",
-    darkPattern: "تب: إغاء iCloud  سح ات",
+    darkPattern: "تنبيه: إلغاء iCloud يمكن يمسح ملفاتك",
     guideSlug: "cancel-icloud",
   },
   "Google Play": {
@@ -161,14 +161,14 @@ const CANCEL_DB: Record<string, CancelInfo> = {
     cancelUrl: "https://account.adobe.com/plans",
     difficulty: "hard",
     domain: "adobe.com",
-    darkPattern: "Adobe رض رس إغاء بر — تأد  تت اإغاء",
+    darkPattern: "Adobe يفرض رسوم إلغاء مبكر — تأكد من توقيت الإلغاء",
     guideSlug: "cancel-adobe",
   },
   "Adobe": {
     cancelUrl: "https://account.adobe.com/plans",
     difficulty: "hard",
     domain: "adobe.com",
-    darkPattern: "Adobe رض رس إغاء بر — تأد  تت اإغاء",
+    darkPattern: "Adobe يفرض رسوم إلغاء مبكر — تأكد من توقيت الإلغاء",
     guideSlug: "cancel-adobe",
   },
   "Microsoft 365": {
@@ -223,7 +223,7 @@ const CANCEL_DB: Record<string, CancelInfo> = {
     cancelUrl: "https://www.dropbox.com/account/plan",
     difficulty: "hard",
     domain: "dropbox.com",
-    darkPattern: "Dropbox ز خطت بد ا غا باشرة",
+    darkPattern: "Dropbox ينزل خطتك بدل ما يلغيها مباشرة",
     guideSlug: "cancel-dropbox",
   },
   "Zoom": {
@@ -294,14 +294,14 @@ const CANCEL_DB: Record<string, CancelInfo> = {
     cancelUrl: "https://my.nordaccount.com/dashboard/nordvpn/",
     difficulty: "hard",
     domain: "nordvpn.com",
-    darkPattern: "NordVPN خ زر اإغاء عرض خصات ثرة",
+    darkPattern: "NordVPN يخفي زر الإلغاء ويعرض خصومات كثيرة",
     guideSlug: "cancel-nordvpn",
   },
   "ExpressVPN": {
     cancelUrl: "https://www.expressvpn.com/subscriptions",
     difficulty: "hard",
     domain: "expressvpn.com",
-    darkPattern: "از تتاص ع ادع عبر اشات",
+    darkPattern: "لازم تتواصل مع الدعم عبر الشات",
     guideSlug: "cancel-expressvpn",
   },
   "Surfshark": {
@@ -339,23 +339,23 @@ const CANCEL_DB: Record<string, CancelInfo> = {
     domain: "duolingo.com",
     guideSlug: "cancel-duolingo-plus",
   },
-  "تس تا": {
+  "فتنس تايم": {
     cancelUrl: "https://www.leejam.com/",
     difficulty: "hard",
     domain: "leejam.com",
-    darkPattern: "از تزر ارع شخصا إغاء",
+    darkPattern: "لازم تزور الفرع شخصياً للإلغاء",
   },
-  " جا": {
+  "لي جام": {
     cancelUrl: "https://www.leejam.com/",
     difficulty: "hard",
     domain: "leejam.com",
-    darkPattern: "از تزر ارع شخصا إغاء",
+    darkPattern: "لازم تزور الفرع شخصياً للإلغاء",
   },
-  "اد راض": {
+  "نادي رياضي": {
     cancelUrl: "",
     difficulty: "hard",
     domain: "",
-    darkPattern: "أغب ااد تطب زارة شخصة إغاء",
+    darkPattern: "أغلب النوادي تطلب زيارة شخصية للإلغاء",
   },
 
   // ── Social ──
@@ -363,7 +363,7 @@ const CANCEL_DB: Record<string, CancelInfo> = {
     cancelUrl: "https://www.linkedin.com/mypreferences/d/manage-subscription",
     difficulty: "hard",
     domain: "linkedin.com",
-    darkPattern: "LinkedIn عرض ع خطة أرخص بد اإغاء",
+    darkPattern: "LinkedIn يعرض عليك خطة أرخص بدل الإلغاء",
     guideSlug: "cancel-linkedin-premium",
   },
   "X Premium": {
@@ -382,7 +382,7 @@ const CANCEL_DB: Record<string, CancelInfo> = {
     cancelUrl: "https://telegram.org/blog/premium",
     difficulty: "hard",
     domain: "telegram.org",
-    darkPattern: "از تغ  إعدادات تجر اتطبات",
+    darkPattern: "لازم تلغي من إعدادات متجر التطبيقات",
     guideSlug: "cancel-telegram-premium",
   },
 
@@ -396,7 +396,7 @@ const CANCEL_DB: Record<string, CancelInfo> = {
     cancelUrl: "https://www.skillshare.com/settings/payments",
     difficulty: "hard",
     domain: "skillshare.com",
-    darkPattern: "Skillshare عرض شر جا عشا ا تغ",
+    darkPattern: "Skillshare يعرض شهر مجاني عشان ما تلغي",
   },
   "MasterClass": {
     cancelUrl: "https://www.masterclass.com/settings/subscriptions",
@@ -426,58 +426,58 @@ const CANCEL_DB: Record<string, CancelInfo> = {
     difficulty: "easy",
     domain: "stc.com.sa",
   },
-  "أغا": {
+  "أنغامي": {
     cancelUrl: "https://www.anghami.com/settings",
     difficulty: "easy",
     domain: "anghami.com",
   },
-  "رستش": {
+  "هنقرستيشن": {
     cancelUrl: "https://www.hungerstation.com/",
     difficulty: "easy",
     domain: "hungerstation.com",
     guideSlug: "cancel-hungerstation-pro",
   },
-  "ر": {
+  "كريم": {
     cancelUrl: "https://app.careem.com/",
     difficulty: "easy",
     domain: "careem.com",
     guideSlug: "cancel-careem-plus",
   },
-  "جاز": {
+  "جاهز": {
     cancelUrl: "https://www.jahez.net/",
     difficulty: "easy",
     domain: "jahez.net",
     guideSlug: "cancel-jahez-plus",
   },
-  "رس": {
+  "مرسول": {
     cancelUrl: "https://www.mrsool.co/",
     difficulty: "easy",
     domain: "mrsool.co",
   },
-  "عاع": {
+  "نعناع": {
     cancelUrl: "https://www.nana.sa/",
     difficulty: "easy",
     domain: "nana.sa",
     guideSlug: "cancel-nana-direct",
   },
-  "تارا": {
+  "تمارا": {
     cancelUrl: "https://www.tamara.co/",
     difficulty: "easy",
     domain: "tamara.co",
     guideSlug: "cancel-tamara",
   },
-  "تاب": {
+  "تابي": {
     cancelUrl: "https://tabby.ai/",
     difficulty: "easy",
     domain: "tabby.ai",
     guideSlug: "cancel-tabby",
   },
-  "جرر": {
+  "جرير": {
     cancelUrl: "https://www.jarir.com/",
     difficulty: "easy",
     domain: "jarir.com",
   },
-  "": {
+  "نون": {
     cancelUrl: "https://www.noon.com/",
     difficulty: "easy",
     domain: "noon.com",

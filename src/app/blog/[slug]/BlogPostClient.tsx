@@ -109,8 +109,8 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
     return (
       <div dir="rtl" style={{ background: "#EDF5F3", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Noto Sans Arabic', 'Plus Jakarta Sans', sans-serif" }}>
         <div style={{ textAlign: "center" }}>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1A3A35", marginBottom: 12 }}>اا  جد</h1>
-          <a href="/blog" style={{ color: "#00A651", fontWeight: 700, textDecoration: "none" }}>ارجع اات</a>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1A3A35", marginBottom: 12 }}>المقال مو موجود</h1>
+          <a href="/blog" style={{ color: "#00A651", fontWeight: 700, textDecoration: "none" }}>ارجع للمقالات</a>
         </div>
       </div>
     );
@@ -131,7 +131,7 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <a href="/blog" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}>
             <ArrowLeft size={16} color="#1A3A35" strokeWidth={2.5} style={{ transform: "scaleX(-1)" }} />
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#4A6862" }}>ااات</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#4A6862" }}>المقالات</span>
           </a>
           <a href="/" style={{ textDecoration: "none" }}>
             <span className="nav-logo" style={{ color: "#1A3A35" }}>yallacancel</span>
@@ -142,7 +142,7 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
             fontWeight: 700, fontSize: 13,
             textDecoration: "none",
           }}>
-            ح ش
+            حلل كشفك
           </a>
         </div>
       </header>
@@ -184,10 +184,10 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
           textAlign: "center",
         }}>
           <h3 style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 10 }}>
-            تب تعر اشتراات؟
+            تبي تعرف اشتراكاتك؟
           </h3>
           <p style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", marginBottom: 20 }}>
-            ارع ش حساب ش  ااشتراات  ثا
+            ارفع كشف حسابك ونكشف كل الاشتراكات في ثواني
           </p>
           <a href="/" style={{
             display: "inline-flex", alignItems: "center", gap: 8,
@@ -196,14 +196,14 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
             fontWeight: 700, fontSize: 14, textDecoration: "none",
             boxShadow: "0 4px 16px rgba(0,166,81,0.3)",
           }}>
-            ح ش جاا <ArrowRight size={14} strokeWidth={2.5} style={{ transform: "scaleX(-1)" }} />
+            حلل كشفك مجاناً <ArrowRight size={14} strokeWidth={2.5} style={{ transform: "scaleX(-1)" }} />
           </a>
         </div>
 
         {/* Related */}
         {related.length > 0 && (
           <div style={{ marginTop: 40 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 800, color: "#1A3A35", marginBottom: 16 }}>اات ذات صة</h3>
+            <h3 style={{ fontSize: 16, fontWeight: 800, color: "#1A3A35", marginBottom: 16 }}>مقالات ذات صلة</h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: 12 }}>
               {related.map((r) => (
                 <a key={r.slug} href={`/blog/${r.slug}`} style={{
@@ -230,7 +230,7 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
         <a href="/" style={{ textDecoration: "none" }}>
           <span className="nav-logo" style={{ color: "rgba(255,255,255,0.45)", justifyContent: "center" }}>yallacancel</span>
         </a>
-        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", marginTop: 8 }}>&copy;  Yalla Cancel</p>
+        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", marginTop: 8 }}>&copy; ٢٠٢٦ Yalla Cancel</p>
       </footer>
     </div>
   );
