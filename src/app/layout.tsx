@@ -54,7 +54,60 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              "mainEntity": [
+                {
+                  "@type": "Question",
+                  "name": "هل بياناتي آمنة؟",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "نعم. كل التحليل يتم داخل متصفحك — ملفك ما يتم رفعه لأي سيرفر. ما نحتفظ بأي بيانات."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "أي بنوك تدعمون؟",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "ندعم جميع البنوك السعودية: الراجحي، الأهلي، بنك الرياض، البلاد، الإنماء، ساب، الفرنسي، العربي الوطني، و stc bank."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "كيف انزل كشف حسابي؟",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "افتح تطبيق بنكك → الحسابات → كشف الحساب → اختر اخر ٣-٦ اشهر → نزله كـ CSV او PDF."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "هل الأداة مجانية؟",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "التحليل الأول مجاني. بعدها تقدر تترقى بـ ٤٩ ريال لمرة واحدة — بدون اشتراك شهري."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "هل يلا كنسل يلغي الاشتراكات عني؟",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "حالياً نوفر لك تقرير تفصيلي مع روابط إلغاء مباشرة. الإلغاء نفسه تسويه بنفسك عبر الرابط — عادة يأخذ أقل من دقيقة لكل اشتراك."
+                  }
+                }
+              ]
+            })
+          }}
+        />
+      </body>
     </html>
   );
 }

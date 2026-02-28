@@ -32,7 +32,16 @@ export default function Header({ locale, onLocaleChange, onLogoClick }: HeaderPr
             onMouseEnter={(e) => { e.currentTarget.style.color = "#1A3A35"; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = "#4A6862"; }}
           >
-            {locale === "ar" ? "أدلة الإلغاء (مجاناً)" : "Cancel Guides (Free)"}
+            {locale === "ar" ? "أدلة الإلغاء" : "Cancel Guides"}
+          </a>
+          <a
+            href="/blog"
+            className="text-sm font-bold no-underline hidden sm:block transition-colors"
+            style={{ color: "#4A6862" }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = "#1A3A35"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = "#4A6862"; }}
+          >
+            {locale === "ar" ? "المدونة" : "Blog"}
           </a>
           <button
             onClick={() => onLocaleChange(locale === "ar" ? "en" : "ar")}

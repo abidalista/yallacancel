@@ -1006,6 +1006,12 @@ export default function HomePage() {
                       >
                         {ar ? "الشفافية" : "Transparency"}
                       </a>
+                      <a href="/blog" className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
+                        onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
+                        onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
+                      >
+                        {ar ? "المدونة" : "Blog"}
+                      </a>
                     </div>
                   </div>
                   <div>
