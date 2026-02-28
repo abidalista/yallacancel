@@ -87,7 +87,7 @@ export default function UploadZone({
           onDragLeave={() => setDragging(false)}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className="cursor-pointer flex flex-col items-center justify-center py-10 px-6"
+          className="cursor-pointer flex flex-col items-center justify-center py-10 px-6 hover:bg-[#F5FAF8] transition-colors"
         >
           <div
             className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
@@ -111,8 +111,11 @@ export default function UploadZone({
           />
         </div>
 
-        {/* Divider */}
-        <div style={{ height: 1, background: "#E5EFED" }} />
+        {/* Divider — visual separator between upload and sample */}
+        <div className="relative" style={{ height: 1, background: "#E5EFED" }}>
+          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
+          </div>
+        </div>
 
         {/* File list (when files selected) */}
         <AnimatePresence>
@@ -163,7 +166,7 @@ export default function UploadZone({
               <div className="flex items-center justify-center mb-4">
                 <span className="text-xs" style={{ color: "#8AADA8" }}>{ar ? "او" : "or"}</span>
               </div>
-              <button onClick={onTestClick} className="text-sm font-medium py-2 px-5 rounded-full mx-auto block" style={{ background: "#E5F5EE", color: "#00A651" }}>
+              <button onClick={(e) => { e.stopPropagation(); onTestClick(); }} className="text-sm font-medium py-2 px-5 rounded-full mx-auto block hover:bg-[#D6EBE5] transition-colors" style={{ background: "#E5F5EE", color: "#00A651", cursor: "pointer" }}>
                 {ar ? "جرب بمثال جاهز" : "Try with sample data"}
               </button>
             </>
