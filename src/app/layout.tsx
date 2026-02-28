@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Yalla Cancel | يلا كانسل — اكتشف اشتراكاتك المخفية",
+  title: "Yalla Cancel | يلا كنسل — اكتشف اشتراكاتك المخفية",
   description:
     "ارفع كشف حسابك البنكي واكتشف كل الاشتراكات المتكررة اللي تسحب فلوسك بدون ما تدري. يدعم جميع البنوك السعودية.",
   keywords:
-    "اشتراكات, بنوك سعودية, الغاء اشتراكات, كشف حساب, الراجحي, الأهلي, يلا كانسل, yalla cancel, cancel subscription saudi",
+    "اشتراكات, بنوك سعودية, الغاء اشتراكات, كشف حساب, الراجحي, الأهلي, يلا كنسل, yalla cancel, cancel subscription saudi",
   openGraph: {
     title: "Yalla Cancel — اشتراكاتك تحت السيطرة",
     description: "لا تترك تطبيقاتك تسحب من رصيدك. تابع والغي اشتراكاتك من مكان واحد.",

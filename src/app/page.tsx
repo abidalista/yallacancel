@@ -115,7 +115,7 @@ const TESTIMONIALS = [
     initial: "م",
   },
   {
-    quote: "كنت اشوف APPLE.COM/BILL كل شهر وما اعرف وش هي بالضبط. يلا كانسل فكها وعرفتني انها iCloud+ و Apple Music وApple TV+ — دفعت فيهم ثلاثتهم بدون ما اقصد!",
+    quote: "كنت اشوف APPLE.COM/BILL كل شهر وما اعرف وش هي بالضبط. يلا كنسل فكها وعرفتني انها iCloud+ و Apple Music وApple TV+ — دفعت فيهم ثلاثتهم بدون ما اقصد!",
     name: "نورة الغامدي",
     role: "معلمة — جدة",
     initial: "ن",
@@ -146,7 +146,7 @@ const FAQ_ITEMS = [
     a: "التحليل الأول مجاني. بعدها تقدر تترقى بـ ٤٩ ريال لمرة واحدة — بدون اشتراك شهري.",
   },
   {
-    q: "هل يلا كانسل يلغي الاشتراكات عني؟",
+    q: "هل يلا كنسل يلغي الاشتراكات عني؟",
     a: "حالياً نوفر لك تقرير تفصيلي مع روابط إلغاء مباشرة. الإلغاء نفسه تسويه بنفسك عبر الرابط — عادة يأخذ أقل من دقيقة لكل اشتراك.",
   },
 ];
@@ -901,7 +901,7 @@ export default function HomePage() {
                 {ar ? "قالوا عنا" : "What users say"}
               </span>
               <h2 className="section-title mb-12">
-                {ar ? "ناس جربوا يلا كانسل" : "People who tried Yalla Cancel"}
+                {ar ? "ناس جربوا يلا كنسل" : "People who tried Yalla Cancel"}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {TESTIMONIALS.map((t, i) => (
@@ -1005,6 +1005,12 @@ export default function HomePage() {
                       >
                         {ar ? "ادلة الالغاء" : "Cancel Guides"}
                       </a>
+                      <a href="/transparency" className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
+                        onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
+                        onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
+                      >
+                        {ar ? "الشفافية" : "Transparency"}
+                      </a>
                     </div>
                   </div>
                   <div>
@@ -1046,7 +1052,7 @@ export default function HomePage() {
                   {ar ? "صنع بحب في السعودية" : "Made with love in Saudi Arabia"}
                 </p>
                 <p className="text-xs" style={{ color: "#4A6862" }}>
-                  {ar ? "جميع الحقوق محفوظة © ٢٠٢٥ يلا كانسل" : "© 2025 Yalla Cancel. All rights reserved."}
+                  {ar ? "جميع الحقوق محفوظة © ٢٠٢٥ يلا كنسل" : "© 2025 Yalla Cancel. All rights reserved."}
                 </p>
               </div>
             </div>
