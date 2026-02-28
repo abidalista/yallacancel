@@ -95,7 +95,7 @@ export default function UploadZone({
           {ar ? "حط اخر ٢-٣ اشهر من كشف حسابك" : "Drop your last 2–3 months of statements"}
         </p>
         <p className="text-sm" style={{ color: "#8AADA8" }}>
-          {ar ? "PDF او CSV من اي بنك، وبس." : "PDF or CSV from any bank — that's it."}
+          {ar ? "PDF او CSV من اي بنك" : "PDF or CSV from any bank"}
         </p>
         <input
           ref={fileInputRef}
