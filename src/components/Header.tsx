@@ -27,7 +27,7 @@ export default function Header({ locale, onLocaleChange, onLogoClick }: HeaderPr
         <div className="flex items-center gap-3">
           <a
             href="/guides"
-            className="text-sm font-bold no-underline hidden sm:block transition-colors"
+            className="text-xs sm:text-sm font-bold no-underline transition-colors"
             style={{ color: "#4A6862" }}
             onMouseEnter={(e) => { e.currentTarget.style.color = "#1A3A35"; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = "#4A6862"; }}
@@ -36,7 +36,7 @@ export default function Header({ locale, onLocaleChange, onLogoClick }: HeaderPr
           </a>
           <a
             href="/blog"
-            className="text-sm font-bold no-underline hidden sm:block transition-colors"
+            className="text-xs sm:text-sm font-bold no-underline transition-colors"
             style={{ color: "#4A6862" }}
             onMouseEnter={(e) => { e.currentTarget.style.color = "#1A3A35"; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = "#4A6862"; }}
