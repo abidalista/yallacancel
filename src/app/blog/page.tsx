@@ -131,7 +131,6 @@ export default function BlogPage() {
                   {post.excerpt}
                 </p>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 16, paddingTop: 14, borderTop: "1px solid #E5EFED" }}>
-                  <span style={{ fontSize: 12, color: "#8AADA8" }}>{formatDate(post.date)}</span>
                   <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700, color: "#00A651" }}>
                     اقرأ المزيد <ArrowLeft size={12} strokeWidth={2.5} />
                   </span>

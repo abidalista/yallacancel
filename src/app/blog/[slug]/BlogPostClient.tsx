@@ -162,9 +162,6 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
               <Clock size={12} strokeWidth={2} />
               {post.readTime}
             </span>
-            <span style={{ fontSize: 12, color: "#8AADA8" }}>
-              {new Date(post.date).toLocaleDateString("ar-SA", { year: "numeric", month: "long", day: "numeric" })}
-            </span>
           </div>
           <h1 style={{
             fontSize: "clamp(1.8rem, 4vw, 2.5rem)",
