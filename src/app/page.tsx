@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Shield, Zap, Link2, BarChart3, FileText, ArrowRight,
@@ -20,7 +21,7 @@ import {
   analyzeFileWithAI,
 } from "@/lib/services";
 import type { SpendingBreakdown as SpendingData } from "@/lib/services";
-import { AuditReport as Report, Subscription, SubscriptionStatus, Transaction, BankId } from "@/lib/types";
+import { AuditReport as Report, SubscriptionStatus, Transaction, BankId } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
 
 type Step = "landing" | "analyzing" | "identify" | "results";
@@ -195,6 +196,7 @@ const FAQ_ITEMS = [
 ];
 
 export default function HomePage() {
+  const router = useRouter();
   const [locale, setLocale] = useState<"ar" | "en">("ar");
   const [step, setStep] = useState<Step>("landing");
   const [report, setReport] = useState<Report | null>(null);
@@ -217,6 +219,24 @@ export default function HomePage() {
     document.documentElement.setAttribute("dir", ar ? "rtl" : "ltr");
     document.documentElement.setAttribute("lang", locale);
   }, [locale, ar]);
+
+  // Push browser history when leaving landing so back button returns to landing
+  useEffect(() => {
+    if (step !== "landing") {
+      window.history.pushState({ step }, "", window.location.pathname);
+    }
+  }, [step]);
+
+  // Handle browser back button
+  useEffect(() => {
+    function onPopState() {
+      if (step !== "landing") {
+        handleStartOver();
+      }
+    }
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [step]);
 
   async function parseFile(file: File, bankOverride?: BankId): Promise<{ transactions: Transaction[]; warnings: string[] }> {
     const ext = file.name.split(".").pop()?.toLowerCase();
@@ -395,134 +415,8 @@ export default function HomePage() {
     }
   }
 
-  async function handleTestStatement() {
-    // ── HARDCODED FALLBACK: proves the UI renders results correctly ──
-    // If fetch fails (e.g. static export without server), use hardcoded data
-    setParseError(null);
-    setStep("analyzing");
-    setAnalyzeTimer(0);
-    setTxCount(0);
-    setAnalyzeStatus(ar ? "نقرأ الملفات..." : "Reading files...");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-
-    const start = Date.now();
-    const timer = setInterval(() => {
-      setAnalyzeTimer(Math.floor((Date.now() - start) / 1000));
-    }, 1000);
-
-    try {
-      // Try fetching the real file first
-      const res = await fetch("/test-statement.csv");
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const text = await res.text();
-      if (!text || text.length < 50) throw new Error("Empty response");
-      clearInterval(timer);
-
-      console.log("[test] Fetched test-statement.csv, length:", text.length);
-      const bankId = detectBank(text);
-      console.log("[test] Detected bank:", bankId);
-      const parsed = parseCSVRobust(text, bankId);
-      console.log("[test] Parsed transactions:", parsed.transactions.length);
-
-      if (parsed.transactions.length === 0) {
-        throw new Error("Parser returned 0 transactions");
-      }
-
-      setTxCount(parsed.transactions.length);
-      setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
-      await new Promise((r) => setTimeout(r, 1200));
-
-      const result = analyzeTransactions(parsed.transactions);
-      const spending = analyzeSpending(parsed.transactions);
-      console.log("[test] Subscriptions found:", result.subscriptions.length);
-
-      setReport(result);
-      setSpendingData(spending);
-
-      const suspicious = result.subscriptions.filter((s) => s.confidence === "suspicious");
-      setStep(suspicious.length > 0 ? "identify" : "results");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    } catch (fetchErr) {
-      console.warn("[test] Fetch/parse failed, using hardcoded data:", fetchErr);
-    }
-
-    // ── Hardcoded fallback data ──
-    setTxCount(72);
-    setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
-    await new Promise((r) => setTimeout(r, 1500));
-    clearInterval(timer);
-
-    const now = "2026-02-27";
-    const makeSub = (
-      name: string, amount: number, freq: "monthly" | "yearly", occ: number,
-      confidence: "confirmed" | "suspicious", status: "investigate" | "cancel" | "keep"
-    ): Subscription => ({
-      id: name.toLowerCase().replace(/\s+/g, "-"),
-      name,
-      normalizedName: name.toLowerCase(),
-      amount,
-      frequency: freq,
-      monthlyEquivalent: freq === "yearly" ? +(amount / 12).toFixed(2) : amount,
-      yearlyEquivalent: freq === "yearly" ? amount : +(amount * 12).toFixed(2),
-      occurrences: occ,
-      lastCharge: now,
-      firstCharge: "2025-11-01",
-      status,
-      confidence,
-      transactions: [],
-    });
-
-    const hardcodedReport: Report = {
-      subscriptions: [
-        makeSub("Spotify", 32.99, "monthly", 4, "confirmed", "investigate"),
-        makeSub("Netflix", 59.99, "monthly", 4, "confirmed", "investigate"),
-        makeSub("ChatGPT Plus", 74.99, "monthly", 4, "confirmed", "investigate"),
-        makeSub("Adobe Creative Cloud", 133.99, "monthly", 4, "confirmed", "investigate"),
-        makeSub("شاهد VIP", 45.00, "monthly", 4, "confirmed", "investigate"),
-        makeSub("Calm", 44.99, "monthly", 4, "confirmed", "investigate"),
-        makeSub("Apple", 14.99, "monthly", 4, "confirmed", "investigate"),
-        makeSub("iCloud+", 14.99, "monthly", 4, "confirmed", "investigate"),
-        makeSub("هنقرستيشن", 29.00, "monthly", 4, "confirmed", "investigate"),
-        makeSub("بنده ماركت", 272.91, "monthly", 8, "suspicious", "investigate"),
-        makeSub("ARAMCO محطة وقود", 182.56, "monthly", 9, "suspicious", "investigate"),
-        makeSub("مطعم البيك - الرياض", 76.43, "monthly", 7, "suspicious", "investigate"),
-        makeSub("كريم - مشوار", 29.20, "monthly", 5, "suspicious", "investigate"),
-        makeSub("Amazon", 256.25, "monthly", 4, "suspicious", "investigate"),
-      ],
-      totalMonthly: 1268.28,
-      totalYearly: 15219.36,
-      potentialMonthlySavings: 0,
-      potentialYearlySavings: 0,
-      analyzedTransactions: 72,
-      dateRange: { from: "2025-11-01", to: "2026-02-27" },
-    };
-
-    const hardcodedSpending: SpendingData = {
-      totalSpend: 6341.40,
-      monthlyAvg: 1585.35,
-      transactionCount: 72,
-      months: 4,
-      dateRange: { from: "2025-11-01", to: "2026-02-27" },
-      categories: [
-        { name: "اشتراكات", nameEn: "Subscriptions", total: 2033.52, percent: 32, monthlyAvg: 508.38, count: 36, topMerchants: ["Adobe Creative Cloud", "ChatGPT Plus", "Netflix"] },
-        { name: "بقالة", nameEn: "Groceries", total: 1885.30, percent: 30, monthlyAvg: 471.33, count: 8, topMerchants: ["بنده ماركت", "NANA GROCERY"] },
-        { name: "مطاعم", nameEn: "Eating Out", total: 465.00, percent: 7, monthlyAvg: 116.25, count: 7, topMerchants: ["مطعم البيك - الرياض"] },
-        { name: "وقود", nameEn: "Transport", total: 1471.00, percent: 23, monthlyAvg: 367.75, count: 9, topMerchants: ["ARAMCO محطة وقود", "كريم - مشوار"] },
-        { name: "تسوق", nameEn: "Shopping", total: 486.58, percent: 8, monthlyAvg: 121.65, count: 7, topMerchants: ["AMAZON.SA", "JARIR BOOKSTORE"] },
-      ],
-      takeaways: [
-        { ar: "اشتراكاتك تمثل <b>٣٢٪</b> من إجمالي مصاريفك.", en: "Subscriptions make up <b>32%</b> of your total spending." },
-        { ar: "أعلى اشتراك هو <b>Adobe Creative Cloud</b> بـ ١٣٤ ريال/شهر.", en: "Your most expensive subscription is <b>Adobe Creative Cloud</b> at 134 SAR/mo." },
-        { ar: "تصرف على البقالة حوالي <b>٤٧١ ريال/شهر</b>.", en: "You spend about <b>471 SAR/mo</b> on groceries." },
-      ],
-    };
-
-    setReport(hardcodedReport);
-    setSpendingData(hardcodedSpending);
-    // Go straight to results — everything is a subscription by default
-    setStep("results");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  function handleTestStatement() {
+    router.push("/report/sample");
   }
 
   function handleIdentifyConfirm(id: string, choice: "subscription" | "not" | "unknown") {
