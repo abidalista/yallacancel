@@ -865,7 +865,7 @@ export default function HomePage() {
                 transition={{ duration: 0.5 }}
               >
                 <span className="section-label inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full mb-5">
-                  <Shield size={12} strokeWidth={1.5} /> {ar ? "خاص ١٠٠٪ — بياناتك تبقى على جهازك" : "100% Private — your data never leaves your device"}
+                  <Shield size={12} strokeWidth={1.5} /> {ar ? "متتبع اشتراكاتك الشخصي" : "Your personal subscription tracker"}
                 </span>
                 <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-4 max-w-3xl mx-auto leading-[1.1]" style={{ color: "#1A3A35" }}>
                   {ar

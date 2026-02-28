@@ -99,7 +99,7 @@ export default function UploadZone({
             {ar ? "حط اخر ٢-٣ اشهر من كشف حسابك" : "Drop your last 2–3 months of statements"}
           </p>
           <p className="text-sm" style={{ color: "#8AADA8" }}>
-            {ar ? "CSV او PDF من اي بنك · اقل من ٩٠ ثانية" : "CSV or PDF from any bank · Under 90 seconds"}
+            {ar ? "PDF او CSV من اي بنك، وبس." : "PDF or CSV from any bank — that's it."}
           </p>
           <input
             ref={fileInputRef}
@@ -160,12 +160,10 @@ export default function UploadZone({
           ) : (
             /* OR + sample button */
             <>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex-1 h-px" style={{ background: "#E5EFED" }} />
+              <div className="flex items-center justify-center mb-4">
                 <span className="text-xs" style={{ color: "#8AADA8" }}>{ar ? "او" : "or"}</span>
-                <div className="flex-1 h-px" style={{ background: "#E5EFED" }} />
               </div>
-              <button onClick={onTestClick} className="btn-ghost w-full">
+              <button onClick={onTestClick} className="text-sm font-medium py-2 px-5 rounded-full mx-auto block" style={{ background: "#E5F5EE", color: "#00A651" }}>
                 {ar ? "جرب بمثال جاهز" : "Try with sample data"}
               </button>
             </>
