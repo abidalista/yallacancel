@@ -48,17 +48,20 @@ export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
           dir={ar ? "rtl" : "ltr"}
         >
           {/* Header */}
-          <div className="bg-gradient-to-br from-indigo-500 to-violet-600 px-6 py-6 text-white text-center relative">
+          <div className="px-6 py-6 text-white text-center relative" style={{ background: "#1A3A35" }}>
             <button
               onClick={onClose}
-              className="absolute top-4 left-4 text-white/70 hover:text-white p-1 rounded-full transition-colors"
+              className="absolute top-4 left-4 p-1 rounded-full transition-colors"
+              style={{ color: "rgba(197,221,217,0.7)" }}
+              onMouseEnter={e => (e.currentTarget.style.color = "white")}
+              onMouseLeave={e => (e.currentTarget.style.color = "rgba(197,221,217,0.7)")}
               aria-label="Close"
             >
               <X size={18} strokeWidth={1.5} />
             </button>
             <Zap size={28} strokeWidth={1.5} className="mx-auto mb-2" />
             <h2 className="text-xl font-extrabold">Yalla Cancel Pro</h2>
-            <p className="text-white/70 text-sm mt-1">
+            <p className="text-sm mt-1" style={{ color: "rgba(197,221,217,0.7)" }}>
               {ar ? "كل شيء تحتاجه لتنظيف اشتراكاتك" : "Everything you need to clean up your subscriptions"}
             </p>
           </div>
@@ -69,10 +72,10 @@ export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
               const Icon = f.icon;
               return (
                 <div key={i} className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
-                    <Icon size={16} strokeWidth={1.5} className="text-indigo-500" />
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#E8F7EE" }}>
+                    <Icon size={16} strokeWidth={1.5} style={{ color: "#00A651" }} />
                   </div>
-                  <span className="text-sm text-slate-700 leading-snug pt-1">
+                  <span className="text-sm leading-snug pt-1" style={{ color: "#4A6862" }}>
                     {f.text}
                   </span>
                 </div>
@@ -82,11 +85,11 @@ export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
 
           {/* Pricing */}
           <div className="px-6 pb-6 space-y-3">
-            <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-center">
-              <div className="text-3xl font-extrabold text-indigo-600 tracking-tight">
+            <div className="rounded-2xl p-4 text-center" style={{ background: "#E5EFED", border: "1px solid #C5DDD9" }}>
+              <div className="text-3xl font-extrabold tracking-tight" style={{ color: "#1A3A35" }}>
                 {ar ? "٤٩ ريال" : "49 SAR"}
               </div>
-              <div className="text-sm text-slate-500">
+              <div className="text-sm" style={{ color: "#4A6862" }}>
                 {ar ? "دفعة واحدة — بدون اشتراك شهري" : "One-time payment — no monthly fee"}
               </div>
             </div>
@@ -98,7 +101,7 @@ export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
               {ar ? "ادفع بمدى أو بطاقة — ٤٩ ريال" : "Pay with mada or card — 49 SAR"}
             </button>
 
-            <p className="text-xs text-center text-slate-400">
+            <p className="text-xs text-center" style={{ color: "#8AADA8" }}>
               {ar
                 ? "الدفع عبر موياسر · آمن ومشفر · يقبل مدى وفيزا وماستر"
                 : "Powered by Moyasar · Secure & encrypted · Accepts mada, Visa, Mastercard"}

@@ -1,0 +1,51 @@
+# Yalla Cancel — Claude Rules
+
+## Project
+Saudi subscription audit platform. Users upload a bank statement (CSV/PDF), the app detects recurring subscriptions, and shows step-by-step cancellation guides. Bilingual: Arabic (RTL, primary) + English.
+
+## Stack
+- Next.js 16 (static export — `output: "export"` in next.config.js)
+- React 19 + TypeScript
+- Tailwind CSS v4 (use `@theme` variables, NOT v3 config)
+- Framer Motion (animations)
+- Lucide React (icons)
+- No backend, no database, no auth
+
+## File locations
+- App pages: `src/app/`
+- Components: `src/components/`
+- Logic/utils: `src/lib/`
+- Static HTML cancel guides: `public/cancel-*.html`
+- Blog posts: `public/blog/`
+- Design references: `docs/reference/`
+
+## Design system (Surfe-inspired)
+See `docs/DESIGN.md` for full spec. Short version:
+- Background: `#EDF5F3` (light mint), not pure white
+- Text: `#1A3A35` (dark teal-navy)
+- Primary CTA: dark navy button `#1A3A35`, white text, rounded-full
+- Cards: white, `rounded-3xl`, soft shadow, `border border-[#E5EFED]`
+- No gradients on backgrounds. No purple. No indigo.
+- Illustrations/mascots encouraged (like Surfe)
+- Arabic is RTL — always set `dir="rtl"` on Arabic content
+
+## Behavior rules
+1. **Build one component at a time.** Never rewrite the whole page unless asked.
+2. **Read before editing.** Always read the file before modifying it.
+3. **Match the design reference.** When a screenshot is referenced in `docs/reference/`, match it closely — spacing, colors, radius, shadows.
+4. **Keep static export compatible.** No `getServerSideProps`, no API routes, no `fs` module in components.
+5. **RTL first.** Default language is Arabic. All new UI must work in RTL layout.
+6. **Tailwind v4 syntax.** Use `@theme` CSS variables. Do NOT use `tailwind.config.js` v3 patterns.
+7. **No unnecessary files.** Don't create new files unless required. Prefer editing existing ones.
+8. **No over-engineering.** Don't add features, abstractions, or error handling beyond what's asked.
+9. **Framer Motion for animations.** Don't use CSS keyframes when Framer Motion exists.
+10. **Lucide for icons.** Don't add new icon libraries.
+
+## Frontend Design Quality
+Create distinctive, production-grade interfaces that avoid generic "AI slop" aesthetics.
+- **Typography**: Avoid generic fonts (Inter, Roboto, Arial). Use distinctive, characterful font choices. Pair a display font with a refined body font.
+- **Color**: Commit to the Surfe palette. Dominant colors with sharp accents. No timid evenly distributed palettes.
+- **Motion**: Focus on high impact moments. One well orchestrated page load with staggered reveals creates more delight than scattered micro interactions.
+- **Spatial Composition**: Unexpected layouts. Asymmetry. Generous negative space OR controlled density.
+- **Backgrounds**: Create atmosphere and depth. Gradient meshes, noise textures, geometric patterns, layered transparencies where appropriate.
+- NEVER produce cookie cutter AI looking design. Every component should feel intentionally designed for yalla cancel's brand.

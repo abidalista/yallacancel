@@ -5,10 +5,10 @@ import { ExternalLink, FileText, AlertTriangle } from "lucide-react";
 import { Subscription, SubscriptionStatus } from "@/lib/types";
 import { getCancelInfo, CancelDifficulty } from "@/lib/cancel-db";
 
-const LOGO = (domain: string) =>
-  `https://logo.clearbit.com/${domain}`;
-const FAV = (domain: string) =>
-  `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+const FAV = (domain: string, sz = 128) =>
+  `https://www.google.com/s2/favicons?domain=${domain}&sz=${sz}`;
+const DDG = (domain: string) =>
+  `https://icons.duckduckgo.com/ip3/${domain}.ico`;
 
 const FREQ_LABELS: Record<string, { ar: string; en: string }> = {
   weekly:    { ar: "أسبوعي",    en: "Weekly" },
@@ -73,19 +73,20 @@ export default function SubscriptionCard({
           <div className="flex-shrink-0">
             {domain ? (
               <img
-                src={LOGO(domain)}
+                src={FAV(domain)}
                 alt={sub.name}
-                className="w-11 h-11 rounded-xl bg-slate-50 p-1 object-contain"
+                className="w-11 h-11 rounded-xl p-1 object-contain"
+                style={{ background: "#EDF5F3" }}
                 onError={(e) => {
                   const img = e.currentTarget;
                   if (!img.dataset.fallback) {
                     img.dataset.fallback = "1";
-                    img.src = FAV(domain);
+                    img.src = DDG(domain);
                   }
                 }}
               />
             ) : (
-              <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center text-sm font-bold text-indigo-500">
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold" style={{ background: "#E5EFED", color: "#1A3A35" }}>
                 {sub.name[0]}
               </div>
             )}
@@ -94,29 +95,29 @@ export default function SubscriptionCard({
           {/* Details */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
-              <span className={`font-bold text-base text-slate-800 ${privacyMode ? "blur-sm" : ""}`}>
+              <span className={`font-bold text-base ${privacyMode ? "blur-sm" : ""}`} style={{ color: "#1A3A35" }}>
                 {sub.name}
               </span>
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${diffCfg.cls}`}>
                 {ar ? diffCfg.ar : diffCfg.en}
               </span>
-              <span className="text-[10px] font-semibold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "#E5EFED", color: "#4A6862" }}>
                 {ar ? freq?.ar : freq?.en}
               </span>
             </div>
 
             {/* Amount — always left-aligned */}
             <div className="flex items-baseline gap-3 mb-1.5" dir="ltr" style={{ textAlign: "left" }}>
-              <span className="text-xl font-extrabold text-slate-900">
-                {sub.amount.toLocaleString(ar ? "ar-SA" : "en-SA")} <span className="text-xs font-semibold text-slate-400">{ar ? "ريال" : "SAR"}</span>
+              <span className="text-xl font-extrabold" style={{ color: "#1A3A35" }}>
+                {sub.amount.toLocaleString(ar ? "ar-SA" : "en-SA")} <span className="text-xs font-semibold" style={{ color: "#8AADA8" }}>{ar ? "ريال" : "SAR"}</span>
               </span>
-              <span className="text-xs text-slate-400">
+              <span className="text-xs" style={{ color: "#8AADA8" }}>
                 = {sub.monthlyEquivalent.toFixed(0)} {ar ? "ريال/شهر" : "SAR/mo"} = {sub.yearlyEquivalent.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"}
               </span>
             </div>
 
             {/* Meta — always left-aligned */}
-            <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-400" dir="ltr" style={{ textAlign: "left" }}>
+            <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs" dir="ltr" style={{ textAlign: "left", color: "#8AADA8" }}>
               <span>
                 {ar ? "آخر خصم:" : "Last:"}{" "}
                 <span className={privacyMode ? "blur-sm" : ""}>
@@ -145,7 +146,7 @@ export default function SubscriptionCard({
       </div>
 
       {/* Action bar */}
-      <div className="border-t border-slate-100 bg-slate-50/50 px-5 py-3 flex items-center gap-2.5">
+      <div className="px-5 py-3 flex items-center gap-2.5" style={{ borderTop: "1px solid #E5EFED", background: "#EDF5F3" }}>
         {hasCancelLink && (
           <a
             href={cancelInfo!.cancelUrl}
@@ -161,7 +162,10 @@ export default function SubscriptionCard({
         {hasGuide && (
           <a
             href={`/${cancelInfo!.guideSlug}.html`}
-            className="inline-flex items-center gap-1.5 bg-white border border-slate-200 hover:border-indigo-300 text-slate-500 hover:text-indigo-600 text-xs font-bold px-4 py-2 rounded-full transition-all no-underline"
+            className="inline-flex items-center gap-1.5 bg-white text-xs font-bold px-4 py-2 rounded-full transition-all no-underline hover:-translate-y-0.5"
+            style={{ border: "1px solid #E5EFED", color: "#4A6862" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "#00A651"; e.currentTarget.style.color = "#1A3A35"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "#E5EFED"; e.currentTarget.style.color = "#4A6862"; }}
           >
             <FileText size={12} strokeWidth={1.5} />
             {ar ? "دليل الإلغاء" : "Cancel Guide"}
@@ -173,21 +177,19 @@ export default function SubscriptionCard({
         <div className="flex gap-1.5">
           <button
             onClick={() => onStatusChange(sub.id, "keep")}
-            className={`text-[10px] font-bold px-3 py-1.5 rounded-full border transition-all ${
-              sub.status === "keep"
-                ? "bg-emerald-500 text-white border-emerald-500"
-                : "bg-white text-slate-400 border-slate-200 hover:border-emerald-300 hover:text-emerald-600"
-            }`}
+            className="text-[10px] font-bold px-3 py-1.5 rounded-full border transition-all"
+            style={sub.status === "keep"
+              ? { background: "#10B981", color: "white", borderColor: "#10B981" }
+              : { background: "white", color: "#8AADA8", borderColor: "#E5EFED" }}
           >
             {ar ? "خلّيه" : "Keep"}
           </button>
           <button
             onClick={() => onStatusChange(sub.id, "cancel")}
-            className={`text-[10px] font-bold px-3 py-1.5 rounded-full border transition-all ${
-              sub.status === "cancel"
-                ? "bg-red-500 text-white border-red-500"
-                : "bg-white text-slate-400 border-slate-200 hover:border-red-300 hover:text-red-600"
-            }`}
+            className="text-[10px] font-bold px-3 py-1.5 rounded-full border transition-all"
+            style={sub.status === "cancel"
+              ? { background: "#EF4444", color: "white", borderColor: "#EF4444" }
+              : { background: "white", color: "#8AADA8", borderColor: "#E5EFED" }}
           >
             {ar ? "الغيه" : "Cancel"}
           </button>

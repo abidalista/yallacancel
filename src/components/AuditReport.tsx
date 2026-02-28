@@ -43,37 +43,37 @@ export default function AuditReport({
       {/* ── Summary Bento Grid ── */}
       <div className="grid grid-cols-2 gap-4">
         <div className="bento-card p-5 text-center">
-          <CreditCard size={20} strokeWidth={1.5} className="mx-auto mb-2 text-indigo-500" />
-          <div className="text-3xl font-extrabold tracking-tight text-slate-900">
+          <CreditCard size={20} strokeWidth={1.5} className="mx-auto mb-2" style={{ color: "#00A651" }} />
+          <div className="text-3xl font-extrabold tracking-tight" style={{ color: "#1A3A35" }}>
             {report.subscriptions.length}
           </div>
-          <div className="text-xs text-slate-400 mt-1">
+          <div className="text-xs mt-1" style={{ color: "#8AADA8" }}>
             {ar ? "اشتراك مكتشف" : "subscriptions found"}
           </div>
         </div>
         <div className="bento-card p-5 text-center">
-          <TrendingDown size={20} strokeWidth={1.5} className="mx-auto mb-2 text-indigo-500" />
-          <div className="text-3xl font-extrabold tracking-tight text-slate-900">
-            {report.totalMonthly.toFixed(0)} <span className="text-sm font-semibold text-slate-400">{ar ? "ريال" : "SAR"}</span>
+          <TrendingDown size={20} strokeWidth={1.5} className="mx-auto mb-2" style={{ color: "#00A651" }} />
+          <div className="text-3xl font-extrabold tracking-tight" style={{ color: "#1A3A35" }}>
+            {report.totalMonthly.toFixed(0)} <span className="text-sm font-semibold" style={{ color: "#8AADA8" }}>{ar ? "ريال" : "SAR"}</span>
           </div>
-          <div className="text-xs text-slate-400 mt-1">
+          <div className="text-xs mt-1" style={{ color: "#8AADA8" }}>
             {ar ? "المجموع الشهري" : "total per month"}
           </div>
         </div>
         <div className="bento-card p-5 text-center">
-          <div className="text-3xl font-extrabold tracking-tight text-indigo-600">
-            {report.totalYearly.toFixed(0)} <span className="text-sm font-semibold text-indigo-400">{ar ? "ريال" : "SAR"}</span>
+          <div className="text-3xl font-extrabold tracking-tight" style={{ color: "#1A3A35" }}>
+            {report.totalYearly.toFixed(0)} <span className="text-sm font-semibold" style={{ color: "#8AADA8" }}>{ar ? "ريال" : "SAR"}</span>
           </div>
-          <div className="text-xs text-slate-400 mt-1">
+          <div className="text-xs mt-1" style={{ color: "#8AADA8" }}>
             {ar ? "المجموع السنوي" : "total per year"}
           </div>
         </div>
         <div className="bento-card p-5 text-center">
-          <CalendarDays size={20} strokeWidth={1.5} className="mx-auto mb-2 text-slate-400" />
-          <div className="text-3xl font-extrabold tracking-tight text-slate-900">
+          <CalendarDays size={20} strokeWidth={1.5} className="mx-auto mb-2" style={{ color: "#8AADA8" }} />
+          <div className="text-3xl font-extrabold tracking-tight" style={{ color: "#1A3A35" }}>
             {report.analyzedTransactions}
           </div>
-          <div className="text-xs text-slate-400 mt-1">
+          <div className="text-xs mt-1" style={{ color: "#8AADA8" }}>
             {ar ? "عملية تم تحليلها" : "transactions analyzed"}
           </div>
         </div>
@@ -84,15 +84,16 @@ export default function AuditReport({
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bento-card bg-gradient-to-br from-indigo-500 to-violet-600 p-6 text-center text-white border-0"
+          className="bento-card p-6 text-center text-white border-0"
+          style={{ background: "#1A3A35" }}
         >
-          <p className="text-sm text-white/70 mb-1">
+          <p className="text-sm mb-1" style={{ color: "rgba(197,221,217,0.8)" }}>
             {ar ? "التوفير المتوقع بإلغاء الاشتراكات المختارة" : "Estimated savings from selected cancellations"}
           </p>
           <div className="text-4xl font-extrabold tracking-tight">
             {(cancelMonthlySavings * 12).toFixed(0)} {ar ? "ريال/سنة" : "SAR/year"}
           </div>
-          <p className="text-xs text-white/50 mt-1">
+          <p className="text-xs mt-1" style={{ color: "rgba(197,221,217,0.5)" }}>
             = {cancelMonthlySavings.toFixed(0)} {ar ? "ريال/شهر" : "SAR/month"} ({cancelSubs.length} {ar ? "اشتراك" : "subscriptions"})
           </p>
         </motion.div>
@@ -100,13 +101,13 @@ export default function AuditReport({
 
       {/* ── Tip Banner ── */}
       {report.subscriptions.length > 0 && cancelSubs.length === 0 && (
-        <div className="bento-card bg-indigo-50/50 border-indigo-100 p-4 flex items-start gap-3">
-          <Info size={18} strokeWidth={1.5} className="text-indigo-500 flex-shrink-0 mt-0.5" />
+        <div className="bento-card p-4 flex items-start gap-3" style={{ background: "#E8F7EE", borderColor: "#C5DDD9" }}>
+          <Info size={18} strokeWidth={1.5} className="flex-shrink-0 mt-0.5" style={{ color: "#00A651" }} />
           <div>
-            <p className="text-sm font-bold text-indigo-800 mb-0.5">
+            <p className="text-sm font-bold mb-0.5" style={{ color: "#1A3A35" }}>
               {ar ? "نصيحة: راجع كل اشتراك" : "Tip: Review each subscription"}
             </p>
-            <p className="text-xs text-indigo-600">
+            <p className="text-xs" style={{ color: "#4A6862" }}>
               {ar
                 ? "اضغط \"الغيه\" على الاشتراكات اللي ما تحتاجها وبنحسب لك التوفير المتوقع."
                 : "Click \"Cancel\" on subscriptions you don't need and we'll calculate your potential savings."}
@@ -134,11 +135,10 @@ export default function AuditReport({
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`text-xs font-bold px-3.5 py-2 rounded-full border transition-all ${
-                filter === f
-                  ? "bg-slate-900 text-white border-slate-900"
-                  : "bg-white text-slate-500 border-slate-200 hover:border-slate-400"
-              }`}
+              className="text-xs font-bold px-3.5 py-2 rounded-full border transition-all"
+              style={filter === f
+                ? { background: "#1A3A35", color: "white", borderColor: "#1A3A35" }
+                : { background: "white", color: "#4A6862", borderColor: "#E5EFED" }}
             >
               {ar ? labels[f].ar : labels[f].en} ({counts[f]})
             </button>
@@ -149,7 +149,10 @@ export default function AuditReport({
 
         <button
           onClick={() => setPrivacyMode(!privacyMode)}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
+          style={{ color: "#8AADA8" }}
+          onMouseEnter={e => (e.currentTarget.style.color = "#4A6862")}
+          onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
         >
           {privacyMode ? <Eye size={14} strokeWidth={1.5} /> : <EyeOff size={14} strokeWidth={1.5} />}
           {privacyMode
@@ -161,16 +164,16 @@ export default function AuditReport({
       {/* ── Subscription List ── */}
       {report.subscriptions.length === 0 ? (
         <div className="bento-card text-center py-16 px-6">
-          <Search size={40} strokeWidth={1.5} className="mx-auto mb-4 text-slate-300" />
-          <p className="font-bold text-lg text-slate-700 mb-2">
+          <Search size={40} strokeWidth={1.5} className="mx-auto mb-4" style={{ color: "#C5DDD9" }} />
+          <p className="font-bold text-lg mb-2" style={{ color: "#1A3A35" }}>
             {ar ? "ما لقينا اشتراكات متكررة" : "No recurring subscriptions found"}
           </p>
-          <p className="text-sm text-slate-400 mb-1">
+          <p className="text-sm mb-1" style={{ color: "#8AADA8" }}>
             {ar
               ? "جرب ارفع كشف حساب أطول (٢-٣ أشهر) عشان نلقى الاشتراكات المتكررة."
               : "Try uploading a longer statement (2-3 months) so we can detect recurring charges."}
           </p>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm" style={{ color: "#8AADA8" }}>
             {ar
               ? "أو جرب ملف ثاني — بعض الكشوفات تحتاج صيغة CSV بدل PDF."
               : "Or try a different file — some statements work better as CSV instead of PDF."}
@@ -189,7 +192,7 @@ export default function AuditReport({
             />
           ))}
           {filtered.length === 0 && (
-            <div className="text-center py-8 text-sm text-slate-400">
+            <div className="text-center py-8 text-sm" style={{ color: "#8AADA8" }}>
               {ar ? "لا توجد اشتراكات في هذه الفئة" : "No subscriptions in this category"}
             </div>
           )}
@@ -198,7 +201,7 @@ export default function AuditReport({
 
       {/* ── Date Range ── */}
       {report.dateRange.from && report.dateRange.to && (
-        <p className="text-xs text-center text-slate-400">
+        <p className="text-xs text-center" style={{ color: "#8AADA8" }}>
           {ar ? "فترة التحليل:" : "Analysis period:"} {report.dateRange.from} — {report.dateRange.to}
         </p>
       )}

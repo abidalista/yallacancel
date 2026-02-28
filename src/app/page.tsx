@@ -17,6 +17,7 @@ import {
   parsePDFRobust,
   analyzeTransactions,
   analyzeSpending,
+  analyzeFileWithAI,
 } from "@/lib/services";
 import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, Subscription, SubscriptionStatus, Transaction, BankId } from "@/lib/types";
@@ -38,23 +39,46 @@ interface ParseError {
   warnings: string[];
 }
 
-const LOGO = (domain: string) =>
-  `https://logo.clearbit.com/${domain}`;
-const FAV = (domain: string) =>
-  `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+const FAV = (domain: string, sz = 64) =>
+  `https://www.google.com/s2/favicons?domain=${domain}&sz=${sz}`;
+const DDG = (domain: string) =>
+  `https://icons.duckduckgo.com/ip3/${domain}.ico`;
 
 function BrandLogo({ domain, alt, className }: { domain: string; alt: string; className?: string }) {
+  const [src, setSrc] = useState<string>(FAV(domain, 128));
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    // Permanent fallback: colored letter — never crashes
+    const letter = (alt.trim().replace(/^(ال|al-?)/i, "")[0] || alt[0] || "?").toUpperCase();
+    return (
+      <span
+        className={className}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#D6EBE5",
+          borderRadius: 4,
+          fontSize: 9,
+          fontWeight: 800,
+          color: "#1A3A35",
+          flexShrink: 0,
+        }}
+      >
+        {letter}
+      </span>
+    );
+  }
+
   return (
     <img
-      src={LOGO(domain)}
+      src={src}
       alt={alt}
       className={className || "w-5 h-5 rounded-sm object-contain"}
-      onError={(e) => {
-        const img = e.currentTarget;
-        if (!img.dataset.fallback) {
-          img.dataset.fallback = "1";
-          img.src = FAV(domain);
-        }
+      onError={() => {
+        if (src === FAV(domain, 128)) setSrc(DDG(domain));
+        else setFailed(true);
       }}
     />
   );
@@ -73,41 +97,41 @@ const BANKS = [
 ];
 
 const PROBLEM_STATS = [
-  { num: "٣٨٢ ريال", text: "متوسط إنفاق السعودي على الاشتراكات شهرياً" },
-  { num: "٧٣٪", text: "من السعوديين ناسين على الأقل اشتراك واحد" },
-  { num: "٤,٥٨٤ ريال", text: "متوسط التوفير المحتمل سنوياً" },
+  { num: "٣٨٢ ريال", text: "متوسط ما يدفعه السعودي على الاشتراكات الرقمية كل شهر" },
+  { num: "٧٣٪", text: "من السعوديين عندهم اشتراك واحد على الأقل ناسيه ومو مستخدمه" },
+  { num: "٤,٥٨٤ ريال", text: "متوسط التوفير السنوي لو ألغيت الاشتراكات اللي ما تحتاجها" },
 ];
 
 const FEATURES = [
   {
     icon: Shield,
-    title: "خصوصية كاملة",
-    desc: "كل التحليل يتم على جهازك — ما نحتفظ بأي بيانات.",
+    title: "آمن وخاص",
+    desc: "كل التحليل يصير داخل متصفحك مباشرة — ملفك ما يوصل لأي سيرفر خارجي.",
   },
   {
     icon: Lock,
-    title: "يفهم بنكك",
-    desc: "يقرأ كشوفات ٩ بنوك سعودية ويفكك الرموز الغريبة تلقائياً.",
+    title: "يقرأ كشف بنكك",
+    desc: "يتعرف على كشوفات ٩ بنوك سعودية ويفك رموز العمليات الغريبة تلقائيا.",
   },
   {
     icon: Zap,
-    title: "نتيجة في ثوانٍ",
-    desc: "ارفع الكشف وخلال ثوانٍ تشوف كل اشتراكاتك مع روابط الإلغاء.",
+    title: "نتائج في ثواني",
+    desc: "ارفع الكشف وخلال ثواني تشوف قائمة كاملة باشتراكاتك مع تكلفة كل واحد.",
   },
   {
     icon: BarChart3,
-    title: "تقرير تفصيلي",
-    desc: "نوريك المبلغ الشهري والسنوي ونقترح لك وش تلغي ووش تخلي.",
+    title: "تقرير واضح",
+    desc: "نوريك المبلغ الشهري والسنوي لكل اشتراك وتقدر تحدد وش تبقي ووش تلغي.",
   },
   {
     icon: Link2,
     title: "روابط إلغاء مباشرة",
-    desc: "لكل اشتراك رابط مباشر يوديك صفحة الإلغاء — بدون دوخة.",
+    desc: "كل اشتراك معه رابط يوديك مباشرة لصفحة الإلغاء — بدون دوخة.",
   },
   {
     icon: FileText,
-    title: "أدلة إلغاء خطوة بخطوة",
-    desc: "٢٠٠+ دليل إلغاء مفصّل لأشهر الخدمات في السعودية والعالم.",
+    title: "أدلة تفصيلية",
+    desc: "أكثر من ٢٠٠ دليل إلغاء خطوة بخطوة لأشهر الخدمات في السعودية والعالم.",
   },
 ];
 
@@ -134,13 +158,13 @@ const TESTIMONIALS = [
     initial: "م",
   },
   {
-    quote: "كنت أشوف APPLE.COM/BILL كل شهر وما أعرف وش هي بالضبط. يلا كانسل فكّها وعرّفتني إنها iCloud+ و Apple Music وApple TV+ — دفعت فيهم ثلاثتهم بدون ما أقصد!",
+    quote: "كنت اشوف APPLE.COM/BILL كل شهر وما اعرف وش هي بالضبط. يلا كانسل فكها وعرفتني انها iCloud+ و Apple Music وApple TV+ — دفعت فيهم ثلاثتهم بدون ما اقصد!",
     name: "نورة الغامدي",
     role: "معلمة — جدة",
     initial: "ن",
   },
   {
-    quote: "كنت مشترك في Adobe وأنا ما أحتاجه — بس خفت من رسوم الإلغاء المبكر. الموقع حذّرني من التوقيت الصح وأنقذني من دفع رسوم إضافية. وفرت ١,٦٠٨ ريال.",
+    quote: "كنت مشترك في Adobe وانا ما احتاجه — بس خفت من رسوم الالغاء المبكر. الموقع حذرني من التوقيت الصح وانقذني من دفع رسوم اضافية. وفرت ١,٦٠٨ ريال.",
     name: "عبدالرحمن ف.",
     role: "مصمم مستقل — الدمام",
     initial: "ع",
@@ -157,8 +181,8 @@ const FAQ_ITEMS = [
     a: "ندعم جميع البنوك السعودية: الراجحي، الأهلي، بنك الرياض، البلاد، الإنماء، ساب، الفرنسي، العربي الوطني، و stc bank.",
   },
   {
-    q: "كيف أنزّل كشف حسابي؟",
-    a: "افتح تطبيق بنكك → الحسابات → كشف الحساب → اختر آخر ٣-٦ أشهر → نزّله كـ CSV أو PDF.",
+    q: "كيف انزل كشف حسابي؟",
+    a: "افتح تطبيق بنكك → الحسابات → كشف الحساب → اختر اخر ٣-٦ اشهر → نزله كـ CSV او PDF.",
   },
   {
     q: "هل الأداة مجانية؟",
@@ -267,6 +291,32 @@ export default function HomePage() {
     }, 1000);
 
     try {
+      // ── Try AI analysis first (Claude API) ──
+      setAnalyzeStatus(ar ? "الذكاء الاصطناعي يحلل كشفك..." : "AI is analyzing your statement...");
+
+      let aiSuccess = false;
+      for (const file of files) {
+        const aiResult = await analyzeFileWithAI(file);
+        if (aiResult.success) {
+          console.log("[handleScan] AI analysis succeeded");
+          if (timerRef.current) clearInterval(timerRef.current);
+          setReport(aiResult.report);
+          setSpendingData(null);
+          setStep("results");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          aiSuccess = true;
+          break;
+        } else {
+          console.warn("[handleScan] AI analysis failed:", aiResult.error);
+        }
+      }
+
+      if (aiSuccess) return;
+
+      // ── Fallback: old parser + analyzer ──
+      console.log("[handleScan] Falling back to local parser");
+      setAnalyzeStatus(ar ? "نجرب طريقة ثانية..." : "Trying alternative method...");
+
       let allTx: Transaction[] = [];
       const failedFiles: string[] = [];
       let allWarnings: string[] = [];
@@ -529,7 +579,7 @@ export default function HomePage() {
   // ── Render ──
 
   return (
-    <div className="min-h-screen bg-[#F8FAFF]">
+    <div className="min-h-screen bg-[#EDF5F3]">
       <Header
         locale={locale}
         onLocaleChange={setLocale}
@@ -547,7 +597,7 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="min-h-screen flex flex-col items-center justify-center px-6 pt-20 bg-[#F8FAFF]"
+            className="min-h-screen flex flex-col items-center justify-center px-6 pt-20 bg-[#EDF5F3]"
           >
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -555,20 +605,20 @@ export default function HomePage() {
               transition={{ duration: 0.5 }}
               className="w-full max-w-[500px] bento-card py-16 px-8 text-center"
             >
-              <div className="text-5xl sm:text-6xl font-extrabold tracking-tight text-slate-900 mb-2">
+              <div className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-2" style={{ color: "#1A3A35" }}>
                 {txCount.toLocaleString()}
               </div>
-              <div className="text-sm text-slate-400 mb-6">
+              <div className="text-sm mb-6" style={{ color: "#8AADA8" }}>
                 {ar ? "عملية" : "transactions"}
               </div>
               <div className="flex items-center justify-center gap-2 mb-4">
-                <Loader2 size={14} strokeWidth={1.5} className="text-indigo-500 animate-spin" />
-                <span className="text-sm text-slate-500">{analyzeStatus}</span>
+                <Loader2 size={14} strokeWidth={1.5} className="animate-spin" style={{ color: "#00A651" }} />
+                <span className="text-sm" style={{ color: "#4A6862" }}>{analyzeStatus}</span>
               </div>
-              <div className="text-lg font-bold text-slate-300 mb-6">
+              <div className="text-lg font-bold mb-6" style={{ color: "#C5DDD9" }}>
                 {analyzeTimer}s
               </div>
-              <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-full px-4 py-2 text-xs text-slate-400">
+              <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs" style={{ background: "#E5EFED", color: "#8AADA8" }}>
                 <Clock size={12} strokeWidth={1.5} />
                 {ar ? "تقريباً خلصنا — لا تطلع من الصفحة" : "Almost there – stay on this page"}
               </div>
@@ -582,19 +632,19 @@ export default function HomePage() {
         const confirmed = report.subscriptions.filter((s) => s.confidence === "confirmed");
         const suspicious = report.subscriptions.filter((s) => s.confidence === "suspicious");
         return (
-          <div className="min-h-screen bg-[#F8FAFF] pt-24 pb-16 px-6">
+          <div className="min-h-screen bg-[#EDF5F3] pt-24 pb-16 px-6">
             <div className="max-w-[700px] mx-auto">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                <p className="text-indigo-500 font-bold text-sm mb-2">
+                <p className="font-bold text-sm mb-2" style={{ color: "#00A651" }}>
                   {ar ? `لقينا ${confirmed.length} اشتراكات مؤكدة` : `Found ${confirmed.length} clear subscriptions`}
                 </p>
-                <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 mb-2">
+                <h1 className="text-3xl font-extrabold tracking-tight mb-2" style={{ color: "#1A3A35" }}>
                   {ar ? `ساعدنا نتعرف على ${suspicious.length} إضافية` : `Help identify ${suspicious.length} more`}
                 </h1>
-                <div className="h-1 bg-indigo-100 rounded-full mb-6">
-                  <div className="h-1 bg-indigo-500 rounded-full" style={{ width: "60%" }} />
+                <div className="h-1 rounded-full mb-6" style={{ background: "#C5DDD9" }}>
+                  <div className="h-1 rounded-full" style={{ width: "60%", background: "#1A3A35" }} />
                 </div>
-                <p className="text-sm text-slate-500 mb-8">
+                <p className="text-sm mb-8" style={{ color: "#4A6862" }}>
                   {ar
                     ? "لقينا بعض العمليات المتكررة مو متأكدين منها. ساعدنا نضيفها لمجموعك:"
                     : "We found some recurring charges we're not sure about. Help us include them in your total:"}
@@ -612,14 +662,14 @@ export default function HomePage() {
                   >
                     <div className="flex items-start justify-between mb-1">
                       <div>
-                        <span className="font-bold text-base text-slate-800">{sub.name}</span>
+                        <span className="font-bold text-base" style={{ color: "#1A3A35" }}>{sub.name}</span>
                       </div>
-                      <span className="font-bold text-base text-slate-900">
+                      <span className="font-bold text-base" style={{ color: "#1A3A35" }}>
                         {sub.amount.toFixed(0)} {ar ? "ريال/شهر" : "SAR/monthly"}
                       </span>
                     </div>
                     {sub.rawDescription && (
-                      <p className="text-xs text-slate-400 mb-3">{sub.rawDescription}</p>
+                      <p className="text-xs mb-3" style={{ color: "#8AADA8" }}>{sub.rawDescription}</p>
                     )}
                     <div className="flex gap-2.5">
                       {(["subscription", "not", "unknown"] as const).map((choice) => {
@@ -636,11 +686,10 @@ export default function HomePage() {
                           <button
                             key={choice}
                             onClick={() => handleIdentifyConfirm(sub.id, choice)}
-                            className={`text-xs font-bold px-4 py-2 rounded-full transition-all ${
-                              isActive
-                                ? "bg-indigo-500 text-white"
-                                : "bg-white border border-slate-200 text-slate-500 hover:border-indigo-300"
-                            }`}
+                            className="text-xs font-bold px-4 py-2 rounded-full transition-all"
+                            style={isActive
+                              ? { background: "#1A3A35", color: "white", border: "1.5px solid #1A3A35" }
+                              : { background: "white", color: "#4A6862", border: "1.5px solid #E5EFED" }}
                           >
                             {labels[choice]}
                           </button>
@@ -679,19 +728,19 @@ export default function HomePage() {
         const hiddenYearly = hidden.reduce((s, sub) => s + sub.yearlyEquivalent, 0);
 
         return (
-          <div className="min-h-screen bg-[#F8FAFF] pt-24 pb-16 px-6">
+          <div className="min-h-screen bg-[#EDF5F3] pt-24 pb-16 px-6">
             <div className="max-w-[700px] mx-auto">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-1">
+                <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-1" style={{ color: "#1A3A35" }}>
                   {ar
                     ? `تصرف ${report.totalYearly.toFixed(0)} ريال/سنة`
                     : `You're spending ${report.totalYearly.toFixed(0)} SAR/year`}
                 </h1>
-                <p className="text-sm text-slate-400 mb-4">
+                <p className="text-sm mb-4" style={{ color: "#8AADA8" }}>
                   {ar ? `من ${subs.length} اشتراك` : `across ${subs.length} subscriptions`}
                 </p>
-                <div className="h-1 bg-indigo-100 rounded-full mb-8">
-                  <div className="h-1 bg-indigo-500 rounded-full w-full" />
+                <div className="h-1 rounded-full mb-8" style={{ background: "#C5DDD9" }}>
+                  <div className="h-1 rounded-full w-full" style={{ background: "#1A3A35" }} />
                 </div>
               </motion.div>
 
@@ -705,10 +754,10 @@ export default function HomePage() {
                 {visible.map((sub, i) => {
                   const info = getCancelInfo(sub.name);
                   return (
-                    <div key={sub.id} className="flex items-center px-5 py-4 border-b border-slate-100">
-                      <span className="text-sm text-slate-400 w-8 flex-shrink-0">{i + 1}.</span>
-                      <span className="font-bold text-sm flex-1 text-slate-800">{sub.name}</span>
-                      <span className="font-bold text-sm mr-4 ml-4 text-slate-700">
+                    <div key={sub.id} className="flex items-center px-5 py-4" style={{ borderBottom: "1px solid #E5EFED" }}>
+                      <span className="text-sm w-8 flex-shrink-0" style={{ color: "#8AADA8" }}>{i + 1}.</span>
+                      <span className="font-bold text-sm flex-1" style={{ color: "#1A3A35" }}>{sub.name}</span>
+                      <span className="font-bold text-sm mr-4 ml-4" style={{ color: "#1A3A35" }}>
                         {sub.yearlyEquivalent.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"}
                       </span>
                       {info?.cancelUrl ? (
@@ -716,12 +765,13 @@ export default function HomePage() {
                           href={info.cancelUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-indigo-500 font-bold text-sm no-underline hover:underline flex-shrink-0"
+                          className="font-bold text-sm no-underline hover:underline flex-shrink-0"
+                          style={{ color: "#00A651" }}
                         >
                           {ar ? "الغي" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
                         </a>
                       ) : (
-                        <span className="text-indigo-500 font-bold text-sm flex-shrink-0">
+                        <span className="font-bold text-sm flex-shrink-0" style={{ color: "#00A651" }}>
                           {ar ? "الغي" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
                         </span>
                       )}
@@ -730,18 +780,18 @@ export default function HomePage() {
                 })}
 
                 {hidden.map((sub, i) => (
-                  <div key={sub.id} className="flex items-center px-5 py-4 border-b border-slate-100">
-                    <span className="text-sm text-slate-400 w-8 flex-shrink-0">{FREE_VISIBLE + i + 1}.</span>
-                    <span className="font-bold text-sm flex-1 blur-sm select-none text-slate-800">{sub.name}</span>
-                    <span className="font-bold text-sm mr-4 ml-4 text-slate-700">
+                  <div key={sub.id} className="flex items-center px-5 py-4" style={{ borderBottom: "1px solid #E5EFED" }}>
+                    <span className="text-sm w-8 flex-shrink-0" style={{ color: "#8AADA8" }}>{FREE_VISIBLE + i + 1}.</span>
+                    <span className="font-bold text-sm flex-1 blur-sm select-none" style={{ color: "#1A3A35" }}>{sub.name}</span>
+                    <span className="font-bold text-sm mr-4 ml-4" style={{ color: "#1A3A35" }}>
                       {sub.yearlyEquivalent.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"}
                     </span>
-                    <Lock size={14} strokeWidth={1.5} className="text-slate-300 flex-shrink-0" />
+                    <Lock size={14} strokeWidth={1.5} style={{ color: "#C5DDD9" }} className="flex-shrink-0" />
                   </div>
                 ))}
 
                 {hidden.length > 0 && (
-                  <div className="px-5 py-3 bg-slate-50 text-center text-sm text-slate-400">
+                  <div className="px-5 py-3 text-center text-sm" style={{ background: "#EDF5F3", color: "#8AADA8" }}>
                     + {hidden.length} {ar ? "إضافية" : "more"} ({hiddenYearly.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"})
                   </div>
                 )}
@@ -754,7 +804,7 @@ export default function HomePage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  <p className="text-center text-indigo-600 font-bold text-base mb-4">
+                  <p className="text-center font-bold text-base mb-4" style={{ color: "#1A3A35" }}>
                     {ar
                       ? `ادفع ٤٩ ريال، ووفر ${hiddenYearly.toFixed(0)} ريال/سنة — يعني ${Math.round(hiddenYearly / 49)}x عائد`
                       : `Pay 49 SAR, save up to ${hiddenYearly.toFixed(0)} SAR/yr — that's a ${Math.round(hiddenYearly / 49)}x return`}
@@ -767,7 +817,7 @@ export default function HomePage() {
                       ? `اكشف كل ${subs.length} اشتراك — ٤٩ ريال`
                       : `Unlock all ${subs.length} subscriptions — 49 SAR`}
                   </button>
-                  <p className="text-xs text-center text-slate-400 mb-8">
+                  <p className="text-xs text-center mb-8" style={{ color: "#8AADA8" }}>
                     {ar
                       ? "دفعة واحدة · بدون حساب · ضمان استرداد كامل"
                       : "One-time payment · No account needed · 100% money-back guarantee"}
@@ -814,18 +864,18 @@ export default function HomePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <span className="section-label-light inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full mb-5">
-                  <Shield size={12} strokeWidth={1.5} /> {ar ? "خصوصية ١٠٠٪ — كل شيء على جهازك" : "100% Private — Everything stays on your device"}
+                <span className="section-label inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full mb-5">
+                  <Shield size={12} strokeWidth={1.5} /> {ar ? "خاص ١٠٠٪ — بياناتك تبقى على جهازك" : "100% Private — your data never leaves your device"}
                 </span>
-                <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-white mb-4 max-w-3xl mx-auto leading-[1.1]">
+                <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-4 max-w-3xl mx-auto leading-[1.1]" style={{ color: "#1A3A35" }}>
                   {ar
-                    ? "وقف النزيف. الغي أي اشتراك بضغطتين."
-                    : "Stop the drain. Cancel any subscription in two clicks."}
+                    ? "اعرف وين تروح فلوسك كل شهر"
+                    : "See exactly where your money goes each month"}
                 </h1>
-                <p className="text-lg text-indigo-200/70 max-w-[600px] mx-auto mb-12 leading-relaxed">
+                <p className="text-lg max-w-[600px] mx-auto mb-12 leading-relaxed" style={{ color: "#4A6862" }}>
                   {ar
-                    ? "ارفع كشف حسابك البنكي ونكشف لك كل الاشتراكات المخفية — مع روابط إلغاء مباشرة."
-                    : "Upload your bank statement and we'll find every hidden subscription — with direct cancel links."}
+                    ? "ارفع كشف حسابك البنكي وفي ثواني نجيب لك كل اشتراكاتك الشهرية مع رابط الغاء مباشر لكل خدمة."
+                    : "Upload your bank statement and in seconds we'll list every subscription you're paying for — with a direct cancel link for each one."}
                 </p>
               </motion.div>
 
@@ -862,7 +912,7 @@ export default function HomePage() {
                         <button
                           key={bankId}
                           onClick={() => handleRetryWithBank(bankId)}
-                          className="text-xs font-bold px-3 py-1.5 rounded-full border border-slate-200 text-slate-500 hover:border-indigo-300 hover:text-indigo-600 transition-all bg-white"
+                          className="text-xs font-bold px-3 py-1.5 rounded-full border border-[#E5EFED] transition-all bg-white hover:border-[#00A651]" style={{ color: "#4A6862" }}
                         >
                           {bankId}
                         </button>
@@ -877,7 +927,7 @@ export default function HomePage() {
                         value={pasteText}
                         onChange={(e) => setPasteText(e.target.value)}
                         placeholder={ar ? "الصق نص كشف الحساب هنا..." : "Paste your statement text here..."}
-                        className="w-full h-24 p-3 rounded-xl border border-slate-200 text-sm text-slate-700 bg-white resize-none focus:outline-none focus:border-indigo-400"
+                        className="w-full h-24 p-3 rounded-xl border border-[#E5EFED] text-sm bg-white resize-none focus:outline-none focus:border-[#00A651]" style={{ color: "#1A3A35" }}
                       />
                       <button
                         onClick={handlePasteAnalyze}
@@ -894,17 +944,39 @@ export default function HomePage() {
               {/* Bank logos */}
               <div className="mt-12 flex flex-wrap justify-center gap-4">
                 {BANKS.map((bank) => (
-                  <div key={bank.name} className="flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-3 py-1.5">
+                  <div key={bank.name} className="flex items-center gap-2 bg-white border border-[#E5EFED] rounded-full px-3 py-1.5">
                     <BrandLogo domain={bank.domain} alt={bank.name} className="w-5 h-5 rounded-sm object-contain" />
-                    <span className="text-xs text-white/70 font-medium">{bank.name}</span>
+                    <span className="text-xs font-medium" style={{ color: "#4A6862" }}>{bank.name}</span>
                   </div>
                 ))}
               </div>
             </div>
           </section>
 
+          {/* Guides CTA — visible early */}
+          <section className="py-10 px-6" style={{ background: "#1A3A35" }}>
+            <div className="max-w-[900px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-5">
+              <div className="text-center sm:text-right">
+                <p className="text-white font-extrabold text-lg mb-1">
+                  {ar ? "تبي تلغي خدمة بعينها؟" : "Want to cancel a specific service?"}
+                </p>
+                <p className="text-sm" style={{ color: "rgba(197,221,217,0.8)" }}>
+                  {ar ? "عندنا اكثر من ٢٠٠ دليل الغاء خطوة بخطوة." : "200+ step-by-step cancellation guides."}
+                </p>
+              </div>
+              <a
+                href="/guides"
+                className="inline-flex items-center gap-2 bg-white px-7 py-3 rounded-full font-bold text-sm no-underline transition-all hover:-translate-y-0.5 hover:shadow-lg flex-shrink-0"
+                style={{ color: "#1A3A35" }}
+              >
+                <FileText size={15} strokeWidth={1.5} />
+                {ar ? "تصفح ادلة الالغاء" : "Browse Cancel Guides"}
+              </a>
+            </div>
+          </section>
+
           {/* Stats */}
-          <section className="bg-indigo-50/60 py-16 px-6 border-y border-indigo-100/50">
+          <section className="py-16 px-6 border-y" style={{ background: "#E5EFED", borderColor: "#C5DDD9" }}>
             <div className="max-w-[900px] mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
               {PROBLEM_STATS.map((stat, i) => (
                 <motion.div
@@ -913,10 +985,10 @@ export default function HomePage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: i * 0.1 }}
-                  className="bg-white border border-indigo-100 rounded-[24px] shadow-sm text-center py-8 px-4"
+                  className="bento-card text-center py-8 px-4"
                 >
-                  <div className="text-3xl font-extrabold tracking-tight text-indigo-600 mb-2">{stat.num}</div>
-                  <p className="text-sm text-slate-500">{stat.text}</p>
+                  <div className="text-3xl font-extrabold tracking-tight mb-2" style={{ color: "#00A651" }}>{stat.num}</div>
+                  <p className="text-sm" style={{ color: "#4A6862" }}>{stat.text}</p>
                 </motion.div>
               ))}
             </div>
@@ -929,7 +1001,7 @@ export default function HomePage() {
                 <Zap size={12} strokeWidth={1.5} /> {ar ? "كيف يعمل" : "How it works"}
               </span>
               <h2 className="section-title">
-                {ar ? "اكتشف. قرر. وفّر." : "Discover. Decide. Save."}
+                {ar ? "سهل، سريع، وواضح" : "Simple, fast, and clear"}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-12">
                 {FEATURES.map((f, i) => {
@@ -943,11 +1015,11 @@ export default function HomePage() {
                       transition={{ duration: 0.5, delay: i * 0.08 }}
                       className="bento-card text-right p-6"
                     >
-                      <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center mb-4">
-                        <Icon size={20} strokeWidth={1.5} className="text-indigo-500" />
+                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center mb-4" style={{ background: "#E8F7EE" }}>
+                        <Icon size={20} strokeWidth={1.5} style={{ color: "#00A651" }} />
                       </div>
-                      <h3 className="font-bold text-base text-slate-800 mb-2">{f.title}</h3>
-                      <p className="text-sm text-slate-500 leading-relaxed">{f.desc}</p>
+                      <h3 className="font-bold text-base mb-2" style={{ color: "#1A3A35" }}>{f.title}</h3>
+                      <p className="text-sm leading-relaxed" style={{ color: "#4A6862" }}>{f.desc}</p>
                     </motion.div>
                   );
                 })}
@@ -956,16 +1028,16 @@ export default function HomePage() {
           </section>
 
           {/* Subscription chips */}
-          <section className="bg-[#F0F1FF] py-16 px-6">
+          <section className="py-16 px-6" style={{ background: "#EDF5F3" }}>
             <div className="max-w-[800px] mx-auto text-center">
-              <h2 className="text-xl font-extrabold tracking-tight text-slate-900 mb-6">
-                {ar ? "نكتشف أكثر من ١٢٠ خدمة" : "We detect 120+ services"}
+              <h2 className="text-xl font-extrabold tracking-tight mb-6" style={{ color: "#1A3A35" }}>
+                {ar ? "نتعرف على أكثر من ١٢٠ خدمة" : "We recognise 120+ services"}
               </h2>
               <div className="flex flex-wrap justify-center gap-3">
                 {SUB_CHIPS.map((chip) => (
-                  <div key={chip.name} className="inline-flex items-center gap-2 bg-white border border-slate-100 rounded-full px-4 py-2 shadow-sm">
+                  <div key={chip.name} className="inline-flex items-center gap-2 bg-white border border-[#E5EFED] rounded-full px-4 py-2 shadow-sm">
                     <BrandLogo domain={chip.domain} alt={chip.name} className="w-5 h-5 rounded-sm object-contain" />
-                    <span className="text-sm font-medium text-slate-600">{chip.name}</span>
+                    <span className="text-sm font-medium" style={{ color: "#4A6862" }}>{chip.name}</span>
                   </div>
                 ))}
               </div>
@@ -973,13 +1045,13 @@ export default function HomePage() {
           </section>
 
           {/* Testimonials */}
-          <section className="bg-gradient-to-b from-indigo-50/40 to-white py-20 px-6">
+          <section className="bg-white py-20 px-6">
             <div className="max-w-[900px] mx-auto text-center">
               <span className="section-label">
-                {ar ? "تجارب المستخدمين" : "What users say"}
+                {ar ? "قالوا عنا" : "What users say"}
               </span>
               <h2 className="section-title mb-12">
-                {ar ? "وفّروا آلاف الريالات" : "They saved thousands"}
+                {ar ? "ناس جربوا يلا كانسل" : "People who tried Yalla Cancel"}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {TESTIMONIALS.map((t, i) => (
@@ -991,14 +1063,14 @@ export default function HomePage() {
                     transition={{ duration: 0.5, delay: i * 0.1 }}
                     className="bento-card p-6 text-right"
                   >
-                    <p className="text-sm text-slate-600 leading-relaxed mb-4">&ldquo;{t.quote}&rdquo;</p>
+                    <p className="text-sm leading-relaxed mb-4" style={{ color: "#4A6862" }}>&ldquo;{t.quote}&rdquo;</p>
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-sm font-bold text-indigo-600">
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: "#E5EFED", color: "#1A3A35" }}>
                         {t.initial}
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-slate-800">{t.name}</p>
-                        <p className="text-xs text-slate-400">{t.role}</p>
+                        <p className="text-sm font-bold" style={{ color: "#1A3A35" }}>{t.name}</p>
+                        <p className="text-xs" style={{ color: "#8AADA8" }}>{t.role}</p>
                       </div>
                     </div>
                   </motion.div>
@@ -1008,11 +1080,11 @@ export default function HomePage() {
           </section>
 
           {/* FAQ */}
-          <section className="bg-[#F8FAFF] py-20 px-6">
+          <section className="py-20 px-6" style={{ background: "#EDF5F3" }}>
             <div className="max-w-[700px] mx-auto">
               <div className="text-center mb-12">
                 <span className="section-label">{ar ? "أسئلة شائعة" : "FAQ"}</span>
-                <h2 className="section-title">{ar ? "أسئلة وأجوبة" : "Questions & Answers"}</h2>
+                <h2 className="section-title">{ar ? "عندك سؤال؟" : "Got a question?"}</h2>
               </div>
               <div className="space-y-3">
                 {FAQ_ITEMS.map((faq, i) => (
@@ -1028,10 +1100,10 @@ export default function HomePage() {
                       onClick={() => setOpenFaq(openFaq === i ? null : i)}
                       className="w-full flex items-center justify-between py-1 text-right"
                     >
-                      <span className="font-bold text-sm text-slate-800">{faq.q}</span>
+                      <span className="font-bold text-sm" style={{ color: "#1A3A35" }}>{faq.q}</span>
                       {openFaq === i
-                        ? <ChevronUp size={16} strokeWidth={1.5} className="text-slate-400 flex-shrink-0" />
-                        : <ChevronDown size={16} strokeWidth={1.5} className="text-slate-400 flex-shrink-0" />}
+                        ? <ChevronUp size={16} strokeWidth={1.5} style={{ color: "#8AADA8" }} className="flex-shrink-0" />
+                        : <ChevronDown size={16} strokeWidth={1.5} style={{ color: "#8AADA8" }} className="flex-shrink-0" />}
                     </button>
                     <AnimatePresence>
                       {openFaq === i && (
@@ -1042,7 +1114,7 @@ export default function HomePage() {
                           transition={{ duration: 0.2 }}
                           className="overflow-hidden"
                         >
-                          <p className="text-sm text-slate-500 leading-relaxed pt-3 border-t border-slate-100 mt-3">
+                          <p className="text-sm leading-relaxed pt-3 mt-3" style={{ color: "#4A6862", borderTop: "1px solid #E5EFED" }}>
                             {faq.a}
                           </p>
                         </motion.div>
@@ -1054,39 +1126,79 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* CTA Banner */}
-          <section className="bg-gradient-to-br from-indigo-600 to-violet-700 py-14 px-6 text-center">
-            <div className="max-w-[600px] mx-auto">
-              <h2 className="text-2xl font-extrabold text-white mb-3">
-                {ar ? "تبي تلغي اشتراك معين؟" : "Want to cancel a specific subscription?"}
-              </h2>
-              <p className="text-base text-white/70 mb-6">
-                {ar ? "عندنا أدلة إلغاء مفصلة لأكثر من ٢٠٠ خدمة." : "We have detailed cancellation guides for 200+ services."}
-              </p>
-              <a
-                href="/guides"
-                className="inline-flex items-center gap-2 bg-white text-indigo-700 px-8 py-3.5 rounded-full font-bold text-sm no-underline transition-all hover:-translate-y-0.5 hover:shadow-lg"
-              >
-                <FileText size={16} strokeWidth={1.5} />
-                {ar ? "تصفح أدلة الإلغاء" : "Browse Cancel Guides"}
-              </a>
-            </div>
-          </section>
-
           {/* Footer */}
-          <footer className="bg-slate-900 py-10 px-6">
-            <div className="max-w-[1100px] mx-auto text-center">
-              <div className="nav-logo nav-logo-light justify-center mb-3">
-                yalla<span className="accent">cancel</span>
+          <footer className="pt-14 pb-10 px-6" style={{ background: "#112920" }}>
+            <div className="max-w-[1100px] mx-auto">
+              {/* Top row */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8 pb-10 mb-10" style={{ borderBottom: "1px solid rgba(197,221,217,0.15)" }}>
+                <div>
+                  <div className="nav-logo mb-2" style={{ color: "#C5DDD9" }}>yallacancel</div>
+                  <p className="text-sm" style={{ color: "#8AADA8" }}>
+                    {ar ? "اداة مجانية لكشف الاشتراكات المنسية" : "Free tool to find forgotten subscriptions"}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-x-10 gap-y-4">
+                  <div>
+                    <p className="text-xs font-bold mb-3 uppercase tracking-widest" style={{ color: "#4A6862" }}>
+                      {ar ? "الخدمة" : "Product"}
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      <a href="/" className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
+                        onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
+                        onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
+                      >
+                        {ar ? "كشف الاشتراكات" : "Subscription Scanner"}
+                      </a>
+                      <a href="/guides" className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
+                        onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
+                        onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
+                      >
+                        {ar ? "ادلة الالغاء" : "Cancel Guides"}
+                      </a>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold mb-3 uppercase tracking-widest" style={{ color: "#4A6862" }}>
+                      {ar ? "ادلة شائعة" : "Popular Guides"}
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      {[
+                        { slug: "cancel-netflix", label: ar ? "الغاء Netflix" : "Cancel Netflix" },
+                        { slug: "cancel-spotify", label: ar ? "الغاء Spotify" : "Cancel Spotify" },
+                        { slug: "cancel-shahid", label: ar ? "الغاء شاهد" : "Cancel Shahid" },
+                        { slug: "cancel-stc", label: ar ? "الغاء stc" : "Cancel stc" },
+                      ].map(({ slug, label }) => (
+                        <a key={slug} href={`/guides/${slug}`} className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
+                          onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
+                          onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
+                        >
+                          {label}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold mb-3 uppercase tracking-widest" style={{ color: "#4A6862" }}>
+                      {ar ? "بنوك مدعومة" : "Supported Banks"}
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      {["الراجحي", "الاهلي", "بنك الرياض", "الانماء"].map((bank) => (
+                        <span key={bank} className="text-sm" style={{ color: "#8AADA8" }}>{bank}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-center gap-6 mb-4">
-                <a href="/guides" className="text-sm text-slate-400 hover:text-white transition-colors no-underline">
-                  {ar ? "أدلة الإلغاء" : "Cancel Guides"}
-                </a>
+
+              {/* Bottom row */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                <p className="text-sm" style={{ color: "#8AADA8" }}>
+                  {ar ? "صنع بحب في السعودية" : "Made with love in Saudi Arabia"}
+                </p>
+                <p className="text-xs" style={{ color: "#4A6862" }}>
+                  {ar ? "جميع الحقوق محفوظة © ٢٠٢٥ يلا كانسل" : "© 2025 Yalla Cancel. All rights reserved."}
+                </p>
               </div>
-              <p className="text-sm text-slate-500">
-                {ar ? "صُنع بحب في السعودية" : "Made with love in Saudi Arabia"}
-              </p>
             </div>
           </footer>
         </>

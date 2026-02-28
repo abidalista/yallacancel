@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, ArrowLeft } from "lucide-react";
 
-const LOGO = (domain: string) =>
-  `https://logo.clearbit.com/${domain}`;
-const FAV = (domain: string) =>
-  `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+const FAV = (domain: string, sz = 64) =>
+  `https://www.google.com/s2/favicons?domain=${domain}&sz=${sz}`;
+const DDG = (domain: string) =>
+  `https://icons.duckduckgo.com/ip3/${domain}.ico`;
 
 type Difficulty = "easy" | "medium" | "hard";
 
@@ -236,10 +238,15 @@ const ALL_GUIDES: Guide[] = [
 
 const CATEGORIES = [...new Set(ALL_GUIDES.map((g) => g.category))];
 
-const DIFFICULTY_LABELS: Record<Difficulty, { ar: string; color: string; bg: string }> = {
-  easy: { ar: "سهل", color: "#065F46", bg: "#ECFDF5" },
-  medium: { ar: "متوسط", color: "#92400E", bg: "#FFFBEB" },
-  hard: { ar: "صعب", color: "#B91C1C", bg: "#FEF2F2" },
+const DIFFICULTY_CONFIG: Record<Difficulty, { label: string; color: string; bg: string; dot: string }> = {
+  easy:   { label: "سهل",    color: "#065F46", bg: "#D1FAE5", dot: "#10B981" },
+  medium: { label: "متوسط", color: "#92400E", bg: "#FEF3C7", dot: "#F59E0B" },
+  hard:   { label: "صعب",   color: "#991B1B", bg: "#FEE2E2", dot: "#EF4444" },
+};
+
+const stagger = {
+  container: { hidden: {}, show: { transition: { staggerChildren: 0.04 } } },
+  item: { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.25 } } },
 };
 
 export default function GuidesPage() {
@@ -272,171 +279,287 @@ export default function GuidesPage() {
   }, [search]);
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--color-surface)" }}>
-      {/* Header */}
-      <header
-        className="sticky top-0 z-50 px-6 py-4"
-        style={{
-          background: "rgba(15,23,42,0.92)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
-        }}
-      >
-        <div className="max-w-[1200px] mx-auto flex items-center justify-between">
-          <a href="/" className="no-underline" style={{ direction: "ltr", unicodeBidi: "bidi-override" }}>
-            <span className="nav-logo nav-logo-light text-xl">yalla<span className="accent">cancel</span></span>
+    <div dir="rtl" style={{ background: "#EDF5F3", minHeight: "100vh", fontFamily: "'Noto Sans Arabic', 'Plus Jakarta Sans', sans-serif" }}>
+
+      {/* ── Nav ── */}
+      <header style={{
+        position: "sticky", top: 0, zIndex: 50,
+        background: "rgba(237,245,243,0.85)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderBottom: "1px solid #C9E0DA",
+      }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}>
+            <ArrowLeft size={16} color="#1A3A35" strokeWidth={2.5} style={{ transform: "scaleX(-1)" }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#4A6862" }}>الرئيسية</span>
+          </a>
+          <a href="/" style={{ textDecoration: "none" }}>
+            <span className="nav-logo" style={{ color: "#1A3A35" }}>
+              yallacancel
+            </span>
           </a>
           <a
             href="/"
-            className="inline-flex items-center gap-2 bg-[var(--color-primary)] text-white px-5 py-2 rounded-xl font-bold text-sm no-underline transition-all hover:-translate-y-0.5"
+            style={{
+              background: "#1A3A35", color: "#fff",
+              padding: "8px 18px", borderRadius: 999,
+              fontWeight: 700, fontSize: 13,
+              textDecoration: "none",
+              transition: "background 0.15s",
+            }}
           >
-            حلل كشفك مجاناً
+            حلل كشفك
           </a>
         </div>
       </header>
 
-      {/* Hero + Search */}
-      <section
-        className="px-6 py-14 text-center"
-        style={{ background: "linear-gradient(135deg, #0F172A 0%, #1E1B4B 50%, #312E81 100%)" }}
-      >
-        <div className="max-w-[600px] mx-auto">
-          <h1 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-3">
-            أدلة إلغاء الاشتراكات
+      {/* ── Hero ── */}
+      <section style={{ padding: "72px 24px 56px", textAlign: "center" }}>
+        <div style={{ maxWidth: 640, margin: "0 auto" }}>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            background: "#C5DDD9", borderRadius: 999,
+            padding: "5px 14px", marginBottom: 20,
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#00A651", display: "inline-block" }} />
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#1A3A35" }}>محدّث ٢٠٢٦</span>
+          </div>
+
+          <h1 style={{
+            fontSize: "clamp(2.4rem, 6vw, 3.75rem)",
+            fontWeight: 900, lineHeight: 1.15,
+            color: "#1A3A35", margin: "0 0 16px",
+            letterSpacing: "-1px",
+          }}>
+            أدلة إلغاء<br />الاشتراكات
           </h1>
-          <p className="text-base text-white/55 leading-relaxed mb-8">
-            {ALL_GUIDES.length}+ دليل خطوة بخطوة — ابحث عن الخدمة اللي تبغى تلغيها
+          <p style={{ fontSize: 17, color: "#4A6862", marginBottom: 36, lineHeight: 1.7 }}>
+            {ALL_GUIDES.length} دليل خطوة بخطوة — لكل خدمة، بالعربي
           </p>
-          {/* Search bar */}
-          <div className="relative max-w-[480px] mx-auto">
-            <svg className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" width="20" height="20" fill="none" viewBox="0 0 24 24">
-              <path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
+
+          {/* Search */}
+          <div style={{ position: "relative", maxWidth: 500, margin: "0 auto" }}>
+            <Search
+              size={18} color="#8AADA8" strokeWidth={2}
+              style={{ position: "absolute", right: 18, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
+            />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="ابحث... Netflix, شاهد, Adobe..."
-              className="w-full pr-12 pl-5 py-4 rounded-2xl border-2 border-white/10 bg-white/5 text-white placeholder-white/35 text-base font-semibold outline-none transition-all focus:border-[var(--color-primary)] focus:bg-white/10"
+              placeholder="ابحث... Netflix، شاهد، Adobe..."
+              style={{
+                width: "100%", paddingRight: 48, paddingLeft: 20,
+                paddingTop: 15, paddingBottom: 15,
+                borderRadius: 16, border: "2px solid #C5DDD9",
+                background: "#fff", fontSize: 15, fontWeight: 600,
+                color: "#1A3A35", outline: "none",
+                boxShadow: "0 4px 20px rgba(0,166,81,0.06)",
+                transition: "border-color 0.15s, box-shadow 0.15s",
+                fontFamily: "inherit",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "#00A651";
+                e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,166,81,0.12)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "#C5DDD9";
+                e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,166,81,0.06)";
+              }}
             />
           </div>
         </div>
       </section>
 
-      {/* Category filters + Results */}
-      <div className="max-w-[1200px] mx-auto px-6 py-10">
+      {/* ── Main content ── */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 80px" }}>
+
         {/* Category pills */}
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 32 }}>
           <button
             onClick={() => setActiveCategory(null)}
-            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
-              !activeCategory
-                ? "bg-[var(--color-dark)] text-white"
-                : "bg-white border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-primary)]"
-            }`}
+            style={{
+              padding: "8px 18px", borderRadius: 999, fontSize: 13, fontWeight: 700,
+              cursor: "pointer", border: "none", transition: "all 0.15s",
+              background: !activeCategory ? "#1A3A35" : "#fff",
+              color: !activeCategory ? "#fff" : "#4A6862",
+              boxShadow: !activeCategory ? "0 2px 12px rgba(26,58,53,0.18)" : "0 1px 4px rgba(0,0,0,0.06)",
+            }}
           >
-            الكل ({search.trim() ? filtered.length : ALL_GUIDES.length})
+            الكل · {search.trim() ? filtered.length : ALL_GUIDES.length}
           </button>
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
-                activeCategory === cat
-                  ? "bg-[var(--color-dark)] text-white"
-                  : "bg-white border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-primary)]"
-              }`}
+              style={{
+                padding: "8px 18px", borderRadius: 999, fontSize: 13, fontWeight: 700,
+                cursor: "pointer", border: "none", transition: "all 0.15s",
+                background: activeCategory === cat ? "#1A3A35" : "#fff",
+                color: activeCategory === cat ? "#fff" : "#4A6862",
+                boxShadow: activeCategory === cat ? "0 2px 12px rgba(26,58,53,0.18)" : "0 1px 4px rgba(0,0,0,0.06)",
+              }}
             >
-              {cat} ({countByCategory[cat] || 0})
+              {cat} · {countByCategory[cat] || 0}
             </button>
           ))}
         </div>
 
-        {/* Results count */}
-        <p className="text-sm text-[var(--color-text-muted)] mb-5">
-          {filtered.length === 0
-            ? "ما لقينا نتائج — جرب كلمة ثانية"
-            : `${filtered.length} دليل إلغاء`}
-        </p>
-
-        {/* Guide cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {filtered.map((g) => {
-            const diff = DIFFICULTY_LABELS[g.difficulty];
-            return (
-              <a
-                key={g.slug}
-                href={`/${g.slug}.html`}
-                className="flex items-center gap-3 bg-white border border-[var(--color-border)] rounded-2xl px-5 py-4 transition-all hover:border-[var(--color-primary)] hover:-translate-y-0.5 hover:shadow-md no-underline"
-              >
-                <img
-                  src={LOGO(g.domain)}
-                  alt=""
-                  className="w-8 h-8 rounded-lg flex-shrink-0 object-contain"
-                  loading="lazy"
-                  onError={(e) => {
-                    const img = e.currentTarget;
-                    if (!img.dataset.fallback) {
-                      img.dataset.fallback = "1";
-                      img.src = FAV(g.domain);
-                    }
-                  }}
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="font-bold text-sm text-[var(--color-text-primary)] truncate">
-                    {g.nameAr}
-                  </div>
-                  <div className="text-xs text-[var(--color-text-muted)]">
-                    كيف ألغي {g.name}
-                  </div>
-                </div>
-                <span
-                  className="text-[10px] font-bold px-2 py-1 rounded-lg flex-shrink-0"
-                  style={{ background: diff.bg, color: diff.color }}
-                >
-                  {diff.ar}
-                </span>
-              </a>
-            );
-          })}
-        </div>
-
-        {/* Empty state */}
-        {filtered.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-lg font-bold text-[var(--color-text-secondary)] mb-3">ما لقينا الخدمة</p>
-            <p className="text-sm text-[var(--color-text-muted)] mb-6">ارفع كشف حسابك ونكتشف اشتراكاتك تلقائياً</p>
-            <a
-              href="/"
-              className="inline-flex items-center gap-2 bg-[var(--color-primary)] text-white px-8 py-3.5 rounded-xl font-bold text-sm no-underline transition-all hover:-translate-y-0.5"
-            >
-              ارفع كشفك مجاناً
-            </a>
-          </div>
+        {/* Result count */}
+        {search.trim() && (
+          <p style={{ fontSize: 13, color: "#8AADA8", marginBottom: 20, fontWeight: 600 }}>
+            {filtered.length === 0 ? "ما في نتائج" : `${filtered.length} نتيجة`}
+          </p>
         )}
+
+        {/* Grid */}
+        <AnimatePresence mode="wait">
+          {filtered.length > 0 ? (
+            <motion.div
+              key={`${search}-${activeCategory}`}
+              variants={stagger.container}
+              initial="hidden"
+              animate="show"
+              style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}
+            >
+              {filtered.map((g) => {
+                const diff = DIFFICULTY_CONFIG[g.difficulty];
+                return (
+                  <motion.a
+                    key={g.slug}
+                    variants={stagger.item}
+                    href={`/${g.slug}.html`}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 12,
+                      background: "#fff", borderRadius: 20,
+                      padding: "14px 18px",
+                      border: "1.5px solid #E5EFED",
+                      textDecoration: "none",
+                      transition: "border-color 0.15s, box-shadow 0.15s, transform 0.15s",
+                      cursor: "pointer",
+                    }}
+                    whileHover={{ y: -2, boxShadow: "0 8px 24px rgba(0,166,81,0.1)", borderColor: "#00A651" }}
+                  >
+                    <img
+                      src={FAV(g.domain, 64)}
+                      alt=""
+                      style={{ width: 36, height: 36, borderRadius: 10, objectFit: "contain", flexShrink: 0, background: "#F5FAF8" }}
+                      loading="lazy"
+                      onError={(e) => {
+                        const img = e.currentTarget;
+                        if (!img.dataset.fallback) {
+                          img.dataset.fallback = "1";
+                          img.src = DDG(g.domain);
+                        } else {
+                          img.style.display = "none";
+                        }
+                      }}
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: 14, color: "#1A3A35", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {g.nameAr}
+                      </div>
+                      <div style={{ fontSize: 12, color: "#8AADA8", marginTop: 1 }}>
+                        كيف ألغي {g.name}
+                      </div>
+                    </div>
+                    <span style={{
+                      display: "inline-flex", alignItems: "center", gap: 4,
+                      fontSize: 11, fontWeight: 700,
+                      padding: "3px 9px", borderRadius: 999,
+                      background: diff.bg, color: diff.color,
+                      flexShrink: 0,
+                    }}>
+                      <span style={{ width: 5, height: 5, borderRadius: "50%", background: diff.dot, display: "inline-block" }} />
+                      {diff.label}
+                    </span>
+                  </motion.a>
+                );
+              })}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{ textAlign: "center", padding: "80px 24px" }}
+            >
+              <div style={{
+                width: 64, height: 64, borderRadius: 20,
+                background: "#E5EFED", margin: "0 auto 20px",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <Search size={28} color="#8AADA8" />
+              </div>
+              <p style={{ fontSize: 18, fontWeight: 800, color: "#1A3A35", marginBottom: 8 }}>ما لقينا الخدمة</p>
+              <p style={{ fontSize: 14, color: "#8AADA8", marginBottom: 28 }}>ارفع كشف حسابك ونكتشف اشتراكاتك تلقائياً</p>
+              <a href="/" style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                background: "#1A3A35", color: "#fff",
+                padding: "12px 28px", borderRadius: 999,
+                fontWeight: 700, fontSize: 14, textDecoration: "none",
+              }}>
+                ارفع كشفك مجاناً
+              </a>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* CTA */}
-      <section className="py-14 px-8 text-center" style={{ background: "var(--color-primary)" }}>
-        <div className="max-w-[600px] mx-auto">
-          <h2 className="text-2xl font-black text-white mb-3">مو لاقي الخدمة؟</h2>
-          <p className="text-base text-white/85 mb-6">ارفع كشف حسابك ونكتشف كل اشتراكاتك تلقائياً مع روابط الإلغاء.</p>
-          <a
-            href="/"
-            className="inline-flex items-center gap-2.5 bg-white text-[var(--color-primary-dark)] px-10 py-4 rounded-xl font-black text-base no-underline transition-all hover:-translate-y-0.5"
-            style={{ boxShadow: "0 4px 20px rgba(0,0,0,0.15)" }}
+      {/* ── CTA section ── */}
+      <section style={{
+        background: "#1A3A35",
+        padding: "72px 24px",
+        textAlign: "center",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        {/* Subtle dot grid */}
+        <div aria-hidden style={{
+          position: "absolute", inset: 0,
+          backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+          pointerEvents: "none",
+        }} />
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 540, margin: "0 auto" }}>
+          <h2 style={{ fontSize: "clamp(1.6rem, 4vw, 2.4rem)", fontWeight: 900, color: "#fff", marginBottom: 14, letterSpacing: "-0.5px" }}>
+            مو لاقي الخدمة؟
+          </h2>
+          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.65)", marginBottom: 36, lineHeight: 1.7 }}>
+            ارفع كشف حسابك ونكتشف كل اشتراكاتك المخفية تلقائياً — مع روابط الإلغاء.
+          </p>
+          <a href="/" style={{
+            display: "inline-flex", alignItems: "center", gap: 10,
+            background: "#00A651", color: "#fff",
+            padding: "15px 36px", borderRadius: 999,
+            fontWeight: 800, fontSize: 15, textDecoration: "none",
+            boxShadow: "0 4px 20px rgba(0,166,81,0.35)",
+            transition: "transform 0.15s, box-shadow 0.15s",
+          }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow = "0 8px 28px rgba(0,166,81,0.45)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,166,81,0.35)";
+            }}
           >
             ارفع كشفك مجاناً
           </a>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 14 }}>لا بريد إلكتروني · لا تسجيل · ١٠٠٪ مجاني</p>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-8 px-6 text-center" style={{ background: "var(--color-dark)" }}>
-        <a href="/" className="no-underline" style={{ direction: "ltr", unicodeBidi: "bidi-override" }}>
-          <span className="nav-logo nav-logo-light text-lg justify-center">yalla<span className="accent">cancel</span></span>
+      {/* ── Footer ── */}
+      <footer style={{ background: "#112920", padding: "28px 24px", textAlign: "center" }}>
+        <a href="/" style={{ textDecoration: "none" }}>
+          <span className="nav-logo" style={{ color: "rgba(255,255,255,0.45)", justifyContent: "center" }}>
+            yallacancel
+          </span>
         </a>
-        <p className="text-xs text-white/30 mt-3">&copy; ٢٠٢٦ Yalla Cancel</p>
+        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", marginTop: 8 }}>&copy; ٢٠٢٦ Yalla Cancel</p>
       </footer>
     </div>
   );

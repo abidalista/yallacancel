@@ -1,14 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #6366F1;
-  --color-primary-hover: #5558E6;
-  --color-primary-dark: #4F46E5;
-  --color-primary-bg: #F5F7FF;
-  --color-dark: #0F172A;
-  --color-dark2: #1E293B;
-  --color-dark3: #334155;
-  --color-surface: #F8FAFF;
+  --color-primary: #1A3A35;
+  --color-primary-hover: #0F2A26;
+  --color-primary-dark: #0F2A26;
+  --color-primary-bg: #E5EFED;
+  --color-green: #00A651;
+  --color-green-hover: #00C060;
+  --color-green-bg: #E8F7EE;
+  --color-dark: #1A3A35;
+  --color-dark2: #2D4F49;
+  --color-dark3: #4A6862;
+  --color-surface: #EDF5F3;
   --color-surface-card: #FFFFFF;
   --color-danger: #EF4444;
   --color-danger-bg: #FEF2F2;
@@ -16,11 +19,11 @@
   --color-warning-bg: #FFFBEB;
   --color-success: #10B981;
   --color-success-bg: #ECFDF5;
-  --color-text-primary: #0F172A;
-  --color-text-secondary: #64748B;
-  --color-text-muted: #94A3B8;
-  --color-border: #E2E8F0;
-  --color-border-focus: #6366F1;
+  --color-text-primary: #1A3A35;
+  --color-text-secondary: #4A6862;
+  --color-text-muted: #8AADA8;
+  --color-border: #E5EFED;
+  --color-border-focus: #00A651;
 }
 
 @layer base {
@@ -36,7 +39,7 @@
   }
 
   body {
-    background-color: #F8FAFF;
+    background-color: #EDF5F3;
     color: var(--color-text-primary);
     -webkit-font-smoothing: antialiased;
     line-height: 1.6;
@@ -50,23 +53,23 @@
   /* ── Bento Card ── */
   .bento-card {
     background-color: white;
-    border: 1px solid #F1F5F9;
+    border: 1.5px solid #E5EFED;
     border-radius: 24px;
     padding: 1.5rem;
-    box-shadow: 0 8px 30px rgb(0 0 0 / 0.04);
+    box-shadow: 0 4px 20px rgba(26, 58, 53, 0.05);
     transition: all 0.2s ease;
   }
   .bento-card:hover {
-    box-shadow: 0 8px 30px rgb(0 0 0 / 0.08);
+    box-shadow: 0 8px 30px rgba(26, 58, 53, 0.09);
   }
 
-  /* ── Buttons (pill shape) ── */
+  /* ── Buttons ── */
   .btn-primary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    background: linear-gradient(135deg, #6366F1 0%, #7C3AED 100%);
+    background: #1A3A35;
     color: white;
     padding: 0.75rem 1.75rem;
     border-radius: 9999px;
@@ -75,12 +78,34 @@
     cursor: pointer;
     border: none;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+    box-shadow: 0 4px 14px rgba(26, 58, 53, 0.2);
   }
   .btn-primary:hover {
-    background: linear-gradient(135deg, #5558E6 0%, #6D28D9 100%);
+    background: #0F2A26;
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
+    box-shadow: 0 8px 24px rgba(26, 58, 53, 0.28);
+  }
+
+  .btn-green {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: #00A651;
+    color: white;
+    padding: 0.75rem 1.75rem;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(0, 166, 81, 0.25);
+  }
+  .btn-green:hover {
+    background: #00C060;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(0, 166, 81, 0.35);
   }
 
   .btn-ghost {
@@ -95,13 +120,13 @@
     font-weight: 600;
     font-size: 0.875rem;
     cursor: pointer;
-    border: 1px solid var(--color-border);
+    border: 1.5px solid var(--color-border);
     transition: all 0.2s ease;
   }
   .btn-ghost:hover {
-    background-color: var(--color-surface);
+    background-color: white;
     color: var(--color-text-primary);
-    border-color: #CBD5E1;
+    border-color: #C5DDD9;
     transform: translateY(-1px);
   }
 
@@ -124,8 +149,8 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: var(--color-primary-bg);
-    color: var(--color-primary);
+    background: #C5DDD9;
+    color: #1A3A35;
     font-size: 0.75rem;
     font-weight: 700;
     padding: 6px 14px;
@@ -135,12 +160,26 @@
     letter-spacing: 0.05em;
   }
 
+  .section-label-light {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(197, 221, 217, 0.25);
+    color: #C5DDD9;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    margin-bottom: 20px;
+  }
+
   .section-title {
     font-size: clamp(1.8rem, 4vw, 3rem);
     font-weight: 800;
     margin-bottom: 16px;
     line-height: 1.15;
     letter-spacing: -0.025em;
+    color: #1A3A35;
   }
 
   .section-sub {
@@ -154,9 +193,9 @@
   /* ── Logo ── */
   .nav-logo {
     font-family: "Plus Jakarta Sans", "Inter", -apple-system, sans-serif;
-    font-size: 1.35rem;
+    font-size: 1.6rem;
     font-weight: 800;
-    color: var(--color-dark);
+    color: #1A3A35;
     display: flex;
     align-items: center;
     gap: 0;
@@ -165,17 +204,10 @@
     direction: ltr;
     unicode-bidi: bidi-override;
   }
-  .nav-logo .accent { color: var(--color-primary); }
-  .nav-logo-light { color: white; }
-  .nav-logo-light .accent { color: #A5B4FC; }
 
-  /* ── Hero gradient ── */
+  /* ── Hero ── */
   .hero-gradient {
-    background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 50%, #312E81 100%);
-  }
-  .section-label-light {
-    background: rgba(255,255,255,0.1);
-    color: #C7D2FE;
+    background: #EDF5F3;
   }
 
   /* ── Privacy blur ── */
@@ -188,8 +220,8 @@
 
   /* ── Decoder cards ── */
   .decoder-card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
+    background: white;
+    border: 1.5px solid var(--color-border);
     border-radius: 24px;
     padding: 1.25rem;
     display: flex;
@@ -198,12 +230,12 @@
     transition: all 0.2s;
   }
   .decoder-card:hover {
-    border-color: var(--color-primary);
+    border-color: #00A651;
     transform: translateY(-2px);
   }
   .decoder-code {
-    background: var(--color-dark);
-    color: #CBD5E1;
+    background: #1A3A35;
+    color: #C5DDD9;
     font-family: monospace;
     font-size: 0.75rem;
     font-weight: 700;
@@ -219,7 +251,7 @@
     align-items: center;
     gap: 8px;
     background: white;
-    border: 1px solid var(--color-border);
+    border: 1.5px solid var(--color-border);
     border-radius: 9999px;
     padding: 10px 16px;
     font-size: 0.85rem;
@@ -228,9 +260,9 @@
     transition: all 0.2s;
   }
   .guide-chip:hover {
-    border-color: var(--color-primary);
-    background: var(--color-primary-bg);
-    color: var(--color-primary);
+    border-color: #00A651;
+    background: #E8F7EE;
+    color: #1A3A35;
     transform: translateY(-1px);
   }
 }
