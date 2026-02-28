@@ -27,12 +27,12 @@ export default function Header({ locale, onLocaleChange, onLogoClick }: HeaderPr
         <div className="flex items-center gap-3">
           <a
             href="/guides"
-            className="text-xs font-semibold no-underline hidden sm:block transition-colors"
-            style={{ color: "#4A6862" }}
-            onMouseEnter={(e) => e.currentTarget.style.color = "#1A3A35"}
-            onMouseLeave={(e) => e.currentTarget.style.color = "#4A6862"}
+            className="text-sm font-bold no-underline hidden sm:block transition-colors px-3 py-1.5 rounded-full"
+            style={{ color: "#1A3A35", background: "rgba(0,166,81,0.08)" }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0,166,81,0.15)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(0,166,81,0.08)"; }}
           >
-            {locale === "ar" ? "أدلة الإلغاء" : "Guides"}
+            {locale === "ar" ? "أدلة الإلغاء (مجاناً)" : "Cancel Guides (Free)"}
           </a>
           <button
             onClick={() => onLocaleChange(locale === "ar" ? "en" : "ar")}
