@@ -30,106 +30,106 @@ export interface CSVParseResult {
 const bankConfigs: Record<BankId, BankConfig> = {
   alrajhi: {
     id: "alrajhi",
-    dateColumn: ["Date", "التاريخ", "Transaction Date", "تاريخ العملية", "Txn Date", "تاريخ المعاملة"],
+    dateColumn: ["Date", "اتارخ", "Transaction Date", "تارخ اعة", "Txn Date", "تارخ اعاة"],
     descriptionColumn: [
-      "Description", "الوصف", "Details", "التفاصيل", "Narrative", "البيان",
-      "Transaction Description", "وصف المعاملة", "Particulars",
+      "Description", "اص", "Details", "اتاص", "Narrative", "ابا",
+      "Transaction Description", "ص اعاة", "Particulars",
     ],
-    amountColumn: ["Amount", "المبلغ", "Debit", "مدين", "Value", "القيمة"],
-    debitColumn: ["Debit", "مدين", "Debit Amount", "مبلغ المدين", "Withdrawal", "سحب"],
-    creditColumn: ["Credit", "دائن", "Credit Amount", "مبلغ الدائن", "Deposit", "إيداع"],
+    amountColumn: ["Amount", "ابغ", "Debit", "د", "Value", "اة"],
+    debitColumn: ["Debit", "د", "Debit Amount", "بغ اد", "Withdrawal", "سحب"],
+    creditColumn: ["Credit", "دائ", "Credit Amount", "بغ ادائ", "Deposit", "إداع"],
     dateFormats: ["DD/MM/YYYY", "YYYY-MM-DD", "DD-MM-YYYY"],
     delimiter: ",",
   },
   snb: {
     id: "snb",
-    dateColumn: ["Date", "التاريخ", "Transaction Date", "تاريخ العملية", "Posting Date", "Txn Date", "تاريخ المعاملة"],
-    descriptionColumn: ["Description", "الوصف", "Details", "التفاصيل", "Transaction Description", "Narrative", "البيان", "Particulars", "وصف المعاملة"],
-    amountColumn: ["Amount", "المبلغ", "Value", "القيمة"],
-    debitColumn: ["Debit", "مدين", "Withdrawal", "سحب"],
-    creditColumn: ["Credit", "دائن", "Deposit", "إيداع"],
+    dateColumn: ["Date", "اتارخ", "Transaction Date", "تارخ اعة", "Posting Date", "Txn Date", "تارخ اعاة"],
+    descriptionColumn: ["Description", "اص", "Details", "اتاص", "Transaction Description", "Narrative", "ابا", "Particulars", "ص اعاة"],
+    amountColumn: ["Amount", "ابغ", "Value", "اة"],
+    debitColumn: ["Debit", "د", "Withdrawal", "سحب"],
+    creditColumn: ["Credit", "دائ", "Deposit", "إداع"],
     dateFormats: ["DD/MM/YYYY", "YYYY-MM-DD", "MM/DD/YYYY"],
     delimiter: ",",
   },
   riyadbank: {
     id: "riyadbank",
-    dateColumn: ["Date", "التاريخ", "Transaction Date", "تاريخ المعاملة", "Txn Date"],
-    descriptionColumn: ["Description", "الوصف", "Particulars", "التفاصيل", "Details", "Narrative", "البيان", "وصف المعاملة"],
-    amountColumn: ["Amount", "المبلغ", "Value"],
-    debitColumn: ["Debit", "مدين", "Withdrawal", "سحب"],
-    creditColumn: ["Credit", "دائن", "Deposit", "إيداع"],
+    dateColumn: ["Date", "اتارخ", "Transaction Date", "تارخ اعاة", "Txn Date"],
+    descriptionColumn: ["Description", "اص", "Particulars", "اتاص", "Details", "Narrative", "ابا", "ص اعاة"],
+    amountColumn: ["Amount", "ابغ", "Value"],
+    debitColumn: ["Debit", "د", "Withdrawal", "سحب"],
+    creditColumn: ["Credit", "دائ", "Deposit", "إداع"],
     dateFormats: ["DD/MM/YYYY", "YYYY-MM-DD"],
     delimiter: ",",
   },
   albilad: {
     id: "albilad",
-    dateColumn: ["Date", "التاريخ", "Transaction Date", "تاريخ المعاملة"],
-    descriptionColumn: ["Description", "الوصف", "Details", "التفاصيل", "البيان"],
-    amountColumn: ["Amount", "المبلغ"],
-    debitColumn: ["Debit", "مدين"],
-    creditColumn: ["Credit", "دائن"],
+    dateColumn: ["Date", "اتارخ", "Transaction Date", "تارخ اعاة"],
+    descriptionColumn: ["Description", "اص", "Details", "اتاص", "ابا"],
+    amountColumn: ["Amount", "ابغ"],
+    debitColumn: ["Debit", "د"],
+    creditColumn: ["Credit", "دائ"],
     dateFormats: ["DD/MM/YYYY", "YYYY-MM-DD"],
     delimiter: ",",
   },
   alinma: {
     id: "alinma",
-    dateColumn: ["Date", "التاريخ", "Transaction Date", "تاريخ العملية", "تاريخ المعاملة"],
-    descriptionColumn: ["Description", "الوصف", "Details", "البيان", "التفاصيل"],
-    amountColumn: ["Amount", "المبلغ"],
-    debitColumn: ["Debit", "مدين"],
-    creditColumn: ["Credit", "دائن"],
+    dateColumn: ["Date", "اتارخ", "Transaction Date", "تارخ اعة", "تارخ اعاة"],
+    descriptionColumn: ["Description", "اص", "Details", "ابا", "اتاص"],
+    amountColumn: ["Amount", "ابغ"],
+    debitColumn: ["Debit", "د"],
+    creditColumn: ["Credit", "دائ"],
     dateFormats: ["DD/MM/YYYY", "YYYY-MM-DD"],
     delimiter: ",",
   },
   sabb: {
     id: "sabb",
-    dateColumn: ["Date", "التاريخ", "Value Date", "Transaction Date", "تاريخ المعاملة"],
-    descriptionColumn: ["Description", "الوصف", "Narrative", "Details", "البيان"],
-    amountColumn: ["Amount", "المبلغ"],
-    debitColumn: ["Debit", "مدين"],
-    creditColumn: ["Credit", "دائن"],
+    dateColumn: ["Date", "اتارخ", "Value Date", "Transaction Date", "تارخ اعاة"],
+    descriptionColumn: ["Description", "اص", "Narrative", "Details", "ابا"],
+    amountColumn: ["Amount", "ابغ"],
+    debitColumn: ["Debit", "د"],
+    creditColumn: ["Credit", "دائ"],
     dateFormats: ["DD/MM/YYYY", "YYYY-MM-DD"],
     delimiter: ",",
   },
   bsf: {
     id: "bsf",
-    dateColumn: ["Date", "التاريخ", "Transaction Date", "تاريخ المعاملة"],
-    descriptionColumn: ["Description", "الوصف", "Details", "البيان"],
-    amountColumn: ["Amount", "المبلغ"],
-    debitColumn: ["Debit", "مدين"],
-    creditColumn: ["Credit", "دائن"],
+    dateColumn: ["Date", "اتارخ", "Transaction Date", "تارخ اعاة"],
+    descriptionColumn: ["Description", "اص", "Details", "ابا"],
+    amountColumn: ["Amount", "ابغ"],
+    debitColumn: ["Debit", "د"],
+    creditColumn: ["Credit", "دائ"],
     dateFormats: ["DD/MM/YYYY", "YYYY-MM-DD"],
     delimiter: ",",
   },
   anb: {
     id: "anb",
-    dateColumn: ["Date", "التاريخ", "Transaction Date", "تاريخ المعاملة"],
-    descriptionColumn: ["Description", "الوصف", "Details", "البيان", "التفاصيل"],
-    amountColumn: ["Amount", "المبلغ"],
-    debitColumn: ["Debit", "مدين"],
-    creditColumn: ["Credit", "دائن"],
+    dateColumn: ["Date", "اتارخ", "Transaction Date", "تارخ اعاة"],
+    descriptionColumn: ["Description", "اص", "Details", "ابا", "اتاص"],
+    amountColumn: ["Amount", "ابغ"],
+    debitColumn: ["Debit", "د"],
+    creditColumn: ["Credit", "دائ"],
     dateFormats: ["DD/MM/YYYY", "YYYY-MM-DD"],
     delimiter: ",",
   },
   other: {
     id: "other",
     dateColumn: [
-      "Date", "التاريخ", "Transaction Date", "تاريخ العملية", "تاريخ",
-      "Posting Date", "Value Date", "Txn Date", "تاريخ المعاملة",
+      "Date", "اتارخ", "Transaction Date", "تارخ اعة", "تارخ",
+      "Posting Date", "Value Date", "Txn Date", "تارخ اعاة",
       "Trade Date", "Settle Date",
     ],
     descriptionColumn: [
-      "Description", "الوصف", "Details", "التفاصيل", "البيان",
-      "Narrative", "Particulars", "Transaction Description", "وصف العملية",
-      "وصف المعاملة", "Memo", "Payee", "المستفيد",
+      "Description", "اص", "Details", "اتاص", "ابا",
+      "Narrative", "Particulars", "Transaction Description", "ص اعة",
+      "ص اعاة", "Memo", "Payee", "استد",
     ],
-    amountColumn: ["Amount", "المبلغ", "Value", "القيمة", "Total", "المجموع"],
+    amountColumn: ["Amount", "ابغ", "Value", "اة", "Total", "اجع"],
     debitColumn: [
-      "Debit", "مدين", "Withdrawal", "سحب", "Debit Amount", "مبلغ المدين",
+      "Debit", "د", "Withdrawal", "سحب", "Debit Amount", "بغ اد",
       "Charge", "Payment",
     ],
     creditColumn: [
-      "Credit", "دائن", "Deposit", "إيداع", "Credit Amount", "مبلغ الدائن",
+      "Credit", "دائ", "Deposit", "إداع", "Credit Amount", "بغ ادائ",
       "Refund",
     ],
     dateFormats: ["DD/MM/YYYY", "YYYY-MM-DD", "MM/DD/YYYY", "DD-MM-YYYY"],
@@ -140,12 +140,12 @@ const bankConfigs: Record<BankId, BankConfig> = {
 // ── Arabic-Indic numeral conversion ──
 
 const ARABIC_DIGITS: Record<string, string> = {
-  "٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4",
-  "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9",
+  "": "0", "": "1", "": "2", "": "3", "": "4",
+  "": "5", "": "6", "": "7", "": "8", "": "9",
 };
 
 function normalizeDigits(str: string): string {
-  return str.replace(/[٠-٩]/g, (d) => ARABIC_DIGITS[d] || d);
+  return str.replace(/[-]/g, (d) => ARABIC_DIGITS[d] || d);
 }
 
 // ── Delimiter detection ──
@@ -469,7 +469,7 @@ function parseCSVHeaderless(
   warnings.push("headerless_mode");
 
   const transactions: Transaction[] = [];
-  const headerPatterns = /^(date|description|amount|debit|credit|balance|التاريخ|الوصف|المبلغ|مدين|دائن|الرصيد)$/i;
+  const headerPatterns = /^(date|description|amount|debit|credit|balance|اتارخ|اص|ابغ|د|دائ|ارصد)$/i;
 
   for (let i = 0; i < lines.length; i++) {
     const fields = parseCSVLine(lines[i], delimiter);
@@ -651,21 +651,21 @@ export function detectBank(content: string): BankId {
   const normalized = normalizeDigits(lower);
   const firstLines = normalized.split(/\r?\n/).slice(0, 15).join(" ");
 
-  if (firstLines.includes("الراجحي") || firstLines.includes("alrajhi") || firstLines.includes("al rajhi"))
+  if (firstLines.includes("اراجح") || firstLines.includes("alrajhi") || firstLines.includes("al rajhi"))
     return "alrajhi";
-  if (firstLines.includes("الأهلي") || firstLines.includes("snb") || firstLines.includes("الاهلي") || firstLines.includes("national bank"))
+  if (firstLines.includes("اأ") || firstLines.includes("snb") || firstLines.includes("اا") || firstLines.includes("national bank"))
     return "snb";
-  if (firstLines.includes("بنك الرياض") || firstLines.includes("riyad") || firstLines.includes("riyadbank"))
+  if (firstLines.includes("ب اراض") || firstLines.includes("riyad") || firstLines.includes("riyadbank"))
     return "riyadbank";
-  if (firstLines.includes("البلاد") || firstLines.includes("albilad") || firstLines.includes("al bilad"))
+  if (firstLines.includes("اباد") || firstLines.includes("albilad") || firstLines.includes("al bilad"))
     return "albilad";
-  if (firstLines.includes("الإنماء") || firstLines.includes("الانماء") || firstLines.includes("alinma"))
+  if (firstLines.includes("اإاء") || firstLines.includes("اااء") || firstLines.includes("alinma"))
     return "alinma";
   if (firstLines.includes("ساب") || firstLines.includes("sabb"))
     return "sabb";
-  if (firstLines.includes("الفرنسي") || firstLines.includes("fransi") || firstLines.includes("bsf"))
+  if (firstLines.includes("ارس") || firstLines.includes("fransi") || firstLines.includes("bsf"))
     return "bsf";
-  if (firstLines.includes("العربي") || firstLines.includes("anb") || firstLines.includes("arab national"))
+  if (firstLines.includes("اعرب") || firstLines.includes("anb") || firstLines.includes("arab national"))
     return "anb";
 
   // Try all bank configs

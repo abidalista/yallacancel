@@ -52,7 +52,7 @@ export default function SpendingBreakdownComponent({ data, locale }: Props) {
         <div className="flex items-center gap-2 mb-1">
           <BarChart3 size={18} strokeWidth={1.5} style={{ color: "#00A651" }} />
           <h3 className="text-base font-extrabold" style={{ color: "#1A3A35" }}>
-            {ar ? "تحليل الإنفاق" : "Spending Breakdown"}
+            {ar ? "تح اإا" : "Spending Breakdown"}
           </h3>
           {dateLabel && (
             <span className="text-xs font-medium" style={{ color: "#8AADA8" }}>{dateLabel}</span>
@@ -60,7 +60,7 @@ export default function SpendingBreakdownComponent({ data, locale }: Props) {
         </div>
         <p className="text-sm" style={{ color: "#4A6862" }}>
           {ar
-            ? `${data.totalSpend.toLocaleString()} ريال إجمالي (~${data.monthlyAvg.toLocaleString()} ريال/شهر) من ${data.transactionCount.toLocaleString()} عملية`
+            ? `${data.totalSpend.toLocaleString()} را إجا (~${data.monthlyAvg.toLocaleString()} را/شر)  ${data.transactionCount.toLocaleString()} عة`
             : `${data.totalSpend.toLocaleString()} SAR total (~${data.monthlyAvg.toLocaleString()} SAR/mo) across ${data.transactionCount.toLocaleString()} transactions`}
         </p>
       </div>
@@ -68,14 +68,14 @@ export default function SpendingBreakdownComponent({ data, locale }: Props) {
       {/* Category table */}
       <div className="px-6 py-4">
         <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "#8AADA8" }}>
-          {ar ? "وين تروح فلوسك" : "Where it goes"}
+          {ar ? " ترح س" : "Where it goes"}
         </p>
 
         <div className="grid grid-cols-12 gap-2 text-[10px] font-bold uppercase tracking-wider pb-2" style={{ color: "#8AADA8", borderBottom: "1px solid #E5EFED" }}>
-          <div className="col-span-4">{ar ? "الفئة" : "Category"}</div>
-          <div className="col-span-3 text-left">{ar ? "المجموع" : "Total"}</div>
+          <div className="col-span-4">{ar ? "ائة" : "Category"}</div>
+          <div className="col-span-3 text-left">{ar ? "اجع" : "Total"}</div>
           <div className="col-span-2 text-center">%</div>
-          <div className="col-span-3 text-left">{ar ? "المعدل/شهر" : "Monthly Avg"}</div>
+          <div className="col-span-3 text-left">{ar ? "اعد/شر" : "Monthly Avg"}</div>
         </div>
 
         {data.categories.map((cat) => {
@@ -97,7 +97,7 @@ export default function SpendingBreakdownComponent({ data, locale }: Props) {
                 <span className="text-sm font-bold" style={{ color: "#1A3A35" }}>
                   {cat.total.toLocaleString()}
                 </span>
-                <span className="text-[10px] mr-1 ml-1" style={{ color: "#8AADA8" }}>{ar ? "ريال" : "SAR"}</span>
+                <span className="text-[10px] mr-1 ml-1" style={{ color: "#8AADA8" }}>{ar ? "را" : "SAR"}</span>
               </div>
 
               <div className="col-span-2 flex items-center gap-1.5">
@@ -114,7 +114,7 @@ export default function SpendingBreakdownComponent({ data, locale }: Props) {
                 <span className="text-sm" style={{ color: "#4A6862" }}>
                   {cat.monthlyAvg.toLocaleString()}
                 </span>
-                <span className="text-[10px] mr-1 ml-1" style={{ color: "#8AADA8" }}>{ar ? "ريال/شهر" : "/mo"}</span>
+                <span className="text-[10px] mr-1 ml-1" style={{ color: "#8AADA8" }}>{ar ? "را/شر" : "/mo"}</span>
               </div>
             </div>
           );
@@ -125,7 +125,7 @@ export default function SpendingBreakdownComponent({ data, locale }: Props) {
       {data.takeaways.length > 0 && (
         <div className="px-6 pb-6 pt-2">
           <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "#8AADA8" }}>
-            {ar ? "ملاحظات مهمة" : "Key takeaways"}
+            {ar ? "احظات ة" : "Key takeaways"}
           </p>
           <div className="space-y-2.5">
             {data.takeaways.map((t, i) => (

@@ -9,12 +9,12 @@ interface PaywallModalProps {
 }
 
 const FEATURES_AR = [
-  { icon: FolderOpen, text: "رفع كشوفات غير محدودة — كل بطاقاتك وبنوكك" },
-  { icon: FileDown, text: "تصدير تقرير PDF بالعربي — احتفظ بنسخة" },
-  { icon: Link2, text: "روابط إلغاء مباشرة لأكثر من ٥٠ خدمة سعودية" },
-  { icon: BookOpen, text: "دليل خطوة بخطوة لإلغاء كل اشتراك" },
-  { icon: MessageSquare, text: "قوالب رسائل إلغاء جاهزة بالعربي" },
-  { icon: Infinity, text: "تحديثات مدى الحياة — دفعة واحدة وخلاص" },
+  { icon: FolderOpen, text: "رع شات غر حددة —  بطاات ب" },
+  { icon: FileDown, text: "تصدر ترر PDF باعرب — احتظ بسخة" },
+  { icon: Link2, text: "رابط إغاء باشرة أثر   خدة سعدة" },
+  { icon: BookOpen, text: "د خطة بخطة إغاء  اشترا" },
+  { icon: MessageSquare, text: "اب رسائ إغاء جازة باعرب" },
+  { icon: Infinity, text: "تحدثات د احاة — دعة احدة خاص" },
 ];
 
 const FEATURES_EN = [
@@ -62,7 +62,7 @@ export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
             <Zap size={28} strokeWidth={1.5} className="mx-auto mb-2" />
             <h2 className="text-xl font-extrabold">Yalla Cancel Pro</h2>
             <p className="text-sm mt-1" style={{ color: "rgba(197,221,217,0.7)" }}>
-              {ar ? "كل شيء تحتاجه لتنظيف اشتراكاتك" : "Everything you need to clean up your subscriptions"}
+              {ar ? " شء تحتاج تظ اشتراات" : "Everything you need to clean up your subscriptions"}
             </p>
           </div>
 
@@ -87,23 +87,23 @@ export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
           <div className="px-6 pb-6 space-y-3">
             <div className="rounded-2xl p-4 text-center" style={{ background: "#E5EFED", border: "1px solid #C5DDD9" }}>
               <div className="text-3xl font-extrabold tracking-tight" style={{ color: "#1A3A35" }}>
-                {ar ? "٤٩ ريال" : "49 SAR"}
+                {ar ? " را" : "49 SAR"}
               </div>
               <div className="text-sm" style={{ color: "#4A6862" }}>
-                {ar ? "دفعة واحدة — بدون اشتراك شهري" : "One-time payment — no monthly fee"}
+                {ar ? "دعة احدة — بد اشترا شر" : "One-time payment — no monthly fee"}
               </div>
             </div>
 
             <button
               className="btn-primary w-full text-center"
-              onClick={() => alert(ar ? "قريباً — جاري ربط بوابة الدفع" : "Coming soon — payment gateway integration in progress")}
+              onClick={() => alert(ar ? "ربا — جار ربط بابة ادع" : "Coming soon — payment gateway integration in progress")}
             >
-              {ar ? "ادفع بمدى أو بطاقة — ٤٩ ريال" : "Pay with mada or card — 49 SAR"}
+              {ar ? "ادع بد أ بطاة —  را" : "Pay with mada or card — 49 SAR"}
             </button>
 
             <p className="text-xs text-center" style={{ color: "#8AADA8" }}>
               {ar
-                ? "الدفع عبر موياسر · آمن ومشفر · يقبل مدى وفيزا وماستر"
+                ? "ادع عبر اسر · آ شر · ب د زا استر"
                 : "Powered by Moyasar · Secure & encrypted · Accepts mada, Visa, Mastercard"}
             </p>
           </div>

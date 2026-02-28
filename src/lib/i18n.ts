@@ -3,93 +3,93 @@ export type Locale = "ar" | "en";
 export const translations = {
   ar: {
     // Header
-    appName: "أبدالستا",
-    tagline: "اكتشف اشتراكاتك المخفية والغي اللي ما تحتاجه",
-    subtitle: "ارفع كشف حسابك البنكي ونحلله لك على طول",
+    appName: "أبداستا",
+    tagline: "اتش اشتراات اخة اغ ا ا تحتاج",
+    subtitle: "ارع ش حساب اب ح  ع ط",
 
     // Navigation
-    home: "الرئيسية",
-    howItWorks: "كيف يعمل",
-    privacy: "الخصوصية",
+    home: "ارئسة",
+    howItWorks: " ع",
+    privacy: "اخصصة",
     language: "English",
 
     // Upload Section
-    uploadTitle: "ارفع كشف حسابك",
-    uploadDesc: "اسحب ملف CSV هنا أو اضغط للاختيار",
-    uploadHint: "ندعم كشوفات: الراجحي، الأهلي، بنك الرياض، البلاد، الإنماء، والمزيد",
-    uploadButton: "اختر ملف",
-    supportedFormats: "الصيغ المدعومة: CSV",
-    selectBank: "اختر بنكك",
-    analyzing: "جاري التحليل...",
+    uploadTitle: "ارع ش حساب",
+    uploadDesc: "اسحب  CSV ا أ اضغط اختار",
+    uploadHint: "دع شات: اراجح اأ ب اراض اباد اإاء ازد",
+    uploadButton: "اختر ",
+    supportedFormats: "اصغ ادعة: CSV",
+    selectBank: "اختر ب",
+    analyzing: "جار اتح...",
 
     // Banks
-    alRajhi: "مصرف الراجحي",
-    snb: "البنك الأهلي السعودي",
-    riyadBank: "بنك الرياض",
-    alBilad: "بنك البلاد",
-    alinma: "مصرف الإنماء",
-    sabb: "بنك ساب",
-    bsf: "البنك السعودي الفرنسي",
-    anb: "البنك العربي الوطني",
-    otherBank: "بنك آخر",
+    alRajhi: "صر اراجح",
+    snb: "اب اأ اسعد",
+    riyadBank: "ب اراض",
+    alBilad: "ب اباد",
+    alinma: "صر اإاء",
+    sabb: "ب ساب",
+    bsf: "اب اسعد ارس",
+    anb: "اب اعرب اط",
+    otherBank: "ب آخر",
 
     // Report
-    reportTitle: "تقرير الاشتراكات",
-    totalSubscriptions: "إجمالي الاشتراكات",
-    monthlyTotal: "المجموع الشهري",
-    yearlyTotal: "المجموع السنوي",
-    currency: "ريال",
+    reportTitle: "ترر ااشتراات",
+    totalSubscriptions: "إجا ااشتراات",
+    monthlyTotal: "اجع اشر",
+    yearlyTotal: "اجع اس",
+    currency: "را",
 
     // Categories
-    cancelSection: "🚫 الغيها",
-    cancelDesc: "اشتراكات ما تستخدمها وتسحب فلوسك",
-    keepSection: "✅ خلّها",
-    keepDesc: "اشتراكات تستخدمها وتستاهل",
-    investigateSection: "🔍 راجعها",
-    investigateDesc: "اشتراكات تحتاج تتأكد منها",
+    cancelSection: "🚫 اغا",
+    cancelDesc: "اشتراات ا تستخدا تسحب س",
+    keepSection: "✅ خا",
+    keepDesc: "اشتراات تستخدا تستا",
+    investigateSection: " راجعا",
+    investigateDesc: "اشتراات تحتاج تتأد ا",
 
     // Actions
-    markCancel: "الغي",
-    markKeep: "خلّه",
+    markCancel: "اغ",
+    markKeep: "خ",
     markInvestigate: "راجع",
-    copyList: "نسخ القائمة",
-    copied: "تم النسخ!",
-    exportReport: "تصدير التقرير",
-    privacyToggle: "إخفاء الأسماء",
-    startOver: "ابدأ من جديد",
+    copyList: "سخ اائة",
+    copied: "ت اسخ!",
+    exportReport: "تصدر اترر",
+    privacyToggle: "إخاء اأساء",
+    startOver: "ابدأ  جدد",
 
     // How it works
-    step1Title: "ارفع كشف حسابك",
-    step1Desc: "نزّل كشف الحساب من تطبيق بنكك بصيغة CSV وارفعه هنا",
-    step2Title: "نحلل لك الاشتراكات",
-    step2Desc: "نكتشف كل الاشتراكات المتكررة ونصنّفها لك",
-    step3Title: "قرر والغي",
-    step3Desc: "اختر اللي تبي تلغيه واللي تبي تخليه",
+    step1Title: "ارع ش حساب",
+    step1Desc: "ز ش احساب  تطب ب بصغة CSV ارع ا",
+    step2Title: "ح  ااشتراات",
+    step2Desc: "تش  ااشتراات اتررة صا ",
+    step3Title: "رر اغ",
+    step3Desc: "اختر ا تب تغ ا تب تخ",
 
     // Privacy
-    privacyTitle: "خصوصيتك أولاً",
-    privacyDesc: "كل التحليل يتم على جهازك. ما نرسل أي بيانات لأي سيرفر.",
-    privacyPoint1: "بياناتك ما تطلع من جهازك أبداً",
-    privacyPoint2: "ما نخزن أي معلومات بنكية",
-    privacyPoint3: "الكود مفتوح المصدر وتقدر تتأكد بنفسك",
-    privacyPoint4: "تقدر تخفي أسماء الاشتراكات في التقرير",
+    privacyTitle: "خصصت أا",
+    privacyDesc: " اتح ت ع جاز. ا رس أ باات أ سرر.",
+    privacyPoint1: "باات ا تطع  جاز أبدا",
+    privacyPoint2: "ا خز أ عات بة",
+    privacyPoint3: "اد تح اصدر تدر تتأد بس",
+    privacyPoint4: "تدر تخ أساء ااشتراات  اترر",
 
     // Footer
-    madeWith: "صُنع بحب في السعودية 🇸🇦",
-    openSource: "مفتوح المصدر",
+    madeWith: "صع بحب  اسعدة 🇸🇦",
+    openSource: "تح اصدر",
 
     // Misc
-    perMonth: "/شهر",
-    perYear: "/سنة",
-    transactions: "عملية",
-    lastCharge: "آخر خصم",
-    frequency: "التكرار",
-    monthly: "شهري",
-    yearly: "سنوي",
-    weekly: "أسبوعي",
-    quarterly: "ربع سنوي",
-    noSubscriptions: "ما لقينا اشتراكات متكررة",
-    potentialSavings: "وفر لحد",
+    perMonth: "/شر",
+    perYear: "/سة",
+    transactions: "عة",
+    lastCharge: "آخر خص",
+    frequency: "اترار",
+    monthly: "شر",
+    yearly: "س",
+    weekly: "أسبع",
+    quarterly: "ربع س",
+    noSubscriptions: "ا ا اشتراات تررة",
+    potentialSavings: "ر حد",
   },
   en: {
     appName: "Abidalista",
@@ -99,7 +99,7 @@ export const translations = {
     home: "Home",
     howItWorks: "How it works",
     privacy: "Privacy",
-    language: "العربية",
+    language: "اعربة",
 
     uploadTitle: "Upload your bank statement",
     uploadDesc: "Drag a CSV file here or click to browse",
@@ -130,7 +130,7 @@ export const translations = {
     cancelDesc: "Subscriptions you don't use that are draining your money",
     keepSection: "✅ Keep These",
     keepDesc: "Subscriptions you actively use",
-    investigateSection: "🔍 Investigate",
+    investigateSection: " Investigate",
     investigateDesc: "Subscriptions you need to review",
 
     markCancel: "Cancel",

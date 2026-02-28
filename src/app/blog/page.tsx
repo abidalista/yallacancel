@@ -10,10 +10,10 @@ const stagger = {
 };
 
 const CATEGORY_COLORS: Record<string, { bg: string; color: string }> = {
-  "احصائيات": { bg: "#DBEAFE", color: "#1E40AF" },
-  "أدلة": { bg: "#D1FAE5", color: "#065F46" },
-  "توعية": { bg: "#FEF3C7", color: "#92400E" },
-  "نصائح": { bg: "#E0E7FF", color: "#3730A3" },
+  "احصائات": { bg: "#DBEAFE", color: "#1E40AF" },
+  "أدة": { bg: "#D1FAE5", color: "#065F46" },
+  "تعة": { bg: "#FEF3C7", color: "#92400E" },
+  "صائح": { bg: "#E0E7FF", color: "#3730A3" },
 };
 
 function formatDate(dateStr: string) {
@@ -38,7 +38,7 @@ export default function BlogPage() {
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}>
             <ArrowLeft size={16} color="#1A3A35" strokeWidth={2.5} style={{ transform: "scaleX(-1)" }} />
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#4A6862" }}>الرئيسية</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#4A6862" }}>ارئسة</span>
           </a>
           <a href="/" style={{ textDecoration: "none" }}>
             <span className="nav-logo" style={{ color: "#1A3A35" }}>yallacancel</span>
@@ -52,7 +52,7 @@ export default function BlogPage() {
               textDecoration: "none",
             }}
           >
-            حلل كشفك
+            ح ش
           </a>
         </div>
       </header>
@@ -66,7 +66,7 @@ export default function BlogPage() {
             padding: "5px 14px", marginBottom: 20,
           }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#00A651", display: "inline-block" }} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: "#1A3A35" }}>مقالات يلا كنسل</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#1A3A35" }}>اات ا س</span>
           </div>
           <h1 style={{
             fontSize: "clamp(2rem, 5vw, 3rem)",
@@ -74,10 +74,10 @@ export default function BlogPage() {
             color: "#1A3A35", margin: "0 0 16px",
             letterSpacing: "-0.5px",
           }}>
-            نصائح وأدلة لتوفير<br />فلوس الاشتراكات
+            صائح أدة تر<br />س ااشتراات
           </h1>
           <p style={{ fontSize: 16, color: "#4A6862", lineHeight: 1.7 }}>
-            مقالات عملية عن الاشتراكات الرقمية، طرق التوفير، وأدلة الإلغاء — بالعربي وللسعودية
+            اات عة ع ااشتراات ارة طر اتر أدة اإغاء — باعرب سعدة
           </p>
         </div>
       </section>
@@ -132,7 +132,7 @@ export default function BlogPage() {
                 </p>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 16, paddingTop: 14, borderTop: "1px solid #E5EFED" }}>
                   <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700, color: "#00A651" }}>
-                    اقرأ المزيد <ArrowLeft size={12} strokeWidth={2.5} />
+                    ارأ ازد <ArrowLeft size={12} strokeWidth={2.5} />
                   </span>
                 </div>
               </motion.a>
@@ -145,10 +145,10 @@ export default function BlogPage() {
       <section style={{ background: "#1A3A35", padding: "64px 24px", textAlign: "center" }}>
         <div style={{ maxWidth: 500, margin: "0 auto" }}>
           <h2 style={{ fontSize: 24, fontWeight: 900, color: "#fff", marginBottom: 12 }}>
-            تبي تعرف اشتراكاتك؟
+            تب تعر اشتراات؟
           </h2>
           <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", marginBottom: 28, lineHeight: 1.7 }}>
-            ارفع كشف حسابك ونكشف كل الاشتراكات المخفية في ثواني
+            ارع ش حساب ش  ااشتراات اخة  ثا
           </p>
           <a href="/" style={{
             display: "inline-flex", alignItems: "center", gap: 8,
@@ -157,7 +157,7 @@ export default function BlogPage() {
             fontWeight: 800, fontSize: 14, textDecoration: "none",
             boxShadow: "0 4px 20px rgba(0,166,81,0.35)",
           }}>
-            حلل كشفك مجاناً <ArrowRight size={14} strokeWidth={2.5} style={{ transform: "scaleX(-1)" }} />
+            ح ش جاا <ArrowRight size={14} strokeWidth={2.5} style={{ transform: "scaleX(-1)" }} />
           </a>
         </div>
       </section>
@@ -167,7 +167,7 @@ export default function BlogPage() {
         <a href="/" style={{ textDecoration: "none" }}>
           <span className="nav-logo" style={{ color: "rgba(255,255,255,0.45)", justifyContent: "center" }}>yallacancel</span>
         </a>
-        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", marginTop: 8 }}>&copy; ٢٠٢٦ Yalla Cancel</p>
+        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", marginTop: 8 }}>&copy;  Yalla Cancel</p>
       </footer>
     </div>
   );

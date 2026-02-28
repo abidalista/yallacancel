@@ -32,7 +32,7 @@ export default function Header({ locale, onLocaleChange, onLogoClick }: HeaderPr
             onMouseEnter={(e) => { e.currentTarget.style.color = "#1A3A35"; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = "#4A6862"; }}
           >
-            {locale === "ar" ? "أدلة الإلغاء" : "Cancel Guides"}
+            {locale === "ar" ? "أدة اإغاء" : "Cancel Guides"}
           </a>
           <a
             href="/blog"
@@ -41,7 +41,7 @@ export default function Header({ locale, onLocaleChange, onLogoClick }: HeaderPr
             onMouseEnter={(e) => { e.currentTarget.style.color = "#1A3A35"; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = "#4A6862"; }}
           >
-            {locale === "ar" ? "المقالات" : "Articles"}
+            {locale === "ar" ? "ااات" : "Articles"}
           </a>
           <button
             onClick={() => onLocaleChange(locale === "ar" ? "en" : "ar")}

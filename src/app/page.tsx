@@ -42,60 +42,60 @@ interface ParseError {
 }
 
 const BANKS = [
-  { name: "الراجحي", domain: "alrajhibank.com.sa" },
-  { name: "الأهلي", domain: "alahli.com" },
-  { name: "بنك الرياض", domain: "riyadbank.com" },
-  { name: "البلاد", domain: "bankalbilad.com" },
-  { name: "الإنماء", domain: "alinma.com" },
-  { name: "الأول (ساب)", domain: "sabb.com" },
-  { name: "الفرنسي", domain: "alfransi.com.sa" },
-  { name: "العربي الوطني", domain: "anb.com.sa" },
+  { name: "اراجح", domain: "alrajhibank.com.sa" },
+  { name: "اأ", domain: "alahli.com" },
+  { name: "ب اراض", domain: "riyadbank.com" },
+  { name: "اباد", domain: "bankalbilad.com" },
+  { name: "اإاء", domain: "alinma.com" },
+  { name: "اأ (ساب)", domain: "sabb.com" },
+  { name: "ارس", domain: "alfransi.com.sa" },
+  { name: "اعرب اط", domain: "anb.com.sa" },
   { name: "stc pay", domain: "stcpay.com.sa" },
 ];
 
 const PROBLEM_STATS = [
-  { num: "٣٨٢ ريال", text: "متوسط ما يدفعه السعودي على الاشتراكات الرقمية كل شهر" },
-  { num: "٧٣٪", text: "من السعوديين عندهم اشتراك واحد على الأقل ناسيه ومو مستخدمه" },
-  { num: "٤,٥٨٤ ريال", text: "متوسط التوفير السنوي لو ألغيت الاشتراكات اللي ما تحتاجها" },
+  { num: " را", text: "تسط ا دع اسعد ع ااشتراات ارة  شر" },
+  { num: "", text: " اسعد عد اشترا احد ع اأ اس  ستخد" },
+  { num: ", را", text: "تسط اتر اس  أغت ااشتراات ا ا تحتاجا" },
 ];
 
 const FEATURES = [
   {
     icon: Shield,
-    title: "آمن وخاص",
-    desc: "كل التحليل يصير داخل متصفحك مباشرة — ملفك ما يوصل لأي سيرفر خارجي.",
+    title: "آ خاص",
+    desc: " اتح صر داخ تصح باشرة —  ا ص أ سرر خارج.",
   },
   {
     icon: Lock,
-    title: "يقرأ كشف بنكك",
-    desc: "يتعرف على كشوفات ٩ بنوك سعودية ويفك رموز العمليات الغريبة تلقائيا.",
+    title: "رأ ش ب",
+    desc: "تعر ع شات  ب سعدة  رز اعات اغربة تائا.",
   },
   {
     icon: Zap,
-    title: "نتائج في ثواني",
-    desc: "ارفع الكشف وخلال ثواني تشوف قائمة كاملة باشتراكاتك مع تكلفة كل واحد.",
+    title: "تائج  ثا",
+    desc: "ارع اش خا ثا تش ائة اة باشتراات ع تة  احد.",
   },
   {
     icon: BarChart3,
-    title: "تقرير واضح",
-    desc: "نوريك المبلغ الشهري والسنوي لكل اشتراك وتقدر تحدد وش تبقي ووش تلغي.",
+    title: "ترر اضح",
+    desc: "ر ابغ اشر اس  اشترا تدر تحدد ش تب ش تغ.",
   },
   {
     icon: Link2,
-    title: "روابط إلغاء مباشرة",
-    desc: "كل اشتراك معه رابط يوديك مباشرة لصفحة الإلغاء — بدون دوخة.",
+    title: "رابط إغاء باشرة",
+    desc: " اشترا ع رابط د باشرة صحة اإغاء — بد دخة.",
   },
   {
     icon: FileText,
-    title: "أدلة تفصيلية",
-    desc: "أكثر من ٢٠٠ دليل إلغاء خطوة بخطوة لأشهر الخدمات في السعودية والعالم.",
+    title: "أدة تصة",
+    desc: "أثر   د إغاء خطة بخطة أشر اخدات  اسعدة اعا.",
   },
 ];
 
 const SUB_CHIPS = [
   { name: "Netflix", domain: "netflix.com" },
   { name: "Spotify", domain: "spotify.com" },
-  { name: "شاهد", domain: "shahid.mbc.net" },
+  { name: "شاد", domain: "shahid.mbc.net" },
   { name: "Disney+", domain: "disneyplus.com" },
   { name: "YouTube", domain: "youtube.com" },
   { name: "Apple", domain: "apple.com" },
@@ -103,51 +103,51 @@ const SUB_CHIPS = [
   { name: "Adobe", domain: "adobe.com" },
   { name: "ChatGPT", domain: "openai.com" },
   { name: "iCloud", domain: "icloud.com" },
-  { name: "هنقرستيشن", domain: "hungerstation.com" },
+  { name: "رستش", domain: "hungerstation.com" },
   { name: "stc", domain: "stc.com.sa" },
 ];
 
 const TESTIMONIALS = [
   {
-    quote: "ما توقعت إن Calm وDropbox وشي اسمه Adobe Stock ما فتحته من سنتين ينخصمون كلهم. ألغيتهم كلهم في دقيقتين وأنا أشرب قهوتي.",
-    name: "محمد ع.",
-    role: "مهندس برمجيات — الرياض",
-    initial: "م",
+    quote: "ا تعت إ Calm Dropbox ش اس Adobe Stock ا تحت  ست خص . أغت   دت أا أشرب ت.",
+    name: "حد ع.",
+    role: "دس برجات — اراض",
+    initial: "",
   },
   {
-    quote: "كنت اشوف APPLE.COM/BILL كل شهر وما اعرف وش هي بالضبط. يلا كنسل فكها وعرفتني انها iCloud+ و Apple Music وApple TV+ — دفعت فيهم ثلاثتهم بدون ما اقصد!",
-    name: "نورة الغامدي",
-    role: "معلمة — جدة",
-    initial: "ن",
+    quote: "ت اش APPLE.COM/BILL  شر ا اعر ش  باضبط. ا س ا عرت اا iCloud+  Apple Music Apple TV+ — دعت  ثاثت بد ا اصد!",
+    name: "رة اغاد",
+    role: "عة — جدة",
+    initial: "",
   },
   {
-    quote: "كنت مشترك في Adobe وانا ما احتاجه — بس خفت من رسوم الالغاء المبكر. الموقع حذرني من التوقيت الصح وانقذني من دفع رسوم اضافية. وفرت ١,٦٠٨ ريال.",
-    name: "عبدالرحمن ف.",
-    role: "مصمم مستقل — الدمام",
+    quote: "ت شتر  Adobe اا ا احتاج — بس خت  رس ااغاء ابر. اع حذر  اتت اصح اذ  دع رس اضاة. رت , را.",
+    name: "عبدارح .",
+    role: "ص ست — ادا",
     initial: "ع",
   },
 ];
 
 const FAQ_ITEMS = [
   {
-    q: "هل بياناتي آمنة؟",
-    a: "نعم. كل التحليل يتم داخل متصفحك — ملفك ما يتم رفعه لأي سيرفر. ما نحتفظ بأي بيانات.",
+    q: " باات آة؟",
+    a: "ع.  اتح ت داخ تصح —  ا ت رع أ سرر. ا حتظ بأ باات.",
   },
   {
-    q: "أي بنوك تدعمون؟",
-    a: "ندعم جميع البنوك السعودية: الراجحي، الأهلي، بنك الرياض، البلاد، الإنماء، ساب، الفرنسي، العربي الوطني، و stc bank.",
+    q: "أ ب تدع؟",
+    a: "دع جع اب اسعدة: اراجح اأ ب اراض اباد اإاء ساب ارس اعرب اط  stc bank.",
   },
   {
-    q: "كيف انزل كشف حسابي؟",
-    a: "افتح تطبيق بنكك → الحسابات → كشف الحساب → اختر اخر ٣-٦ اشهر → نزله كـ CSV او PDF.",
+    q: " از ش حساب؟",
+    a: "اتح تطب ب  احسابات  ش احساب  اختر اخر - اشر  ز  CSV ا PDF.",
   },
   {
-    q: "هل الأداة مجانية؟",
-    a: "التحليل الأول مجاني. بعدها تقدر تترقى بـ ٤٩ ريال لمرة واحدة — بدون اشتراك شهري.",
+    q: " اأداة جاة؟",
+    a: "اتح اأ جا. بعدا تدر تتر ب  را رة احدة — بد اشترا شر.",
   },
   {
-    q: "هل يلا كنسل يلغي الاشتراكات عني؟",
-    a: "حالياً نوفر لك تقرير تفصيلي مع روابط إلغاء مباشرة. الإلغاء نفسه تسويه بنفسك عبر الرابط — عادة يأخذ أقل من دقيقة لكل اشتراك.",
+    q: " ا س غ ااشتراات ع؟",
+    a: "حاا ر  ترر تص ع رابط إغاء باشرة. اإغاء س تس بس عبر ارابط — عادة أخذ أ  دة  اشترا.",
   },
 ];
 
@@ -216,32 +216,32 @@ export default function HomePage() {
     const suggestions: string[] = [];
     const suggestionsAr: string[] = [];
     let details = "The file format wasn't recognized.";
-    let detailsAr = "صيغة الملف ما تعرفنا عليها.";
+    let detailsAr = "صغة ا ا تعرا عا.";
 
     if (hasPdfFail && !hasCsvFail) {
       details = "We couldn't extract data from this PDF. Some bank PDFs use image-based formats.";
-      detailsAr = "ما قدرنا نقرأ البيانات من ملف PDF. بعض الكشوفات تكون بصيغة صور.";
+      detailsAr = "ا درا رأ اباات   PDF. بعض اشات ت بصغة صر.";
       suggestions.push("Try downloading CSV instead of PDF from your bank app");
-      suggestionsAr.push("حاول تنزل كشف CSV بدل PDF من تطبيق بنكك");
+      suggestionsAr.push("حا تز ش CSV بد PDF  تطب ب");
     }
 
     if (hasCsvFail || hasHeaderIssue) {
       suggestions.push("Select your bank manually below and try again");
-      suggestionsAr.push("اختر بنكك يدوياً تحت وجرب مرة ثانية");
+      suggestionsAr.push("اختر ب دا تحت جرب رة ثاة");
     }
 
     if (hasColumnIssue) {
       suggestions.push("Make sure the file has: Date, Description, Amount columns");
-      suggestionsAr.push("تأكد إن الملف فيه: التاريخ، الوصف، المبلغ");
+      suggestionsAr.push("تأد إ ا : اتارخ اص ابغ");
     }
 
     suggestions.push("Or copy-paste your transactions text directly");
-    suggestionsAr.push("أو انسخ والصق نص العمليات مباشرة");
+    suggestionsAr.push("أ اسخ اص ص اعات باشرة");
 
     return {
       type: "no_transactions",
       message: "Couldn't find any transactions",
-      messageAr: "ما قدرنا نلقى أي عمليات",
+      messageAr: "ا درا  أ عات",
       details,
       detailsAr,
       suggestions,
@@ -258,7 +258,7 @@ export default function HomePage() {
     setStep("analyzing");
     setAnalyzeTimer(0);
     setTxCount(0);
-    setAnalyzeStatus(ar ? "نقرأ الملفات..." : "Reading files...");
+    setAnalyzeStatus(ar ? "رأ اات..." : "Reading files...");
     window.scrollTo({ top: 0, behavior: "smooth" });
 
     const start = Date.now();
@@ -268,7 +268,7 @@ export default function HomePage() {
 
     try {
       // ── Try AI analysis first (Claude API) ──
-      setAnalyzeStatus(ar ? "الذكاء الاصطناعي يحلل كشفك..." : "AI is analyzing your statement...");
+      setAnalyzeStatus(ar ? "اذاء ااصطاع ح ش..." : "AI is analyzing your statement...");
 
       let aiSuccess = false;
       for (const file of files) {
@@ -291,7 +291,7 @@ export default function HomePage() {
 
       // ── Fallback: old parser + analyzer ──
       console.log("[handleScan] Falling back to local parser");
-      setAnalyzeStatus(ar ? "نجرب طريقة ثانية..." : "Trying alternative method...");
+      setAnalyzeStatus(ar ? "جرب طرة ثاة..." : "Trying alternative method...");
 
       let allTx: Transaction[] = [];
       const failedFiles: string[] = [];
@@ -299,7 +299,7 @@ export default function HomePage() {
 
       for (const file of files) {
         try {
-          setAnalyzeStatus(ar ? `نقرأ ${file.name}...` : `Reading ${file.name}...`);
+          setAnalyzeStatus(ar ? `رأ ${file.name}...` : `Reading ${file.name}...`);
           const { transactions, warnings } = await parseFile(file, bankOverride || undefined);
           allWarnings = allWarnings.concat(warnings);
           if (transactions.length === 0) {
@@ -323,7 +323,7 @@ export default function HomePage() {
         return;
       }
 
-      setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
+      setAnalyzeStatus(ar ? "بحث ع ااشتراات اخة..." : "Looking for hidden subscriptions...");
       await new Promise((r) => setTimeout(r, 1500));
 
       const result = analyzeTransactions(allTx);
@@ -342,11 +342,11 @@ export default function HomePage() {
       setParseError({
         type: "file_error",
         message: "Something went wrong",
-        messageAr: "صار خطأ غير متوقع",
+        messageAr: "صار خطأ غر تع",
         details: "An unexpected error occurred.",
-        detailsAr: "صار خطأ غير متوقع أثناء معالجة ملفك.",
+        detailsAr: "صار خطأ غر تع أثاء عاجة .",
         suggestions: ["Try uploading the file again"],
-        suggestionsAr: ["جرب ارفع الملف مرة ثانية"],
+        suggestionsAr: ["جرب ارع ا رة ثاة"],
         showBankSelector: true,
         showPasteInput: true,
         failedFiles: [],
@@ -459,7 +459,7 @@ export default function HomePage() {
                 {txCount.toLocaleString()}
               </div>
               <div className="text-sm mb-6" style={{ color: "#8AADA8" }}>
-                {ar ? "عملية" : "transactions"}
+                {ar ? "عة" : "transactions"}
               </div>
               <div className="flex items-center justify-center gap-2 mb-4">
                 <Loader2 size={14} strokeWidth={1.5} className="animate-spin" style={{ color: "#00A651" }} />
@@ -470,7 +470,7 @@ export default function HomePage() {
               </div>
               <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs" style={{ background: "#E5EFED", color: "#8AADA8" }}>
                 <Clock size={12} strokeWidth={1.5} />
-                {ar ? "تقريباً خلصنا — لا تطلع من الصفحة" : "Almost there – stay on this page"}
+                {ar ? "تربا خصا — ا تطع  اصحة" : "Almost there – stay on this page"}
               </div>
             </motion.div>
           </motion.div>
@@ -486,17 +486,17 @@ export default function HomePage() {
             <div className="max-w-[700px] mx-auto">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 <p className="font-bold text-sm mb-2" style={{ color: "#00A651" }}>
-                  {ar ? `لقينا ${confirmed.length} اشتراكات مؤكدة` : `Found ${confirmed.length} clear subscriptions`}
+                  {ar ? `ا ${confirmed.length} اشتراات ؤدة` : `Found ${confirmed.length} clear subscriptions`}
                 </p>
                 <h1 className="text-3xl font-extrabold tracking-tight mb-2" style={{ color: "#1A3A35" }}>
-                  {ar ? `ساعدنا نتعرف على ${suspicious.length} إضافية` : `Help identify ${suspicious.length} more`}
+                  {ar ? `ساعدا تعر ع ${suspicious.length} إضاة` : `Help identify ${suspicious.length} more`}
                 </h1>
                 <div className="h-1 rounded-full mb-6" style={{ background: "#C5DDD9" }}>
                   <div className="h-1 rounded-full" style={{ width: "60%", background: "#1A3A35" }} />
                 </div>
                 <p className="text-sm mb-8" style={{ color: "#4A6862" }}>
                   {ar
-                    ? "لقينا بعض العمليات المتكررة مو متأكدين منها. ساعدنا نضيفها لمجموعك:"
+                    ? "ا بعض اعات اتررة  تأد ا. ساعدا ضا جع:"
                     : "We found some recurring charges we're not sure about. Help us include them in your total:"}
                 </p>
               </motion.div>
@@ -515,7 +515,7 @@ export default function HomePage() {
                         <span className="font-bold text-base" style={{ color: "#1A3A35" }}>{sub.name}</span>
                       </div>
                       <span className="font-bold text-base" style={{ color: "#1A3A35" }}>
-                        {sub.amount.toFixed(0)} {ar ? "ريال/شهر" : "SAR/monthly"}
+                        {sub.amount.toFixed(0)} {ar ? "را/شر" : "SAR/monthly"}
                       </span>
                     </div>
                     {sub.rawDescription && (
@@ -524,9 +524,9 @@ export default function HomePage() {
                     <div className="flex gap-2.5">
                       {(["subscription", "not", "unknown"] as const).map((choice) => {
                         const labels = {
-                          subscription: ar ? "اشتراك" : "Subscription",
-                          not: ar ? "مو اشتراك" : "Not a sub",
-                          unknown: ar ? "ما أدري" : "Don't know",
+                          subscription: ar ? "اشترا" : "Subscription",
+                          not: ar ? " اشترا" : "Not a sub",
+                          unknown: ar ? "ا أدر" : "Don't know",
                         };
                         const isActive =
                           (choice === "subscription" && sub.userConfirmed && sub.confidence === "confirmed") ||
@@ -555,13 +555,13 @@ export default function HomePage() {
                   onClick={handleFinishIdentify}
                   className="btn-primary flex-1"
                 >
-                  {ar ? "شوف تقريري" : "Show my report"} <ArrowRight size={16} strokeWidth={1.5} />
+                  {ar ? "ش ترر" : "Show my report"} <ArrowRight size={16} strokeWidth={1.5} />
                 </button>
                 <button
                   onClick={handleSkipIdentify}
                   className="btn-ghost"
                 >
-                  {ar ? `تخطى (${confirmed.length})` : `Skip (${confirmed.length})`}
+                  {ar ? `تخط (${confirmed.length})` : `Skip (${confirmed.length})`}
                 </button>
               </div>
             </div>
@@ -583,11 +583,11 @@ export default function HomePage() {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-1" style={{ color: "#1A3A35" }}>
                   {ar
-                    ? `تصرف ${report.totalYearly.toFixed(0)} ريال/سنة`
+                    ? `تصر ${report.totalYearly.toFixed(0)} را/سة`
                     : `You're spending ${report.totalYearly.toFixed(0)} SAR/year`}
                 </h1>
                 <p className="text-sm mb-4" style={{ color: "#8AADA8" }}>
-                  {ar ? `من ${subs.length} اشتراك` : `across ${subs.length} subscriptions`}
+                  {ar ? ` ${subs.length} اشترا` : `across ${subs.length} subscriptions`}
                 </p>
                 <div className="h-1 rounded-full mb-8" style={{ background: "#C5DDD9" }}>
                   <div className="h-1 rounded-full w-full" style={{ background: "#1A3A35" }} />
@@ -608,7 +608,7 @@ export default function HomePage() {
                       <span className="text-sm w-8 flex-shrink-0" style={{ color: "#8AADA8" }}>{i + 1}.</span>
                       <span className="font-bold text-sm flex-1" style={{ color: "#1A3A35" }}>{sub.name}</span>
                       <span className="font-bold text-sm mr-4 ml-4" style={{ color: "#1A3A35" }}>
-                        {sub.yearlyEquivalent.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"}
+                        {sub.yearlyEquivalent.toFixed(0)} {ar ? "را/سة" : "SAR/yr"}
                       </span>
                       {info?.cancelUrl ? (
                         <a
@@ -618,11 +618,11 @@ export default function HomePage() {
                           className="font-bold text-sm no-underline hover:underline flex-shrink-0"
                           style={{ color: "#00A651" }}
                         >
-                          {ar ? "الغي" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
+                          {ar ? "اغ" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
                         </a>
                       ) : (
                         <span className="font-bold text-sm flex-shrink-0" style={{ color: "#00A651" }}>
-                          {ar ? "الغي" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
+                          {ar ? "اغ" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
                         </span>
                       )}
                     </div>
@@ -634,7 +634,7 @@ export default function HomePage() {
                     <span className="text-sm w-8 flex-shrink-0" style={{ color: "#8AADA8" }}>{FREE_VISIBLE + i + 1}.</span>
                     <span className="font-bold text-sm flex-1 blur-sm select-none" style={{ color: "#1A3A35" }}>{sub.name}</span>
                     <span className="font-bold text-sm mr-4 ml-4" style={{ color: "#1A3A35" }}>
-                      {sub.yearlyEquivalent.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"}
+                      {sub.yearlyEquivalent.toFixed(0)} {ar ? "را/سة" : "SAR/yr"}
                     </span>
                     <Lock size={14} strokeWidth={1.5} style={{ color: "#C5DDD9" }} className="flex-shrink-0" />
                   </div>
@@ -642,7 +642,7 @@ export default function HomePage() {
 
                 {hidden.length > 0 && (
                   <div className="px-5 py-3 text-center text-sm" style={{ background: "#EDF5F3", color: "#8AADA8" }}>
-                    + {hidden.length} {ar ? "إضافية" : "more"} ({hiddenYearly.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"})
+                    + {hidden.length} {ar ? "إضاة" : "more"} ({hiddenYearly.toFixed(0)} {ar ? "را/سة" : "SAR/yr"})
                   </div>
                 )}
               </motion.div>
@@ -656,7 +656,7 @@ export default function HomePage() {
                 >
                   <p className="text-center font-bold text-base mb-4" style={{ color: "#1A3A35" }}>
                     {ar
-                      ? `ادفع ٤٩ ريال، ووفر ${hiddenYearly.toFixed(0)} ريال/سنة — يعني ${Math.round(hiddenYearly / 49)}x عائد`
+                      ? `ادع  را ر ${hiddenYearly.toFixed(0)} را/سة — ع ${Math.round(hiddenYearly / 49)}x عائد`
                       : `Pay 49 SAR, save up to ${hiddenYearly.toFixed(0)} SAR/yr — that's a ${Math.round(hiddenYearly / 49)}x return`}
                   </p>
                   <button
@@ -664,12 +664,12 @@ export default function HomePage() {
                     className="btn-primary w-full text-base py-4 mb-3"
                   >
                     {ar
-                      ? `اكشف كل ${subs.length} اشتراك — ٤٩ ريال`
+                      ? `اش  ${subs.length} اشترا —  را`
                       : `Unlock all ${subs.length} subscriptions — 49 SAR`}
                   </button>
                   <p className="text-xs text-center mb-8" style={{ color: "#8AADA8" }}>
                     {ar
-                      ? "دفعة واحدة · بدون حساب · ضمان استرداد كامل"
+                      ? "دعة احدة · بد حساب · ضا استرداد ا"
                       : "One-time payment · No account needed · 100% money-back guarantee"}
                   </p>
                 </motion.div>
@@ -695,7 +695,7 @@ export default function HomePage() {
               <div className="text-center mt-8">
                 <button onClick={handleStartOver} className="btn-ghost">
                   <RotateCcw size={14} strokeWidth={1.5} />
-                  {ar ? "ابدأ من جديد" : "Start Over"}
+                  {ar ? "ابدأ  جدد" : "Start Over"}
                 </button>
               </div>
             </div>
@@ -715,16 +715,16 @@ export default function HomePage() {
                 transition={{ duration: 0.5 }}
               >
                 <span className="section-label inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full mb-5">
-                  <Shield size={12} strokeWidth={1.5} /> {ar ? "متتبع اشتراكاتك الشخصي" : "Your personal subscription tracker"}
+                  <Shield size={12} strokeWidth={1.5} /> {ar ? "تتبع اشتراات اشخص" : "Your personal subscription tracker"}
                 </span>
                 <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-4 max-w-3xl mx-auto leading-[1.1]" style={{ color: "#1A3A35" }}>
                   {ar
-                    ? "اعرف وين تروح فلوسك كل شهر"
+                    ? "اعر  ترح س  شر"
                     : "See exactly where your money goes each month"}
                 </h1>
                 <p className="text-lg max-w-[600px] mx-auto mb-12 leading-relaxed" style={{ color: "#4A6862" }}>
                   {ar
-                    ? "ارفع كشف حسابك البنكي وفي ثواني نجيب لك كل اشتراكاتك الشهرية مع رابط الغاء مباشر لكل خدمة."
+                    ? "ارع ش حساب اب  ثا جب   اشتراات اشرة ع رابط اغاء باشر  خدة."
                     : "Upload your bank statement and in seconds we'll list every subscription you're paying for — with a direct cancel link for each one."}
                 </p>
               </motion.div>
@@ -776,7 +776,7 @@ export default function HomePage() {
                       <textarea
                         value={pasteText}
                         onChange={(e) => setPasteText(e.target.value)}
-                        placeholder={ar ? "الصق نص كشف الحساب هنا..." : "Paste your statement text here..."}
+                        placeholder={ar ? "اص ص ش احساب ا..." : "Paste your statement text here..."}
                         className="w-full h-24 p-3 rounded-xl border border-[#E5EFED] text-sm bg-white resize-none focus:outline-none focus:border-[#00A651]" style={{ color: "#1A3A35" }}
                       />
                       <button
@@ -784,7 +784,7 @@ export default function HomePage() {
                         disabled={!pasteText.trim()}
                         className="btn-primary mt-2 text-sm disabled:opacity-50"
                       >
-                        {ar ? "حلل النص" : "Analyze text"}
+                        {ar ? "ح اص" : "Analyze text"}
                       </button>
                     </div>
                   )}
@@ -807,10 +807,10 @@ export default function HomePage() {
           <section className="py-16 px-6" style={{ background: "#EDF5F3" }}>
             <div className="max-w-[800px] mx-auto text-center">
               <h2 className="text-xl font-extrabold tracking-tight mb-2" style={{ color: "#1A3A35" }}>
-                {ar ? "تبي تلغي اشتراك؟" : "Want to cancel a subscription?"}
+                {ar ? "تب تغ اشترا؟" : "Want to cancel a subscription?"}
               </h2>
               <p className="text-sm mb-6" style={{ color: "#8AADA8" }}>
-                {ar ? "عندنا اكثر من ٢٠٠ دليل الغاء خطوة بخطوة" : "200+ step-by-step cancellation guides"}
+                {ar ? "عدا اثر   د اغاء خطة بخطة" : "200+ step-by-step cancellation guides"}
               </p>
               <div className="flex flex-wrap justify-center gap-3 mb-8">
                 {SUB_CHIPS.map((chip) => (
@@ -832,7 +832,7 @@ export default function HomePage() {
                 onMouseLeave={e => { e.currentTarget.style.background = "#00A651"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,166,81,0.25)"; }}
               >
                 <Search size={16} strokeWidth={1.5} />
-                {ar ? "ابحث في أدلة الإلغاء" : "Search cancel guides"}
+                {ar ? "ابحث  أدة اإغاء" : "Search cancel guides"}
               </a>
             </div>
           </section>
@@ -860,10 +860,10 @@ export default function HomePage() {
           <section className="bg-white py-20 px-6">
             <div className="max-w-[1000px] mx-auto text-center">
               <span className="section-label">
-                <Zap size={12} strokeWidth={1.5} /> {ar ? "كيف يعمل" : "How it works"}
+                <Zap size={12} strokeWidth={1.5} /> {ar ? " ع" : "How it works"}
               </span>
               <h2 className="section-title">
-                {ar ? "سهل، سريع، وواضح" : "Simple, fast, and clear"}
+                {ar ? "س سرع اضح" : "Simple, fast, and clear"}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-12">
                 {FEATURES.map((f, i) => {
@@ -893,10 +893,10 @@ export default function HomePage() {
           <section className="bg-white py-20 px-6">
             <div className="max-w-[900px] mx-auto text-center">
               <span className="section-label">
-                {ar ? "قالوا عنا" : "What users say"}
+                {ar ? "اا عا" : "What users say"}
               </span>
               <h2 className="section-title mb-12">
-                {ar ? "ناس جربوا يلا كنسل" : "People who tried Yalla Cancel"}
+                {ar ? "اس جربا ا س" : "People who tried Yalla Cancel"}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {TESTIMONIALS.map((t, i) => (
@@ -928,8 +928,8 @@ export default function HomePage() {
           <section className="py-20 px-6" style={{ background: "#EDF5F3" }}>
             <div className="max-w-[700px] mx-auto">
               <div className="text-center mb-12">
-                <span className="section-label">{ar ? "أسئلة شائعة" : "FAQ"}</span>
-                <h2 className="section-title">{ar ? "عندك سؤال؟" : "Got a question?"}</h2>
+                <span className="section-label">{ar ? "أسئة شائعة" : "FAQ"}</span>
+                <h2 className="section-title">{ar ? "عد سؤا؟" : "Got a question?"}</h2>
               </div>
               <div className="space-y-3">
                 {FAQ_ITEMS.map((faq, i) => (
@@ -979,54 +979,54 @@ export default function HomePage() {
                 <div>
                   <div className="nav-logo mb-2" style={{ color: "#C5DDD9" }}>yallacancel</div>
                   <p className="text-sm" style={{ color: "#8AADA8" }}>
-                    {ar ? "اداة مجانية لكشف الاشتراكات المنسية" : "Free tool to find forgotten subscriptions"}
+                    {ar ? "اداة جاة ش ااشتراات اسة" : "Free tool to find forgotten subscriptions"}
                   </p>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-x-10 gap-y-8">
                   <div>
                     <p className="text-xs font-bold mb-3 uppercase tracking-widest" style={{ color: "#4A6862" }}>
-                      {ar ? "الخدمة" : "Product"}
+                      {ar ? "اخدة" : "Product"}
                     </p>
                     <div className="flex flex-col gap-2">
                       <a href="/" className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
                         onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
                         onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
                       >
-                        {ar ? "كشف الاشتراكات" : "Subscription Scanner"}
+                        {ar ? "ش ااشتراات" : "Subscription Scanner"}
                       </a>
                       <a href="/guides" className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
                         onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
                         onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
                       >
-                        {ar ? "ادلة الالغاء" : "Cancel Guides"}
+                        {ar ? "ادة ااغاء" : "Cancel Guides"}
                       </a>
                       <a href="/transparency" className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
                         onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
                         onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
                       >
-                        {ar ? "الشفافية" : "Transparency"}
+                        {ar ? "اشاة" : "Transparency"}
                       </a>
                       <a href="/blog" className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
                         onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
                         onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
                       >
-                        {ar ? "المقالات" : "Articles"}
+                        {ar ? "ااات" : "Articles"}
                       </a>
                     </div>
                   </div>
                   <div>
                     <p className="text-xs font-bold mb-3 uppercase tracking-widest" style={{ color: "#4A6862" }}>
-                      {ar ? "ادلة شائعة" : "Popular Guides"}
+                      {ar ? "ادة شائعة" : "Popular Guides"}
                     </p>
                     <div className="flex flex-col gap-2">
                       {[
-                        { slug: "cancel-netflix", label: ar ? "الغاء Netflix" : "Cancel Netflix" },
-                        { slug: "cancel-spotify", label: ar ? "الغاء Spotify" : "Cancel Spotify" },
-                        { slug: "cancel-shahid", label: ar ? "الغاء شاهد" : "Cancel Shahid" },
-                        { slug: "cancel-adobe", label: ar ? "الغاء Adobe" : "Cancel Adobe" },
-                        { slug: "cancel-chatgpt", label: ar ? "الغاء ChatGPT" : "Cancel ChatGPT" },
-                        { slug: "cancel-amazon-prime", label: ar ? "الغاء Amazon Prime" : "Cancel Amazon Prime" },
-                        { slug: "cancel-disney-plus", label: ar ? "الغاء Disney+" : "Cancel Disney+" },
+                        { slug: "cancel-netflix", label: ar ? "اغاء Netflix" : "Cancel Netflix" },
+                        { slug: "cancel-spotify", label: ar ? "اغاء Spotify" : "Cancel Spotify" },
+                        { slug: "cancel-shahid", label: ar ? "اغاء شاد" : "Cancel Shahid" },
+                        { slug: "cancel-adobe", label: ar ? "اغاء Adobe" : "Cancel Adobe" },
+                        { slug: "cancel-chatgpt", label: ar ? "اغاء ChatGPT" : "Cancel ChatGPT" },
+                        { slug: "cancel-amazon-prime", label: ar ? "اغاء Amazon Prime" : "Cancel Amazon Prime" },
+                        { slug: "cancel-disney-plus", label: ar ? "اغاء Disney+" : "Cancel Disney+" },
                       ].map(({ slug, label }) => (
                         <a key={slug} href={`/${slug}.html`} className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
                           onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
@@ -1039,17 +1039,17 @@ export default function HomePage() {
                   </div>
                   <div>
                     <p className="text-xs font-bold mb-3 uppercase tracking-widest" style={{ color: "#4A6862" }}>
-                      {ar ? "المزيد من الأدلة" : "More Guides"}
+                      {ar ? "ازد  اأدة" : "More Guides"}
                     </p>
                     <div className="flex flex-col gap-2">
                       {[
-                        { slug: "cancel-stc", label: ar ? "الغاء stc" : "Cancel stc" },
-                        { slug: "cancel-youtube-premium", label: ar ? "الغاء YouTube Premium" : "Cancel YouTube Premium" },
-                        { slug: "cancel-icloud", label: ar ? "الغاء iCloud" : "Cancel iCloud" },
-                        { slug: "cancel-microsoft-365", label: ar ? "الغاء Microsoft 365" : "Cancel Microsoft 365" },
-                        { slug: "cancel-nordvpn", label: ar ? "الغاء NordVPN" : "Cancel NordVPN" },
-                        { slug: "cancel-linkedin-premium", label: ar ? "الغاء LinkedIn" : "Cancel LinkedIn" },
-                        { slug: "cancel-apple-tv-plus", label: ar ? "الغاء Apple TV+" : "Cancel Apple TV+" },
+                        { slug: "cancel-stc", label: ar ? "اغاء stc" : "Cancel stc" },
+                        { slug: "cancel-youtube-premium", label: ar ? "اغاء YouTube Premium" : "Cancel YouTube Premium" },
+                        { slug: "cancel-icloud", label: ar ? "اغاء iCloud" : "Cancel iCloud" },
+                        { slug: "cancel-microsoft-365", label: ar ? "اغاء Microsoft 365" : "Cancel Microsoft 365" },
+                        { slug: "cancel-nordvpn", label: ar ? "اغاء NordVPN" : "Cancel NordVPN" },
+                        { slug: "cancel-linkedin-premium", label: ar ? "اغاء LinkedIn" : "Cancel LinkedIn" },
+                        { slug: "cancel-apple-tv-plus", label: ar ? "اغاء Apple TV+" : "Cancel Apple TV+" },
                       ].map(({ slug, label }) => (
                         <a key={slug} href={`/${slug}.html`} className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
                           onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
@@ -1062,25 +1062,25 @@ export default function HomePage() {
                   </div>
                   <div>
                     <p className="text-xs font-bold mb-3 uppercase tracking-widest" style={{ color: "#4A6862" }}>
-                      {ar ? "بنوك مدعومة" : "Supported Banks"}
+                      {ar ? "ب دعة" : "Supported Banks"}
                     </p>
                     <div className="flex flex-col gap-2">
-                      {["الراجحي", "الاهلي", "بنك الرياض", "الانماء", "البلاد", "ساب"].map((bank) => (
+                      {["اراجح", "اا", "ب اراض", "اااء", "اباد", "ساب"].map((bank) => (
                         <span key={bank} className="text-sm" style={{ color: "#8AADA8" }}>{bank}</span>
                       ))}
                     </div>
                   </div>
                   <div>
                     <p className="text-xs font-bold mb-3 uppercase tracking-widest" style={{ color: "#4A6862" }}>
-                      {ar ? "المقالات" : "Articles"}
+                      {ar ? "ااات" : "Articles"}
                     </p>
                     <div className="flex flex-col gap-2">
                       {[
-                        { slug: "kam-yisrif-sudi-ishtirakaat", label: ar ? "كم يصرف السعودي على الاشتراكات؟" : "Saudi Spending on Subscriptions" },
-                        { slug: "kif-talgi-ishtirakaat-mukhfiya", label: ar ? "كيف تكتشف الاشتراكات المخفية؟" : "How to Find Hidden Subscriptions" },
-                        { slug: "dark-patterns-tatbikat", label: ar ? "كيف التطبيقات تخليك تدفع" : "How Apps Trick You Into Paying" },
-                        { slug: "tawfir-floos-ishtirakaat", label: ar ? "٥ طرق لتوفير فلوس الاشتراكات" : "5 Ways to Save on Subscriptions" },
-                        { slug: "trial-trap-tajriba-majaniya", label: ar ? "فخ التجربة المجانية" : "The Free Trial Trap" },
+                        { slug: "kam-yisrif-sudi-ishtirakaat", label: ar ? " صر اسعد ع ااشتراات؟" : "Saudi Spending on Subscriptions" },
+                        { slug: "kif-talgi-ishtirakaat-mukhfiya", label: ar ? " تتش ااشتراات اخة؟" : "How to Find Hidden Subscriptions" },
+                        { slug: "dark-patterns-tatbikat", label: ar ? " اتطبات تخ تدع" : "How Apps Trick You Into Paying" },
+                        { slug: "tawfir-floos-ishtirakaat", label: ar ? " طر تر س ااشتراات" : "5 Ways to Save on Subscriptions" },
+                        { slug: "trial-trap-tajriba-majaniya", label: ar ? "خ اتجربة اجاة" : "The Free Trial Trap" },
                       ].map(({ slug, label }) => (
                         <a key={slug} href={`/blog/${slug}`} className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
                           onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
@@ -1097,10 +1097,10 @@ export default function HomePage() {
               {/* Bottom row */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                 <p className="text-sm" style={{ color: "#8AADA8" }}>
-                  {ar ? "صنع بحب في السعودية" : "Made with love in Saudi Arabia"}
+                  {ar ? "صع بحب  اسعدة" : "Made with love in Saudi Arabia"}
                 </p>
                 <p className="text-xs" style={{ color: "#4A6862" }}>
-                  {ar ? "جميع الحقوق محفوظة © ٢٠٢٥ يلا كنسل" : "© 2025 Yalla Cancel. All rights reserved."}
+                  {ar ? "جع اح حظة ©  ا س" : "© 2025 Yalla Cancel. All rights reserved."}
                 </p>
               </div>
             </div>

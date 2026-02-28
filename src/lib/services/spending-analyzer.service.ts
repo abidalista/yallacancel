@@ -27,59 +27,59 @@ export interface SpendingBreakdown {
 
 const CATEGORY_RULES: { category: string; categoryEn: string; keywords: string[] }[] = [
   {
-    category: "توصيل طعام",
+    category: "تص طعا",
     categoryEn: "Food Delivery",
-    keywords: ["hungerstation", "هنقرستيشن", "jahez", "جاهز", "mrsool", "مرسول", "toyou", "تويو", "wolt", "uber eats", "deliveroo", "talabat", "طلبات", "carriage", "كاريدج"],
+    keywords: ["hungerstation", "رستش", "jahez", "جاز", "mrsool", "رس", "toyou", "ت", "wolt", "uber eats", "deliveroo", "talabat", "طبات", "carriage", "اردج"],
   },
   {
-    category: "مطاعم",
+    category: "طاع",
     categoryEn: "Eating Out",
-    keywords: ["restaurant", "مطعم", "cafe", "كافيه", "coffee", "قهوة", "starbucks", "dunkin", "mcdonald", "ماكدونالدز", "burger", "برجر", "kfc", "بيتزا", "pizza", "shawarma", "شاورما", "sushi", "بوفيه", "buffet", "herfy", "هرفي", "albaik", "البيك", "kudu", "كودو"],
+    keywords: ["restaurant", "طع", "cafe", "ا", "coffee", "ة", "starbucks", "dunkin", "mcdonald", "ادادز", "burger", "برجر", "kfc", "بتزا", "pizza", "shawarma", "شارا", "sushi", "ب", "buffet", "herfy", "ر", "albaik", "اب", "kudu", "د"],
   },
   {
-    category: "بقالة",
+    category: "باة",
     categoryEn: "Groceries",
-    keywords: ["nana", "نعناع", "grocery", "بقالة", "tamimi", "التميمي", "panda", "بنده", "danube", "الدانوب", "carrefour", "كارفور", "lulu", "لولو", "othaim", "العثيم", "farm", "مزرعة"],
+    keywords: ["nana", "عاع", "grocery", "باة", "tamimi", "ات", "panda", "بد", "danube", "اداب", "carrefour", "ارر", "lulu", "", "othaim", "اعث", "farm", "زرعة"],
   },
   {
-    category: "تسوق",
+    category: "تس",
     categoryEn: "Shopping",
-    keywords: ["noon", "نون", "amazon", "أمازون", "jarir", "جرير", "extra", "اكسترا", "namshi", "نمشي", "shein", "aliexpress", "zara", "hm", "ikea", "ايكيا", "xcite", "اكسايت"],
+    keywords: ["noon", "", "amazon", "أاز", "jarir", "جرر", "extra", "استرا", "namshi", "ش", "shein", "aliexpress", "zara", "hm", "ikea", "اا", "xcite", "اسات"],
   },
   {
-    category: "مواصلات",
+    category: "اصات",
     categoryEn: "Transport",
-    keywords: ["uber", "أوبر", "careem", "كريم", "bolt", "بولت", "taxi", "تاكسي", "fuel", "وقود", "aramco", "أرامكو", "gas", "benzin", "petrol", "parking", "مواقف", "saher", "ساهر", "sixt", "rental car", "تأجير"],
+    keywords: ["uber", "أبر", "careem", "ر", "bolt", "بت", "taxi", "تاس", "fuel", "د", "aramco", "أرا", "gas", "benzin", "petrol", "parking", "ا", "saher", "سار", "sixt", "rental car", "تأجر"],
   },
   {
-    category: "اتصالات",
+    category: "اتصاات",
     categoryEn: "Telecom",
-    keywords: ["stc", "mobily", "موبايلي", "zain", "زين", "jawwy", "جوّي", "virgin", "فيرجن", "lebara", "ليبارا", "salam", "سلام"],
+    keywords: ["stc", "mobily", "با", "zain", "ز", "jawwy", "ج", "virgin", "رج", "lebara", "بارا", "salam", "سا"],
   },
   {
-    category: "تحويلات",
+    category: "تحات",
     categoryEn: "Transfers",
-    keywords: ["transfer", "تحويل", "حوالة", "stc pay", "urpay", "bayan", "western union", "ويسترن يونيون", "p2p", "iban"],
+    keywords: ["transfer", "تح", "حاة", "stc pay", "urpay", "bayan", "western union", "ستر ", "p2p", "iban"],
   },
   {
-    category: "سكن",
+    category: "س",
     categoryEn: "Housing",
-    keywords: ["rent", "إيجار", "ايجار", "ejar", "housing", "سكن", "mortgage", "رهن", "electricity", "كهرباء", "water", "مياه", "sec", "marafiq"],
+    keywords: ["rent", "إجار", "اجار", "ejar", "housing", "س", "mortgage", "ر", "electricity", "رباء", "water", "ا", "sec", "marafiq"],
   },
   {
-    category: "اشتراكات",
+    category: "اشتراات",
     categoryEn: "Subscriptions",
-    keywords: ["netflix", "spotify", "apple.com", "itunes", "google play", "youtube", "shahid", "شاهد", "adobe", "microsoft", "chatgpt", "openai", "discord", "playstation", "xbox", "icloud", "notion", "figma", "canva", "grammarly", "zoom", "slack", "linkedin", "twitter", "nordvpn", "expressvpn", "dropbox", "headspace", "calm", "duolingo", "crunchyroll", "disney", "hulu", "paramount", "hbo", "max", "osn", "bein", "tidal", "audible", "anghami", "deezer"],
+    keywords: ["netflix", "spotify", "apple.com", "itunes", "google play", "youtube", "shahid", "شاد", "adobe", "microsoft", "chatgpt", "openai", "discord", "playstation", "xbox", "icloud", "notion", "figma", "canva", "grammarly", "zoom", "slack", "linkedin", "twitter", "nordvpn", "expressvpn", "dropbox", "headspace", "calm", "duolingo", "crunchyroll", "disney", "hulu", "paramount", "hbo", "max", "osn", "bein", "tidal", "audible", "anghami", "deezer"],
   },
   {
     category: "صحة",
     categoryEn: "Health",
-    keywords: ["pharmacy", "صيدلية", "hospital", "مستشفى", "clinic", "عيادة", "doctor", "دكتور", "medical", "طبي", "gym", "fitness", "نادي", "leejam", "لي جام", "insurance", "تأمين", "bupa", "medgulf", "tawuniya"],
+    keywords: ["pharmacy", "صدة", "hospital", "ستش", "clinic", "عادة", "doctor", "دتر", "medical", "طب", "gym", "fitness", "اد", "leejam", " جا", "insurance", "تأ", "bupa", "medgulf", "tawuniya"],
   },
   {
-    category: "تعليم",
+    category: "تع",
     categoryEn: "Education",
-    keywords: ["university", "جامعة", "school", "مدرسة", "course", "coursera", "udemy", "skillshare", "masterclass", "تعليم", "education", "tuition"],
+    keywords: ["university", "جاعة", "school", "درسة", "course", "coursera", "udemy", "skillshare", "masterclass", "تع", "education", "tuition"],
   },
 ];
 
@@ -92,7 +92,7 @@ function categorizeTransaction(description: string): { category: string; categor
       }
     }
   }
-  return { category: "أخرى", categoryEn: "Other" };
+  return { category: "أخر", categoryEn: "Other" };
 }
 
 export function analyzeSpending(transactions: Transaction[]): SpendingBreakdown {
@@ -156,7 +156,7 @@ export function analyzeSpending(transactions: Transaction[]): SpendingBreakdown 
   if (categories.length > 0) {
     const top = categories[0];
     takeaways.push({
-      ar: `**${top.name}** هي أكبر فئة إنفاق — ${top.total.toLocaleString()} ريال (${top.percent}٪ من المجموع).`,
+      ar: `**${top.name}**  أبر ئة إا — ${top.total.toLocaleString()} را (${top.percent}  اجع).`,
       en: `**${top.nameEn}** is your biggest spending category — ${top.total.toLocaleString()} SAR (${top.percent}% of total).`,
     });
   }
@@ -166,7 +166,7 @@ export function analyzeSpending(transactions: Transaction[]): SpendingBreakdown 
   if (foodDelivery && groceries && foodDelivery.total > groceries.total) {
     const ratio = Math.round(foodDelivery.total / groceries.total);
     takeaways.push({
-      ar: `**التوصيل أكثر من البقالة بـ ${ratio}x** — ${foodDelivery.total.toLocaleString()} ريال توصيل مقابل ${groceries.total.toLocaleString()} ريال بقالة.`,
+      ar: `**اتص أثر  اباة ب ${ratio}x** — ${foodDelivery.total.toLocaleString()} را تص اب ${groceries.total.toLocaleString()} را باة.`,
       en: `**Food delivery > groceries by ${ratio}x** — ${foodDelivery.total.toLocaleString()} SAR delivery vs ${groceries.total.toLocaleString()} SAR groceries.`,
     });
   }
@@ -174,7 +174,7 @@ export function analyzeSpending(transactions: Transaction[]): SpendingBreakdown 
   const subscriptions = categories.find((c) => c.nameEn === "Subscriptions");
   if (subscriptions) {
     takeaways.push({
-      ar: `**الاشتراكات** تكلفك ${subscriptions.monthlyAvg.toLocaleString()} ريال/شهر — وش منها تحتاجه فعلاً؟`,
+      ar: `**ااشتراات** ت ${subscriptions.monthlyAvg.toLocaleString()} را/شر — ش ا تحتاج عا؟`,
       en: `**Subscriptions** cost you ${subscriptions.monthlyAvg.toLocaleString()} SAR/mo — which ones do you actually use?`,
     });
   }
@@ -182,7 +182,7 @@ export function analyzeSpending(transactions: Transaction[]): SpendingBreakdown 
   const transport = categories.find((c) => c.nameEn === "Transport");
   if (transport && transport.topMerchants.length > 0) {
     takeaways.push({
-      ar: `**المواصلات** — ${transport.total.toLocaleString()} ريال (${transport.topMerchants.join("، ")}).`,
+      ar: `**ااصات** — ${transport.total.toLocaleString()} را (${transport.topMerchants.join(" ")}).`,
       en: `**Transport** — ${transport.total.toLocaleString()} SAR (${transport.topMerchants.join(", ")}).`,
     });
   }
@@ -197,7 +197,7 @@ export function analyzeSpending(transactions: Transaction[]): SpendingBreakdown 
     const sorted = [...monthTotals.entries()].sort((a, b) => b[1] - a[1]);
     const [bigMonth, bigAmt] = sorted[0];
     takeaways.push({
-      ar: `**أعلى شهر**: ${bigMonth} (${Math.round(bigAmt).toLocaleString()} ريال).`,
+      ar: `**أع شر**: ${bigMonth} (${Math.round(bigAmt).toLocaleString()} را).`,
       en: `**Biggest month**: ${bigMonth} (${Math.round(bigAmt).toLocaleString()} SAR).`,
     });
   }
