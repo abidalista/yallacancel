@@ -911,7 +911,7 @@ export default function HomePage() {
                   {ar ? "تبي تلغي اشتراك؟" : "Want to cancel a subscription?"}
                 </h2>
                 <p className="text-sm mb-6" style={{ color: "#8AADA8" }}>
-                  {ar ? "عندنا أكثر من ٢٠٠ دليل إلغاء خطوة بخطوة — مجاناً" : "We have 200+ step-by-step cancel guides — free"}
+                  {ar ? "عندنا أكثر من ٢٠٠ دليل إلغاء خطوة بخطوة" : "We have 200+ step-by-step cancel guides"}
                 </p>
                 <a
                   href="/guides"

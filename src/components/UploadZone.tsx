@@ -162,7 +162,7 @@ export default function UploadZone({
             onMouseEnter={e => { e.currentTarget.style.background = "#009147"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,166,81,0.35)"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "#00A651"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,166,81,0.25)"; }}
           >
-            {ar ? "جرب بمثال جاهز — مجاناً" : "Try with sample data — free"}
+            {ar ? "جرب بمثال جاهز" : "Try with sample data"}
           </button>
         </div>
       )}
