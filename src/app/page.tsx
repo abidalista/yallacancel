@@ -982,7 +982,7 @@ export default function HomePage() {
                     {ar ? "اداة مجانية لكشف الاشتراكات المنسية" : "Free tool to find forgotten subscriptions"}
                   </p>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-10 gap-y-8">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-x-10 gap-y-8">
                   <div>
                     <p className="text-xs font-bold mb-3 uppercase tracking-widest" style={{ color: "#4A6862" }}>
                       {ar ? "الخدمة" : "Product"}
@@ -1067,6 +1067,28 @@ export default function HomePage() {
                     <div className="flex flex-col gap-2">
                       {["الراجحي", "الاهلي", "بنك الرياض", "الانماء", "البلاد", "ساب"].map((bank) => (
                         <span key={bank} className="text-sm" style={{ color: "#8AADA8" }}>{bank}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold mb-3 uppercase tracking-widest" style={{ color: "#4A6862" }}>
+                      {ar ? "المقالات" : "Articles"}
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      {[
+                        { slug: "kam-yisrif-sudi-ishtirakaat", label: ar ? "كم يصرف السعودي؟" : "Saudi Spending Stats" },
+                        { slug: "kif-talgi-ishtirakaat-mukhfiya", label: ar ? "اشتراكات مخفية" : "Hidden Subscriptions" },
+                        { slug: "dark-patterns-tatbikat", label: ar ? "Dark Patterns" : "Dark Patterns" },
+                        { slug: "guide-ilghaa-adobe", label: ar ? "الغاء Adobe" : "Cancel Adobe" },
+                        { slug: "tawfir-floos-ishtirakaat", label: ar ? "توفير فلوس" : "Save Money" },
+                        { slug: "trial-trap-tajriba-majaniya", label: ar ? "فخ التجربة" : "Trial Trap" },
+                      ].map(({ slug, label }) => (
+                        <a key={slug} href={`/blog/${slug}`} className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
+                          onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
+                          onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
+                        >
+                          {label}
+                        </a>
                       ))}
                     </div>
                   </div>
