@@ -1076,12 +1076,11 @@ export default function HomePage() {
                     </p>
                     <div className="flex flex-col gap-2">
                       {[
-                        { slug: "kam-yisrif-sudi-ishtirakaat", label: ar ? "كم يصرف السعودي؟" : "Saudi Spending Stats" },
-                        { slug: "kif-talgi-ishtirakaat-mukhfiya", label: ar ? "اشتراكات مخفية" : "Hidden Subscriptions" },
-                        { slug: "dark-patterns-tatbikat", label: ar ? "Dark Patterns" : "Dark Patterns" },
-                        { slug: "guide-ilghaa-adobe", label: ar ? "الغاء Adobe" : "Cancel Adobe" },
-                        { slug: "tawfir-floos-ishtirakaat", label: ar ? "توفير فلوس" : "Save Money" },
-                        { slug: "trial-trap-tajriba-majaniya", label: ar ? "فخ التجربة" : "Trial Trap" },
+                        { slug: "kam-yisrif-sudi-ishtirakaat", label: ar ? "كم يصرف السعودي على الاشتراكات؟" : "Saudi Spending on Subscriptions" },
+                        { slug: "kif-talgi-ishtirakaat-mukhfiya", label: ar ? "كيف تكتشف الاشتراكات المخفية؟" : "How to Find Hidden Subscriptions" },
+                        { slug: "dark-patterns-tatbikat", label: ar ? "كيف التطبيقات تخليك تدفع" : "How Apps Trick You Into Paying" },
+                        { slug: "tawfir-floos-ishtirakaat", label: ar ? "٥ طرق لتوفير فلوس الاشتراكات" : "5 Ways to Save on Subscriptions" },
+                        { slug: "trial-trap-tajriba-majaniya", label: ar ? "فخ التجربة المجانية" : "The Free Trial Trap" },
                       ].map(({ slug, label }) => (
                         <a key={slug} href={`/blog/${slug}`} className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
                           onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
