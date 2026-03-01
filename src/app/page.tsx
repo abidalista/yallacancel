@@ -605,26 +605,17 @@ export default function HomePage() {
                       <span className="font-bold text-sm mr-4 ml-4" style={{ color: "#1A3A35" }}>
                         {sub.yearlyEquivalent.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"}
                       </span>
-                      {info?.cancelUrl ? (
-                        <a
-                          href={info.cancelUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-bold text-xs px-3.5 py-1.5 rounded-full no-underline flex-shrink-0 transition-colors"
-                          style={{ background: "white", color: "#00A651", border: "1.5px solid #00A651" }}
-                          onMouseEnter={e => { e.currentTarget.style.background = "#00A651"; e.currentTarget.style.color = "white"; }}
-                          onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.color = "#00A651"; }}
-                        >
-                          {ar ? "الغي" : "Cancel"}
-                        </a>
-                      ) : (
-                        <span
-                          className="font-bold text-xs px-3.5 py-1.5 rounded-full flex-shrink-0"
-                          style={{ background: "white", color: "#C5DDD9", border: "1.5px solid #E5EFED" }}
-                        >
-                          {ar ? "الغي" : "Cancel"}
-                        </span>
-                      )}
+                      <a
+                        href={info?.cancelUrl || `https://www.google.com/search?q=cancel+${encodeURIComponent(sub.name)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-bold text-xs px-3.5 py-1.5 rounded-full no-underline flex-shrink-0 transition-colors"
+                        style={{ background: "white", color: "#00A651", border: "1.5px solid #00A651" }}
+                        onMouseEnter={e => { e.currentTarget.style.background = "#00A651"; e.currentTarget.style.color = "white"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.color = "#00A651"; }}
+                      >
+                        {ar ? "الغي" : "Cancel"}
+                      </a>
                     </div>
                   );
                 })}
