@@ -197,12 +197,12 @@ export default function SampleReportPage() {
           <div className="min-h-screen bg-[#EDF5F3] pt-24 pb-16 px-6">
             <div className="max-w-[700px] mx-auto">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                <p className="font-bold text-sm mb-2" style={{ color: "#00A651" }}>
+                <p className="font-bold text-base mb-2" style={{ color: "#00A651" }}>
                   {ar ? `لقينا ${confirmed.length} اشتراكات مؤكدة` : `Found ${confirmed.length} clear subscriptions`}
                 </p>
-                <h1 className="text-3xl font-extrabold tracking-tight mb-2" style={{ color: "#1A3A35" }}>
+                <h2 className="text-2xl font-extrabold tracking-tight mb-2" style={{ color: "#1A3A35" }}>
                   {ar ? `ساعدنا نتعرف على ${suspicious.length} إضافية` : `Help identify ${suspicious.length} more`}
-                </h1>
+                </h2>
                 <div className="h-1 rounded-full mb-6" style={{ background: "#C5DDD9" }}>
                   <div className="h-1 rounded-full" style={{ width: "60%", background: "#1A3A35" }} />
                 </div>
@@ -241,7 +241,7 @@ export default function SampleReportPage() {
                           unknown: ar ? "ما أدري" : "Don't know",
                         };
                         const isActive =
-                          (choice === "subscription" && sub.userConfirmed && sub.confidence === "confirmed") ||
+                          (choice === "subscription" && (!sub.userConfirmed || (sub.userConfirmed && sub.confidence === "confirmed"))) ||
                           (choice === "not" && sub.userConfirmed && sub.status === "keep") ||
                           (choice === "unknown" && sub.userConfirmed && sub.confidence === "suspicious" && sub.status !== "keep");
                         return (
