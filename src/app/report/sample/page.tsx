@@ -148,7 +148,7 @@ export default function SampleReportPage() {
       />
 
       {showPaywall && (
-        <PaywallModal locale={locale} onClose={() => setShowPaywall(false)} />
+        <PaywallModal locale={locale} onClose={() => setShowPaywall(false)} onPaymentSuccess={() => setShowPaywall(false)} />
       )}
 
       {/* ── ANALYZING ── */}

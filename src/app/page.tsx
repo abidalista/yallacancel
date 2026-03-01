@@ -158,6 +158,7 @@ export default function HomePage() {
   const [report, setReport] = useState<Report | null>(null);
   const [parseError, setParseError] = useState<ParseError | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [txCount, setTxCount] = useState(0);
   const [analyzeTimer, setAnalyzeTimer] = useState(0);
@@ -437,7 +438,7 @@ export default function HomePage() {
       />
 
       {showPaywall && (
-        <PaywallModal locale={locale} onClose={() => setShowPaywall(false)} />
+        <PaywallModal locale={locale} onClose={() => setShowPaywall(false)} onPaymentSuccess={() => { setIsPaid(true); setShowPaywall(false); }} />
       )}
 
       {/* ── ANALYZING ── */}
@@ -682,6 +683,7 @@ export default function HomePage() {
                 onStatusChange={handleStatusChange}
                 onStartOver={handleStartOver}
                 onUpgradeClick={() => setShowPaywall(true)}
+                isPaid={isPaid}
               />
 
               {/* Spending breakdown */}

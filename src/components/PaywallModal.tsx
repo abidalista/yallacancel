@@ -1,11 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Zap, FolderOpen, FileDown, Link2, BookOpen, MessageSquare, Infinity } from "lucide-react";
+import { X, Zap, FolderOpen, FileDown, Link2, BookOpen, MessageSquare, Infinity, Loader2 } from "lucide-react";
+import { WhopCheckoutEmbed } from "@whop/checkout/react";
 
 interface PaywallModalProps {
   locale: "ar" | "en";
   onClose: () => void;
+  onPaymentSuccess: () => void;
 }
 
 const FEATURES_AR = [
@@ -26,9 +29,12 @@ const FEATURES_EN = [
   { icon: Infinity, text: "Lifetime updates — pay once, done" },
 ];
 
-export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
+export default function PaywallModal({ locale, onClose, onPaymentSuccess }: PaywallModalProps) {
   const ar = locale === "ar";
   const features = ar ? FEATURES_AR : FEATURES_EN;
+  const [showCheckout, setShowCheckout] = useState(false);
+
+  const planId = process.env.NEXT_PUBLIC_WHOP_PLAN_ID || "plan_3E0V8cxU8VYXI";
 
   return (
     <AnimatePresence>
@@ -44,7 +50,7 @@ export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ duration: 0.3 }}
-          className="bg-white rounded-[24px] shadow-2xl w-full max-w-md overflow-hidden"
+          className="bg-white rounded-[24px] shadow-2xl w-full max-w-md overflow-hidden max-h-[90vh] overflow-y-auto"
           dir={ar ? "rtl" : "ltr"}
         >
           {/* Header */}
@@ -66,47 +72,75 @@ export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
             </p>
           </div>
 
-          {/* Features */}
-          <div className="px-6 py-5 space-y-3">
-            {features.map((f, i) => {
-              const Icon = f.icon;
-              return (
-                <div key={i} className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#E8F7EE" }}>
-                    <Icon size={16} strokeWidth={1.5} style={{ color: "#00A651" }} />
+          {!showCheckout ? (
+            <>
+              {/* Features */}
+              <div className="px-6 py-5 space-y-3">
+                {features.map((f, i) => {
+                  const Icon = f.icon;
+                  return (
+                    <div key={i} className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#E8F7EE" }}>
+                        <Icon size={16} strokeWidth={1.5} style={{ color: "#00A651" }} />
+                      </div>
+                      <span className="text-sm leading-snug pt-1" style={{ color: "#4A6862" }}>
+                        {f.text}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Pricing */}
+              <div className="px-6 pb-6 space-y-3">
+                <div className="rounded-2xl p-4 text-center" style={{ background: "#E5EFED", border: "1px solid #C5DDD9" }}>
+                  <div className="text-3xl font-extrabold tracking-tight" style={{ color: "#1A3A35" }}>
+                    {ar ? "٤٩ ريال" : "49 SAR"}
                   </div>
-                  <span className="text-sm leading-snug pt-1" style={{ color: "#4A6862" }}>
-                    {f.text}
-                  </span>
+                  <div className="text-sm" style={{ color: "#4A6862" }}>
+                    {ar ? "دفعة واحدة — بدون اشتراك شهري" : "One-time payment — no monthly fee"}
+                  </div>
                 </div>
-              );
-            })}
-          </div>
 
-          {/* Pricing */}
-          <div className="px-6 pb-6 space-y-3">
-            <div className="rounded-2xl p-4 text-center" style={{ background: "#E5EFED", border: "1px solid #C5DDD9" }}>
-              <div className="text-3xl font-extrabold tracking-tight" style={{ color: "#1A3A35" }}>
-                {ar ? "٤٩ ريال" : "49 SAR"}
+                <button
+                  className="btn-primary w-full text-center"
+                  onClick={() => setShowCheckout(true)}
+                >
+                  {ar ? "ادفع الحين — ٤٩ ريال" : "Pay now — 49 SAR"}
+                </button>
+
+                <p className="text-xs text-center" style={{ color: "#8AADA8" }}>
+                  {ar
+                    ? "دفع آمن ومشفر · يقبل مدى وفيزا وماستر و Apple Pay"
+                    : "Secure & encrypted · Accepts mada, Visa, Mastercard & Apple Pay"}
+                </p>
               </div>
-              <div className="text-sm" style={{ color: "#4A6862" }}>
-                {ar ? "دفعة واحدة — بدون اشتراك شهري" : "One-time payment — no monthly fee"}
-              </div>
+            </>
+          ) : (
+            /* Whop Checkout Embed */
+            <div className="px-4 py-5" dir="ltr">
+              <WhopCheckoutEmbed
+                planId={planId}
+                theme="light"
+                skipRedirect
+                onComplete={() => {
+                  onPaymentSuccess();
+                }}
+                fallback={
+                  <div className="flex items-center justify-center py-16">
+                    <Loader2 size={24} className="animate-spin" style={{ color: "#00A651" }} />
+                  </div>
+                }
+              />
+              <button
+                onClick={() => setShowCheckout(false)}
+                className="w-full text-center text-sm mt-3 py-2"
+                style={{ color: "#8AADA8" }}
+              >
+                {ar ? "← رجوع" : "← Back"}
+              </button>
             </div>
-
-            <button
-              className="btn-primary w-full text-center"
-              onClick={() => alert(ar ? "قريبا — جاري ربط بوابة الدفع" : "Coming soon — payment gateway integration in progress")}
-            >
-              {ar ? "ادفع بمدى أو بطاقة — ٤٩ ريال" : "Pay with mada or card — 49 SAR"}
-            </button>
-
-            <p className="text-xs text-center" style={{ color: "#8AADA8" }}>
-              {ar
-                ? "الدفع عبر موياسر · آمن ومشفر · يقبل مدى وفيزا وماستر"
-                : "Powered by Moyasar · Secure & encrypted · Accepts mada, Visa, Mastercard"}
-            </p>
-          </div>
+          )}
         </motion.div>
       </motion.div>
     </AnimatePresence>

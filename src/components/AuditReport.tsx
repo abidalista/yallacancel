@@ -12,6 +12,7 @@ interface AuditReportProps {
   onStatusChange: (id: string, status: SubscriptionStatus) => void;
   onStartOver: () => void;
   onUpgradeClick: () => void;
+  isPaid?: boolean;
 }
 
 export default function AuditReport({
@@ -20,6 +21,7 @@ export default function AuditReport({
   onStatusChange,
   onStartOver,
   onUpgradeClick,
+  isPaid = false,
 }: AuditReportProps) {
   const [privacyMode, setPrivacyMode] = useState(false);
   const [filter, setFilter] = useState<"all" | SubscriptionStatus>("all");
