@@ -610,14 +610,19 @@ export default function HomePage() {
                           href={info.cancelUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="font-bold text-sm no-underline hover:underline flex-shrink-0"
-                          style={{ color: "#00A651" }}
+                          className="font-bold text-xs px-3 py-1.5 rounded-full no-underline flex-shrink-0 transition-colors"
+                          style={{ background: "#E8F7EE", color: "#00A651" }}
+                          onMouseEnter={e => { e.currentTarget.style.background = "#00A651"; e.currentTarget.style.color = "white"; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = "#E8F7EE"; e.currentTarget.style.color = "#00A651"; }}
                         >
-                          {ar ? "الغي" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
+                          {ar ? "الغي" : "Cancel"}
                         </a>
                       ) : (
-                        <span className="font-bold text-sm flex-shrink-0" style={{ color: "#00A651" }}>
-                          {ar ? "الغي" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
+                        <span
+                          className="font-bold text-xs px-3 py-1.5 rounded-full flex-shrink-0"
+                          style={{ background: "#E8F7EE", color: "#00A651" }}
+                        >
+                          {ar ? "الغي" : "Cancel"}
                         </span>
                       )}
                     </div>
@@ -651,16 +656,16 @@ export default function HomePage() {
                 >
                   <p className="text-center font-bold text-base mb-4" style={{ color: "#1A3A35" }}>
                     {ar
-                      ? `ادفع ٤٩ ريال، ووفر ${hiddenYearly.toFixed(0)} ريال/سنة — يعني ${Math.round(hiddenYearly / 49)}x عائد`
-                      : `Pay 49 SAR, save up to ${hiddenYearly.toFixed(0)} SAR/yr — that's a ${Math.round(hiddenYearly / 49)}x return`}
+                      ? `ادفع ٤٩ ريال ووفر ${hiddenYearly.toFixed(0)} ريال/سنة`
+                      : `Pay 49 SAR and save ${hiddenYearly.toFixed(0)} SAR/yr`}
                   </p>
                   <button
                     onClick={() => setShowPaywall(true)}
                     className="btn-primary w-full text-base py-4 mb-3"
                   >
                     {ar
-                      ? `اكشف كل ${subs.length} اشتراك — ٤٩ ريال`
-                      : `Unlock all ${subs.length} subscriptions — 49 SAR`}
+                      ? "اكشف التقرير الكامل (٤٩ ريال)"
+                      : "Reveal the full report (49 SAR)"}
                   </button>
                 </motion.div>
               )}
