@@ -610,17 +610,17 @@ export default function HomePage() {
                           href={info.cancelUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="font-bold text-xs px-3 py-1.5 rounded-full no-underline flex-shrink-0 transition-colors"
-                          style={{ background: "#E8F7EE", color: "#00A651" }}
+                          className="font-bold text-xs px-3.5 py-1.5 rounded-full no-underline flex-shrink-0 transition-colors"
+                          style={{ background: "white", color: "#00A651", border: "1.5px solid #00A651" }}
                           onMouseEnter={e => { e.currentTarget.style.background = "#00A651"; e.currentTarget.style.color = "white"; }}
-                          onMouseLeave={e => { e.currentTarget.style.background = "#E8F7EE"; e.currentTarget.style.color = "#00A651"; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.color = "#00A651"; }}
                         >
                           {ar ? "الغي" : "Cancel"}
                         </a>
                       ) : (
                         <span
-                          className="font-bold text-xs px-3 py-1.5 rounded-full flex-shrink-0"
-                          style={{ background: "#E8F7EE", color: "#00A651" }}
+                          className="font-bold text-xs px-3.5 py-1.5 rounded-full flex-shrink-0"
+                          style={{ background: "white", color: "#C5DDD9", border: "1.5px solid #E5EFED" }}
                         >
                           {ar ? "الغي" : "Cancel"}
                         </span>
