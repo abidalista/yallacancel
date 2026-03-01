@@ -662,26 +662,23 @@ export default function HomePage() {
                       ? `اكشف كل ${subs.length} اشتراك — ٤٩ ريال`
                       : `Unlock all ${subs.length} subscriptions — 49 SAR`}
                   </button>
-                  <p className="text-xs text-center mb-8" style={{ color: "#8AADA8" }}>
-                    {ar
-                      ? "دفعة واحدة · بدون حساب · ضمان استرداد كامل"
-                      : "One-time payment · No account needed · 100% money-back guarantee"}
-                  </p>
                 </motion.div>
               )}
 
-              {/* Full audit report */}
-              <AuditReport
-                report={report}
-                locale={locale}
-                onStatusChange={handleStatusChange}
-                onStartOver={handleStartOver}
-                onUpgradeClick={() => setShowPaywall(true)}
-                isPaid={isPaid}
-              />
+              {/* Full audit report — only after payment */}
+              {isPaid && (
+                <AuditReport
+                  report={report}
+                  locale={locale}
+                  onStatusChange={handleStatusChange}
+                  onStartOver={handleStartOver}
+                  onUpgradeClick={() => setShowPaywall(true)}
+                  isPaid={isPaid}
+                />
+              )}
 
-              {/* Spending breakdown */}
-              {spendingData && spendingData.categories.length > 0 && (
+              {/* Spending breakdown — only after payment */}
+              {isPaid && spendingData && spendingData.categories.length > 0 && (
                 <div className="mt-6">
                   <SpendingBreakdownComponent data={spendingData} locale={locale} />
                 </div>

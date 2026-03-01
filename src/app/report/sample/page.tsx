@@ -31,6 +31,7 @@ export default function SampleReportPage() {
   const [report, setReport] = useState<Report | null>(null);
   const [spendingData, setSpendingData] = useState<SpendingData | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
   const [analyzeTimer, setAnalyzeTimer] = useState(0);
   const [txCount, setTxCount] = useState(0);
   const [analyzeStatus, setAnalyzeStatus] = useState("");
@@ -148,7 +149,7 @@ export default function SampleReportPage() {
       />
 
       {showPaywall && (
-        <PaywallModal locale={locale} onClose={() => setShowPaywall(false)} onPaymentSuccess={() => setShowPaywall(false)} />
+        <PaywallModal locale={locale} onClose={() => setShowPaywall(false)} onPaymentSuccess={() => { setIsPaid(true); setShowPaywall(false); }} />
       )}
 
       {/* ── ANALYZING ── */}
@@ -372,25 +373,22 @@ export default function SampleReportPage() {
                       ? `اكشف كل ${subs.length} اشتراك — ٤٩ ريال`
                       : `Unlock all ${subs.length} subscriptions — 49 SAR`}
                   </button>
-                  <p className="text-xs text-center mb-8" style={{ color: "#8AADA8" }}>
-                    {ar
-                      ? "دفعة واحدة · بدون حساب · ضمان استرداد كامل"
-                      : "One-time payment · No account needed · 100% money-back guarantee"}
-                  </p>
                 </motion.div>
               )}
 
-              {/* Full audit report */}
-              <AuditReport
-                report={report}
-                locale={locale}
-                onStatusChange={handleStatusChange}
-                onStartOver={handleStartOver}
-                onUpgradeClick={() => setShowPaywall(true)}
-              />
+              {/* Full audit report — only after payment */}
+              {isPaid && (
+                <AuditReport
+                  report={report}
+                  locale={locale}
+                  onStatusChange={handleStatusChange}
+                  onStartOver={handleStartOver}
+                  onUpgradeClick={() => setShowPaywall(true)}
+                />
+              )}
 
-              {/* Spending breakdown */}
-              {spendingData && spendingData.categories.length > 0 && (
+              {/* Spending breakdown — only after payment */}
+              {isPaid && spendingData && spendingData.categories.length > 0 && (
                 <div className="mt-6">
                   <SpendingBreakdownComponent data={spendingData} locale={locale} />
                 </div>
