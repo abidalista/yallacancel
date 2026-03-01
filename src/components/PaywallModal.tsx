@@ -62,7 +62,7 @@ export default function PaywallModal({ locale, onClose, onPaymentSuccess }: Payw
               <X size={18} strokeWidth={1.5} />
             </button>
             <Zap size={28} strokeWidth={1.5} className="mx-auto mb-2" />
-            <h2 className="text-xl font-extrabold">Yalla Cancel Pro</h2>
+            <h2 className="text-xl font-extrabold">YallaCancel</h2>
             <p className="text-sm mt-1" style={{ color: "rgba(197,221,217,0.7)" }}>
               {ar ? "تخلص من الاشتراكات اللي ما تبيها" : "Get rid of subscriptions you don't need"}
             </p>
