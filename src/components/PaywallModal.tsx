@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Zap, FolderOpen, FileDown, Link2, BookOpen, MessageSquare, Infinity, Loader2 } from "lucide-react";
+import { X, Zap, FolderOpen, FileDown, Link2, BookOpen, Loader2 } from "lucide-react";
 import { WhopCheckoutEmbed } from "@whop/checkout/react";
 
 interface PaywallModalProps {
@@ -12,21 +12,17 @@ interface PaywallModalProps {
 }
 
 const FEATURES_AR = [
-  { icon: FolderOpen, text: "رفع كشوفات غير محدودة — كل بطاقاتك وبنوكك" },
-  { icon: FileDown, text: "تصدير تقرير PDF بالعربي — احتفظ بنسخة" },
-  { icon: Link2, text: "روابط إلغاء مباشرة لأكثر من ٥٠ خدمة سعودية" },
-  { icon: BookOpen, text: "دليل خطوة بخطوة لإلغاء كل اشتراك" },
-  { icon: MessageSquare, text: "قوالب رسائل إلغاء جاهزة بالعربي" },
-  { icon: Infinity, text: "تحديثات مدى الحياة — دفعة واحدة وخلاص" },
+  { icon: FolderOpen, text: "ارفع كشوفات بدون حد — كل بطاقاتك وبنوكك" },
+  { icon: FileDown, text: "حمل تقرير PDF كامل — نسختك تبقى معك" },
+  { icon: Link2, text: "روابط إلغاء مباشرة — أكثر من ٥٠ خدمة" },
+  { icon: BookOpen, text: "شرح خطوة بخطوة — كيف تلغي كل اشتراك" },
 ];
 
 const FEATURES_EN = [
-  { icon: FolderOpen, text: "Unlimited CSV uploads — all your cards and banks" },
-  { icon: FileDown, text: "Export Arabic PDF report — keep a copy" },
-  { icon: Link2, text: "Direct cancel links for 50+ Saudi services" },
-  { icon: BookOpen, text: "Step-by-step cancellation guide for each service" },
-  { icon: MessageSquare, text: "Ready-to-send Arabic cancellation message templates" },
-  { icon: Infinity, text: "Lifetime updates — pay once, done" },
+  { icon: FolderOpen, text: "Unlimited uploads — all your cards and banks" },
+  { icon: FileDown, text: "Download full PDF report — keep your copy" },
+  { icon: Link2, text: "Direct cancel links — 50+ services" },
+  { icon: BookOpen, text: "Step-by-step guide to cancel each subscription" },
 ];
 
 export default function PaywallModal({ locale, onClose, onPaymentSuccess }: PaywallModalProps) {
@@ -68,7 +64,7 @@ export default function PaywallModal({ locale, onClose, onPaymentSuccess }: Payw
             <Zap size={28} strokeWidth={1.5} className="mx-auto mb-2" />
             <h2 className="text-xl font-extrabold">Yalla Cancel Pro</h2>
             <p className="text-sm mt-1" style={{ color: "rgba(197,221,217,0.7)" }}>
-              {ar ? "كل شيء تحتاجه لتنظيف اشتراكاتك" : "Everything you need to clean up your subscriptions"}
+              {ar ? "تخلص من الاشتراكات اللي ما تبيها" : "Get rid of subscriptions you don't need"}
             </p>
           </div>
 
@@ -106,7 +102,7 @@ export default function PaywallModal({ locale, onClose, onPaymentSuccess }: Payw
                   className="btn-primary w-full text-center"
                   onClick={() => setShowCheckout(true)}
                 >
-                  {ar ? "ادفع الحين — ٤٩ ريال" : "Pay now — 49 SAR"}
+                  {ar ? "تقريرك الكامل — ٤٩ ريال" : "Your full report — 49 SAR"}
                 </button>
 
                 <p className="text-xs text-center" style={{ color: "#8AADA8" }}>
