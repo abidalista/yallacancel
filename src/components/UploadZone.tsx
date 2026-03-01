@@ -22,6 +22,15 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function truncateName(name: string, max = 20): string {
+  const dot = name.lastIndexOf(".");
+  if (dot === -1) return name.length > max ? name.slice(0, max) + "..." : name;
+  const ext = name.slice(dot);
+  const base = name.slice(0, dot);
+  if (base.length <= max) return name;
+  return base.slice(0, max) + "..." + ext;
+}
+
 export default function UploadZone({
   locale,
   onScan,
@@ -124,7 +133,7 @@ export default function UploadZone({
                 <div key={`${f.name}-${i}`} className="flex items-center justify-between">
                   <span className="flex items-center gap-2 text-sm" style={{ color: "#4A6862" }}>
                     <FileText size={14} strokeWidth={1.5} style={{ color: "#8AADA8" }} />
-                    {f.name} <span style={{ color: "#8AADA8" }}>({formatSize(f.size)})</span>
+                    {truncateName(f.name)} <span style={{ color: "#8AADA8" }}>({formatSize(f.size)})</span>
                   </span>
                   <button
                     onClick={() => removeFile(i)}

@@ -51,6 +51,7 @@ export default function SampleReportPage() {
       setTxCount(0);
       setAnalyzeStatus(ar ? "نقرأ الملفات..." : "Reading files...");
 
+      const MIN_LOADING_MS = 4000;
       const start = Date.now();
       const timer = setInterval(() => {
         if (!cancelled) setAnalyzeTimer(Math.floor((Date.now() - start) / 1000));
@@ -61,7 +62,6 @@ export default function SampleReportPage() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const text = await res.text();
         if (!text || text.length < 50) throw new Error("Empty");
-        clearInterval(timer);
 
         const bankId = detectBank(text);
         const parsed = parseCSVRobust(text, bankId);
@@ -71,10 +71,13 @@ export default function SampleReportPage() {
           setTxCount(parsed.transactions.length);
           setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
         }
-        await new Promise(r => setTimeout(r, 1200));
 
         const result = analyzeTransactions(parsed.transactions);
         const spending = analyzeSpending(parsed.transactions);
+
+        const elapsed = Date.now() - start;
+        if (elapsed < MIN_LOADING_MS) await new Promise(r => setTimeout(r, MIN_LOADING_MS - elapsed));
+        clearInterval(timer);
 
         if (!cancelled) {
           setReport(result);
@@ -84,12 +87,14 @@ export default function SampleReportPage() {
           window.scrollTo({ top: 0, behavior: "smooth" });
         }
       } catch {
-        clearInterval(timer);
         if (!cancelled) {
           setTxCount(72);
           setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
         }
-        await new Promise(r => setTimeout(r, 1500));
+        const elapsed = Date.now() - start;
+        if (elapsed < MIN_LOADING_MS) await new Promise(r => setTimeout(r, MIN_LOADING_MS - elapsed));
+        clearInterval(timer);
+
         if (!cancelled) {
           setReport({ ...SAMPLE_REPORT });
           setSpendingData({ ...SAMPLE_SPENDING });

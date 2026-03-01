@@ -267,6 +267,8 @@ export default function HomePage() {
       setAnalyzeTimer(Math.floor((Date.now() - start) / 1000));
     }, 1000);
 
+    const MIN_LOADING_MS = 4000;
+
     try {
       // ── Try AI analysis first (Claude API) ──
       setAnalyzeStatus(ar ? "الذكاء الاصطناعي يحلل كشفك..." : "AI is analyzing your statement...");
@@ -276,6 +278,11 @@ export default function HomePage() {
         const aiResult = await analyzeFileWithAI(file);
         if (aiResult.success) {
           console.log("[handleScan] AI analysis succeeded");
+          const elapsed = Date.now() - start;
+          if (elapsed < MIN_LOADING_MS) {
+            setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
+            await new Promise(r => setTimeout(r, MIN_LOADING_MS - elapsed));
+          }
           if (timerRef.current) clearInterval(timerRef.current);
           setReport(aiResult.report);
           setSpendingData(null);
@@ -325,10 +332,14 @@ export default function HomePage() {
       }
 
       setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
-      await new Promise((r) => setTimeout(r, 1500));
 
       const result = analyzeTransactions(allTx);
       const spending = analyzeSpending(allTx);
+
+      const elapsed = Date.now() - start;
+      if (elapsed < MIN_LOADING_MS) {
+        await new Promise(r => setTimeout(r, MIN_LOADING_MS - elapsed));
+      }
       if (timerRef.current) clearInterval(timerRef.current);
 
       setReport(result);
