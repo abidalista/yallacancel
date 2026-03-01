@@ -556,13 +556,7 @@ export default function HomePage() {
                   onClick={handleFinishIdentify}
                   className="btn-primary flex-1"
                 >
-                  {ar ? "شوف تقريري" : "Show my report"} <ArrowRight size={16} strokeWidth={1.5} />
-                </button>
-                <button
-                  onClick={handleSkipIdentify}
-                  className="btn-ghost"
-                >
-                  {ar ? `تخطى (${confirmed.length})` : `Skip (${confirmed.length})`}
+                  {ar ? "شوف تقريري" : "Show my report"}
                 </button>
               </div>
             </div>
