@@ -316,17 +316,15 @@ export default function SampleReportPage() {
                       <span className="font-bold text-sm mr-4 ml-4" style={{ color: "#1A3A35" }}>
                         {sub.yearlyEquivalent.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"}
                       </span>
-                      <a
-                        href={info?.cancelUrl || `https://www.google.com/search?q=cancel+${encodeURIComponent(sub.name)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-bold text-xs px-3.5 py-1.5 rounded-full no-underline flex-shrink-0 transition-colors"
+                      <button
+                        onClick={() => setShowPaywall(true)}
+                        className="font-bold text-xs px-3.5 py-1.5 rounded-full flex-shrink-0 transition-colors"
                         style={{ background: "white", color: "#00A651", border: "1.5px solid #00A651" }}
                         onMouseEnter={e => { e.currentTarget.style.background = "#00A651"; e.currentTarget.style.color = "white"; }}
                         onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.color = "#00A651"; }}
                       >
                         {ar ? "الغي" : "Cancel"}
-                      </a>
+                      </button>
                     </div>
                   );
                 })}
@@ -358,8 +356,8 @@ export default function SampleReportPage() {
                 >
                   <p className="text-center font-bold text-base mb-4" style={{ color: "#1A3A35" }}>
                     {ar
-                      ? `ادفع ٤٩ ريال ووفر ${hiddenYearly.toFixed(0)} ريال/سنة`
-                      : `Pay 49 SAR and save ${hiddenYearly.toFixed(0)} SAR/yr`}
+                      ? `ادفع ٤٩ ريال ووفر ${report.totalYearly.toFixed(0)} ريال/سنة`
+                      : `Pay 49 SAR and save ${report.totalYearly.toFixed(0)} SAR/yr`}
                   </p>
                   <button
                     onClick={() => setShowPaywall(true)}
