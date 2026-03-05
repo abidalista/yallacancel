@@ -24,6 +24,13 @@ import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, SubscriptionStatus, Transaction, BankId } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
 import MerchantLogo from "@/components/MerchantLogo";
+import {
+  savePaymentReceipt,
+  getPaymentReceipt,
+  saveReportData,
+  getReportData,
+  clearReportData,
+} from "@/lib/payment-store";
 
 type Step = "landing" | "analyzing" | "identify" | "results";
 
@@ -195,6 +202,31 @@ export default function HomePage() {
     return () => window.removeEventListener("popstate", onPopState);
   }, [step]);
 
+  // Restore payment state from localStorage on mount
+  useEffect(() => {
+    const receiptId = getPaymentReceipt();
+    if (!receiptId) return;
+
+    fetch("/api/verify-payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ receiptId }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.valid) {
+          setIsPaid(true);
+          const cached = getReportData();
+          if (cached.report) {
+            setReport(cached.report);
+            setSpendingData(cached.spending);
+            setStep("results");
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   async function parseFile(file: File, bankOverride?: BankId): Promise<{ transactions: Transaction[]; warnings: string[] }> {
     const ext = file.name.split(".").pop()?.toLowerCase();
     if (ext === "pdf") {
@@ -286,6 +318,7 @@ export default function HomePage() {
           if (timerRef.current) clearInterval(timerRef.current);
           setReport(aiResult.report);
           setSpendingData(null);
+          saveReportData(aiResult.report, null);
           setStep("results");
           window.scrollTo({ top: 0, behavior: "smooth" });
           aiSuccess = true;
@@ -344,6 +377,7 @@ export default function HomePage() {
 
       setReport(result);
       setSpendingData(spending);
+      saveReportData(result, spending);
 
       // Go straight to results — everything is a subscription by default
       setStep("results");
@@ -431,6 +465,7 @@ export default function HomePage() {
     setRetryFiles([]);
     setTxCount(0);
     setAnalyzeTimer(0);
+    clearReportData();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -449,7 +484,7 @@ export default function HomePage() {
       />
 
       {showPaywall && (
-        <PaywallModal locale={locale} onClose={() => setShowPaywall(false)} onPaymentSuccess={() => { setIsPaid(true); setShowPaywall(false); }} />
+        <PaywallModal locale={locale} onClose={() => setShowPaywall(false)} onPaymentSuccess={(receiptId) => { setIsPaid(true); setShowPaywall(false); savePaymentReceipt(receiptId); if (report) saveReportData(report, spendingData); }} />
       )}
 
       {/* ── ANALYZING ── */}
@@ -679,6 +714,7 @@ export default function HomePage() {
                   onStartOver={handleStartOver}
                   onUpgradeClick={() => setShowPaywall(true)}
                   isPaid={isPaid}
+                  spendingData={spendingData}
                 />
               )}
 

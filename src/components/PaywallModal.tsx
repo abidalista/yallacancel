@@ -8,7 +8,7 @@ import { WhopCheckoutEmbed } from "@whop/checkout/react";
 interface PaywallModalProps {
   locale: "ar" | "en";
   onClose: () => void;
-  onPaymentSuccess: () => void;
+  onPaymentSuccess: (receiptId: string) => void;
 }
 
 const FEATURES_AR = [
@@ -119,8 +119,8 @@ export default function PaywallModal({ locale, onClose, onPaymentSuccess }: Payw
                 planId={planId}
                 theme="light"
                 skipRedirect
-                onComplete={() => {
-                  onPaymentSuccess();
+                onComplete={(_planId, receiptId) => {
+                  onPaymentSuccess(receiptId || "");
                 }}
                 fallback={
                   <div className="flex items-center justify-center py-16">

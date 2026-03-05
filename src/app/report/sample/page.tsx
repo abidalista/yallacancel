@@ -19,6 +19,12 @@ import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, SubscriptionStatus } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
 import { SAMPLE_REPORT, SAMPLE_SPENDING } from "@/lib/sample-data";
+import {
+  savePaymentReceipt,
+  getPaymentReceipt,
+  saveReportData,
+  getReportData,
+} from "@/lib/payment-store";
 
 type Step = "analyzing" | "identify" | "results";
 
@@ -41,6 +47,22 @@ export default function SampleReportPage() {
     document.documentElement.dir = ar ? "rtl" : "ltr";
     document.documentElement.lang = ar ? "ar" : "en";
   }, [ar]);
+
+  // Restore payment state on mount
+  useEffect(() => {
+    const receiptId = getPaymentReceipt();
+    if (!receiptId) return;
+    fetch("/api/verify-payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ receiptId }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.valid) setIsPaid(true);
+      })
+      .catch(() => {});
+  }, []);
 
   // Load sample data on mount
   useEffect(() => {
@@ -82,6 +104,7 @@ export default function SampleReportPage() {
         if (!cancelled) {
           setReport(result);
           setSpendingData(spending);
+          saveReportData(result, spending);
           const suspicious = result.subscriptions.filter(s => s.confidence === "suspicious");
           setStep(suspicious.length > 0 ? "identify" : "results");
           window.scrollTo({ top: 0, behavior: "smooth" });
@@ -96,8 +119,11 @@ export default function SampleReportPage() {
         clearInterval(timer);
 
         if (!cancelled) {
-          setReport({ ...SAMPLE_REPORT });
-          setSpendingData({ ...SAMPLE_SPENDING });
+          const sr = { ...SAMPLE_REPORT };
+          const ss = { ...SAMPLE_SPENDING };
+          setReport(sr);
+          setSpendingData(ss);
+          saveReportData(sr, ss);
           setStep("results");
           window.scrollTo({ top: 0, behavior: "smooth" });
         }
@@ -154,7 +180,7 @@ export default function SampleReportPage() {
       />
 
       {showPaywall && (
-        <PaywallModal locale={locale} onClose={() => setShowPaywall(false)} onPaymentSuccess={() => { setIsPaid(true); setShowPaywall(false); }} />
+        <PaywallModal locale={locale} onClose={() => setShowPaywall(false)} onPaymentSuccess={(receiptId) => { setIsPaid(true); setShowPaywall(false); savePaymentReceipt(receiptId); if (report) saveReportData(report, spendingData); }} />
       )}
 
       {/* ── ANALYZING ── */}
@@ -383,6 +409,8 @@ export default function SampleReportPage() {
                   onStatusChange={handleStatusChange}
                   onStartOver={handleStartOver}
                   onUpgradeClick={() => setShowPaywall(true)}
+                  isPaid={isPaid}
+                  spendingData={spendingData}
                 />
               )}
 

@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { CreditCard, TrendingDown, CalendarDays, Eye, EyeOff, Info, Search } from "lucide-react";
+import { CreditCard, TrendingDown, CalendarDays, Eye, EyeOff, Info, Search, FileDown } from "lucide-react";
 import { AuditReport as Report, SubscriptionStatus } from "@/lib/types";
+import type { SpendingBreakdown } from "@/lib/services";
 import SubscriptionCard from "./SubscriptionCard";
 
 interface AuditReportProps {
@@ -13,6 +14,7 @@ interface AuditReportProps {
   onStartOver: () => void;
   onUpgradeClick: () => void;
   isPaid?: boolean;
+  spendingData?: SpendingBreakdown | null;
 }
 
 export default function AuditReport({
@@ -22,6 +24,7 @@ export default function AuditReport({
   onStartOver,
   onUpgradeClick,
   isPaid = false,
+  spendingData,
 }: AuditReportProps) {
   const [privacyMode, setPrivacyMode] = useState(false);
   const [filter, setFilter] = useState<"all" | SubscriptionStatus>("all");
@@ -148,6 +151,20 @@ export default function AuditReport({
         })}
 
         <div className="flex-1" />
+
+        {isPaid && (
+          <button
+            onClick={async () => {
+              const { generateReport } = await import("@/lib/generate-pdf");
+              generateReport(report, spendingData || null, locale);
+            }}
+            className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-full transition-all hover:-translate-y-0.5"
+            style={{ background: "#00A651", color: "white" }}
+          >
+            <FileDown size={14} strokeWidth={1.5} />
+            {ar ? "حمل PDF" : "Download PDF"}
+          </button>
+        )}
 
         <button
           onClick={() => setPrivacyMode(!privacyMode)}
