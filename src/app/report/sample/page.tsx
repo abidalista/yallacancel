@@ -10,11 +10,6 @@ import Header from "@/components/Header";
 import AuditReport from "@/components/AuditReport";
 import PaywallModal from "@/components/PaywallModal";
 import SpendingBreakdownComponent from "@/components/SpendingBreakdown";
-import {
-  parseCSVRobust, detectBank,
-  analyzeTransactions,
-  analyzeSpending,
-} from "@/lib/services";
 import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, SubscriptionStatus } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
@@ -67,69 +62,42 @@ export default function SampleReportPage() {
   // Load sample data on mount
   useEffect(() => {
     let cancelled = false;
-    async function loadSampleData() {
-      setStep("analyzing");
-      setAnalyzeTimer(0);
-      setTxCount(0);
-      setAnalyzeStatus(ar ? "نقرأ الملفات..." : "Reading files...");
+    const MIN_LOADING_MS = 4000;
+    const start = Date.now();
 
-      const MIN_LOADING_MS = 4000;
-      const start = Date.now();
-      const timer = setInterval(() => {
-        if (!cancelled) setAnalyzeTimer(Math.floor((Date.now() - start) / 1000));
-      }, 1000);
+    setStep("analyzing");
+    setAnalyzeTimer(0);
+    setTxCount(72);
+    setAnalyzeStatus(ar ? "نقرأ الملفات..." : "Reading files...");
 
-      try {
-        const res = await fetch("/test-statement.csv");
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const text = await res.text();
-        if (!text || text.length < 50) throw new Error("Empty");
+    const timer = setInterval(() => {
+      if (!cancelled) setAnalyzeTimer(Math.floor((Date.now() - start) / 1000));
+    }, 1000);
 
-        const bankId = detectBank(text);
-        const parsed = parseCSVRobust(text, bankId);
-        if (parsed.transactions.length === 0) throw new Error("No transactions");
-
-        if (!cancelled) {
-          setTxCount(parsed.transactions.length);
-          setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
-        }
-
-        const result = analyzeTransactions(parsed.transactions);
-        const spending = analyzeSpending(parsed.transactions);
-
-        const elapsed = Date.now() - start;
-        if (elapsed < MIN_LOADING_MS) await new Promise(r => setTimeout(r, MIN_LOADING_MS - elapsed));
-        clearInterval(timer);
-
-        if (!cancelled) {
-          setReport(result);
-          setSpendingData(spending);
-          saveReportData(result, spending);
-          const suspicious = result.subscriptions.filter(s => s.confidence === "suspicious");
-          setStep(suspicious.length > 0 ? "identify" : "results");
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }
-      } catch {
-        if (!cancelled) {
-          setTxCount(72);
-          setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
-        }
-        const elapsed = Date.now() - start;
-        if (elapsed < MIN_LOADING_MS) await new Promise(r => setTimeout(r, MIN_LOADING_MS - elapsed));
-        clearInterval(timer);
-
-        if (!cancelled) {
-          const sr = { ...SAMPLE_REPORT };
-          const ss = { ...SAMPLE_SPENDING };
-          setReport(sr);
-          setSpendingData(ss);
-          saveReportData(sr, ss);
-          setStep("results");
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }
+    // Show analyzing animation, then load curated sample data
+    setTimeout(() => {
+      if (!cancelled) {
+        setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
       }
-    }
-    loadSampleData();
+    }, 1500);
+
+    const loadAfterDelay = async () => {
+      const elapsed = Date.now() - start;
+      if (elapsed < MIN_LOADING_MS) await new Promise(r => setTimeout(r, MIN_LOADING_MS - elapsed));
+      clearInterval(timer);
+
+      if (!cancelled) {
+        const sr = { ...SAMPLE_REPORT };
+        const ss = { ...SAMPLE_SPENDING };
+        setReport(sr);
+        setSpendingData(ss);
+        saveReportData(sr, ss);
+        setStep("results");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    };
+    loadAfterDelay();
+
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
