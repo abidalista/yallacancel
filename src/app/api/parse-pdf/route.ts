@@ -10,6 +10,22 @@ const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const LLAMA_API_KEY = process.env.LLAMA_CLOUD_API_KEY;
 const LLAMA_BASE = "https://api.cloud.llamaindex.ai";
 
+// Simple in-memory rate limiter (per IP, 5 requests per 10 minutes)
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT = 5;
+const RATE_WINDOW_MS = 10 * 60 * 1000;
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return false;
+  }
+  entry.count++;
+  return entry.count > RATE_LIMIT;
+}
+
 // ── LlamaParse: extract text from PDF ──
 
 async function extractPDFText(file: File): Promise<string> {
@@ -34,7 +50,6 @@ async function extractPDFText(file: File): Promise<string> {
   }
 
   const { id: jobId } = await uploadRes.json();
-  console.log("[llamaparse] job created:", jobId);
 
   // Poll for result
   for (let i = 0; i < 90; i++) {
@@ -50,21 +65,11 @@ async function extractPDFText(file: File): Promise<string> {
       }
     );
 
-    if (res.status === 404) {
-      console.log(`[llamaparse] poll ${i + 1}: processing...`);
-      continue;
-    }
-
-    if (!res.ok) {
-      console.error(`[llamaparse] poll error: ${res.status}`);
-      continue;
-    }
+    if (res.status === 404) continue;
+    if (!res.ok) continue;
 
     const data = await res.json();
-    if (data.markdown) {
-      console.log(`[llamaparse] done. markdown length: ${data.markdown.length}`);
-      return data.markdown;
-    }
+    if (data.markdown) return data.markdown;
   }
 
   throw new Error("LlamaParse timeout");
@@ -84,7 +89,7 @@ For each subscription found, return:
 - frequency: "weekly", "monthly", "quarterly", or "yearly"
 - occurrences: how many times this charge appears in the statement
 - first_date: first charge date (YYYY-MM-DD format)
-- last_date: last charge date (YYYY-MM-DD format)  
+- last_date: last charge date (YYYY-MM-DD format)
 - raw_description: the original bank statement description
 - cancel_url: if you know the cancellation URL for this service, include it. otherwise null.
 - category: one of "streaming", "music", "software", "gaming", "fitness", "food_delivery", "shopping", "cloud_storage", "vpn", "education", "finance", "telecom", "insurance", "other"
@@ -122,26 +127,17 @@ ${rawText}`;
     body: JSON.stringify({
       model: "claude-sonnet-4-20250514",
       max_tokens: 8192,
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
+      messages: [{ role: "user", content: prompt }],
     }),
   });
 
   if (!res.ok) {
     const err = await res.text();
-    console.error("[claude] API error:", res.status, err);
-    throw new Error(`Claude API failed: ${res.status}`);
+    throw new Error(`Claude API failed: ${res.status} ${err.slice(0, 200)}`);
   }
 
   const data = await res.json();
   const text = data.content?.[0]?.text || "";
-
-  console.log("[claude] response length:", text.length);
-  console.log("[claude] response preview:", text.slice(0, 300));
 
   // Parse JSON from response (strip markdown fences if any)
   const cleaned = text.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
@@ -149,7 +145,6 @@ ${rawText}`;
   try {
     return JSON.parse(cleaned);
   } catch {
-    console.error("[claude] Failed to parse JSON:", cleaned.slice(0, 500));
     throw new Error("Claude returned invalid JSON");
   }
 }
@@ -157,6 +152,15 @@ ${rawText}`;
 // ── API handler ──
 
 export async function POST(request: NextRequest) {
+  // Rate limit
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  if (isRateLimited(ip)) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429 }
+    );
+  }
+
   if (!ANTHROPIC_API_KEY) {
     return NextResponse.json(
       { error: "ANTHROPIC_API_KEY not configured" },
@@ -172,16 +176,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    console.log("[parse-pdf] Processing:", file.name, "size:", file.size);
-
     let rawText: string;
     const ext = file.name.split(".").pop()?.toLowerCase();
 
     if (ext === "pdf") {
-      // Use LlamaParse to extract text from PDF
       rawText = await extractPDFText(file);
     } else {
-      // CSV/text: read directly
       rawText = await file.text();
     }
 
@@ -192,23 +192,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Truncate if too long (Claude has token limits)
-    // ~100k chars is roughly 25k tokens, well within limits
+    // Truncate if too long (~100k chars ≈ 25k tokens)
     if (rawText.length > 100000) {
       rawText = rawText.slice(0, 100000);
-      console.log("[parse-pdf] Truncated text to 100k chars");
     }
 
-    console.log("[parse-pdf] Sending to Claude. Text length:", rawText.length);
-
-    // Send to Claude for analysis
     const result = await analyzeWithClaude(rawText);
-
-    console.log("[parse-pdf] Claude analysis complete");
-
     return NextResponse.json(result);
   } catch (error) {
-    console.error("[parse-pdf] Error:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Parse failed" },
       { status: 500 }

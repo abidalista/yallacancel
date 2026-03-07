@@ -10,9 +10,7 @@ export async function POST(request: NextRequest) {
 
     const apiKey = process.env.WHOP_API_KEY;
     if (!apiKey) {
-      // If no API key configured, trust the receipt exists
-      // (better UX than blocking paid users)
-      return NextResponse.json({ valid: true });
+      return NextResponse.json({ valid: false }, { status: 503 });
     }
 
     const res = await fetch(

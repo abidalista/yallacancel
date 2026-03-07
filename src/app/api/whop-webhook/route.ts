@@ -29,11 +29,10 @@ export async function POST(request: NextRequest) {
     const event = JSON.parse(body);
     const { action, data } = event;
 
-    // Log the event for monitoring
+    // Log the event for monitoring (no PII)
     console.log(`[whop-webhook] ${action}`, {
       id: data?.id,
       plan: data?.plan_id,
-      email: data?.email,
       status: data?.status,
     });
 
@@ -44,15 +43,15 @@ export async function POST(request: NextRequest) {
         break;
 
       case "payment.failed":
-        console.warn(`[whop-webhook] Payment failed for ${data?.email}`);
+        console.warn(`[whop-webhook] Payment failed for ${data?.id}`);
         break;
 
       case "membership.went_valid":
-        console.log(`[whop-webhook] Membership activated for ${data?.email}`);
+        console.log(`[whop-webhook] Membership activated: ${data?.id}`);
         break;
 
       case "membership.went_invalid":
-        console.log(`[whop-webhook] Membership deactivated for ${data?.email}`);
+        console.log(`[whop-webhook] Membership deactivated: ${data?.id}`);
         break;
 
       default:

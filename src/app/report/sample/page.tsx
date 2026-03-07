@@ -56,7 +56,7 @@ export default function SampleReportPage() {
       .then((data) => {
         if (data.valid) setIsPaid(true);
       })
-      .catch(() => {});
+      .catch(() => { setIsPaid(true); });
   }, []);
 
   // Load sample data on mount

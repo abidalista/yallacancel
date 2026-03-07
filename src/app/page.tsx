@@ -224,7 +224,17 @@ export default function HomePage() {
           }
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        // Verification failed (network error or no API key) —
+        // still trust the local receipt so paid users aren't blocked offline
+        setIsPaid(true);
+        const cached = getReportData();
+        if (cached.report) {
+          setReport(cached.report);
+          setSpendingData(cached.spending);
+          setStep("results");
+        }
+      });
   }, []);
 
   async function parseFile(file: File, bankOverride?: BankId): Promise<{ transactions: Transaction[]; warnings: string[] }> {
