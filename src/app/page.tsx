@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Shield, Zap, Link2, BarChart3, FileText, ArrowRight,
   Lock, ChevronDown, ChevronUp, Clock, CheckCircle2,
-  RotateCcw, Loader2, Search,
+  RotateCcw, Loader2, Search, Upload, CalendarRange, AlertCircle,
 } from "lucide-react";
 import Header from "@/components/Header";
 import UploadZone from "@/components/UploadZone";
@@ -628,6 +628,103 @@ export default function HomePage() {
         const hidden = subs.slice(FREE_VISIBLE);
         const hiddenYearly = hidden.reduce((s, sub) => s + sub.yearlyEquivalent, 0);
 
+        // ── Zero subscriptions found ──
+        if (subs.length === 0) {
+          return (
+            <div className="min-h-screen bg-[#EDF5F3] pt-24 pb-16 px-6">
+              <div className="max-w-[600px] mx-auto">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center mb-8">
+                  <div className="w-16 h-16 rounded-full mx-auto mb-5 flex items-center justify-center" style={{ background: "#E5EFED" }}>
+                    <Search size={28} strokeWidth={1.5} style={{ color: "#8AADA8" }} />
+                  </div>
+                  <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2" style={{ color: "#1A3A35" }}>
+                    {ar ? "ما لقينا اشتراكات" : "No subscriptions found"}
+                  </h1>
+                  <p className="text-sm leading-relaxed" style={{ color: "#4A6862" }}>
+                    {ar
+                      ? "حللنا الكشف ولكن ما طلعت اشتراكات متكررة. هذا ممكن يكون لأن:"
+                      : "We analyzed your statement but found no recurring subscriptions. This could be because:"}
+                  </p>
+                </motion.div>
+
+                {/* Possible reasons */}
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }} className="space-y-3 mb-8">
+                  {[
+                    {
+                      icon: <CalendarRange size={18} strokeWidth={1.5} />,
+                      titleAr: "الكشف قصير",
+                      titleEn: "Statement too short",
+                      descAr: "كشف شهر واحد ممكن ما يبين الاشتراكات. ارفع كشف ٢-٣ اشهر عشان نلقى الدفعات المتكررة.",
+                      descEn: "A single month may not reveal subscriptions. Upload 2-3 months so we can spot recurring charges.",
+                    },
+                    {
+                      icon: <FileText size={18} strokeWidth={1.5} />,
+                      titleAr: "البطاقة الثانية",
+                      titleEn: "Different card",
+                      descAr: "بعض الاشتراكات تنخصم من بطاقة ثانية. جرب ارفع كشوفات بطاقاتك الاخرى.",
+                      descEn: "Some subscriptions charge a different card. Try uploading statements from your other cards.",
+                    },
+                    {
+                      icon: <AlertCircle size={18} strokeWidth={1.5} />,
+                      titleAr: "صيغة الملف",
+                      titleEn: "File format issue",
+                      descAr: "بعض ملفات PDF تكون صور ما نقدر نقرأها. جرب نزل كشف CSV من تطبيق بنكك.",
+                      descEn: "Some PDF files are image-based and can't be read. Try downloading a CSV from your banking app.",
+                    },
+                  ].map((reason, i) => (
+                    <div key={i} className="bento-card p-4 flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: "#E5EFED", color: "#4A6862" }}>
+                        {reason.icon}
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm mb-0.5" style={{ color: "#1A3A35" }}>
+                          {ar ? reason.titleAr : reason.titleEn}
+                        </p>
+                        <p className="text-xs leading-relaxed" style={{ color: "#4A6862" }}>
+                          {ar ? reason.descAr : reason.descEn}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </motion.div>
+
+                {/* Actions */}
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="space-y-3">
+                  <button
+                    onClick={handleStartOver}
+                    className="btn-primary w-full text-base py-4 flex items-center justify-center gap-2"
+                  >
+                    <Upload size={18} strokeWidth={1.5} />
+                    {ar ? "ارفع كشوفات اكثر" : "Upload more statements"}
+                  </button>
+                  <button
+                    onClick={handleTestStatement}
+                    className="btn-ghost w-full flex items-center justify-center gap-2"
+                  >
+                    <FileText size={14} strokeWidth={1.5} />
+                    {ar ? "شوف تقرير تجريبي" : "See a sample report"}
+                  </button>
+                </motion.div>
+
+                {/* Analyzed transactions note */}
+                {report.analyzedTransactions > 0 && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                    className="text-xs text-center mt-6"
+                    style={{ color: "#8AADA8" }}
+                  >
+                    {ar
+                      ? `حللنا ${report.analyzedTransactions} عملية ولكن ما لقينا شي متكرر`
+                      : `We analyzed ${report.analyzedTransactions} transactions but found nothing recurring`}
+                  </motion.p>
+                )}
+              </div>
+            </div>
+          );
+        }
+
         return (
           <div className="min-h-screen bg-[#EDF5F3] pt-24 pb-16 px-6">
             <div className="max-w-[700px] mx-auto">
@@ -653,7 +750,6 @@ export default function HomePage() {
                 className="bento-card overflow-hidden mb-6 p-0"
               >
                 {visible.map((sub, i) => {
-                  const info = getCancelInfo(sub.name);
                   return (
                     <div key={sub.id} className="flex items-center px-5 py-4" style={{ borderBottom: "1px solid #E5EFED" }}>
                       <span className="text-sm w-8 flex-shrink-0" style={{ color: "#8AADA8" }}>{i + 1}.</span>
