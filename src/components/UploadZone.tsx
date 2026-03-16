@@ -2,7 +2,10 @@
 
 import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, X, FileText, Sparkles } from "lucide-react";
+import { Upload, X, FileText, Sparkles, AlertTriangle } from "lucide-react";
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+const MAX_FILES = 5;
 
 interface SelectedFile {
   file: File;
@@ -38,24 +41,47 @@ export default function UploadZone({
 }: UploadZoneProps) {
   const [dragging, setDragging] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
+  const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const ar = locale === "ar";
 
   function addFiles(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return;
+    setFileError(null);
+
     const newFiles: SelectedFile[] = [];
+    const rejected: string[] = [];
+
     for (let i = 0; i < fileList.length; i++) {
       const file = fileList[i];
       const ext = file.name.split(".").pop()?.toLowerCase();
-      if (ext === "csv" || ext === "pdf") {
-        newFiles.push({ file, name: file.name, size: file.size });
+
+      if (ext !== "csv" && ext !== "pdf") {
+        rejected.push(ar ? `${file.name} — لازم يكون CSV او PDF` : `${file.name} — must be CSV or PDF`);
+        continue;
       }
+      if (file.size > MAX_FILE_SIZE) {
+        rejected.push(ar ? `${file.name} — اكبر من ٥ ميقا` : `${file.name} — exceeds 5 MB limit`);
+        continue;
+      }
+      newFiles.push({ file, name: file.name, size: file.size });
     }
-    if (newFiles.length === 0) {
-      alert(ar ? "الملفات لازم تكون CSV او PDF" : "Files must be CSV or PDF");
+
+    if (newFiles.length === 0 && rejected.length > 0) {
+      setFileError(rejected.join("\n"));
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
-    setSelectedFiles((prev) => [...prev, ...newFiles]);
+
+    setSelectedFiles((prev) => {
+      const combined = [...prev, ...newFiles];
+      if (combined.length > MAX_FILES) {
+        setFileError(ar ? `اقصى عدد ملفات هو ${MAX_FILES}` : `Maximum ${MAX_FILES} files allowed`);
+        return prev;
+      }
+      if (rejected.length > 0) setFileError(rejected.join("\n"));
+      return combined;
+    });
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -115,6 +141,22 @@ export default function UploadZone({
           onChange={(e) => addFiles(e.target.files)}
         />
       </div>
+
+      {/* File error */}
+      <AnimatePresence>
+        {fileError && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-3 flex items-start gap-2 px-4 py-3 rounded-xl text-sm"
+            style={{ background: "#FEF2F2", color: "#991B1B" }}
+          >
+            <AlertTriangle size={16} strokeWidth={1.5} className="flex-shrink-0 mt-0.5" />
+            <span className="whitespace-pre-line">{fileError}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* File list (when files selected) */}
       <AnimatePresence>
