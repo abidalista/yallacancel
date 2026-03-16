@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Zap, FolderOpen, FileDown, Link2, BookOpen, Loader2 } from "lucide-react";
+import { X, Zap, FolderOpen, FileDown, Link2, BookOpen, Loader2, Mail } from "lucide-react";
 import { WhopCheckoutEmbed } from "@whop/checkout/react";
 
 interface PaywallModalProps {
@@ -115,6 +115,14 @@ export default function PaywallModal({ locale, onClose, onPaymentSuccess }: Payw
           ) : (
             /* Whop Checkout Embed */
             <div className="px-4 py-5" dir="ltr">
+              <div className="flex items-center gap-2 px-3 py-2.5 mb-3 rounded-xl text-xs" style={{ background: "#FFF7ED", color: "#92400E" }} dir={ar ? "rtl" : "ltr"}>
+                <Mail size={14} strokeWidth={1.5} className="flex-shrink-0" />
+                <span>
+                  {ar
+                    ? "حط ايميلك الصحيح عشان يوصلك الوصل والتقرير"
+                    : "Use your real email — your receipt and report will be sent there"}
+                </span>
+              </div>
               <WhopCheckoutEmbed
                 planId={planId}
                 theme="light"
