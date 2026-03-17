@@ -61,41 +61,41 @@ const BANKS = [
 ];
 
 const PROBLEM_STATS = [
-  { num: "٣٨٢ ريال", text: "متوسط ما يدفعه السعودي على الاشتراكات الرقمية كل شهر" },
-  { num: "٧٣٪", text: "من السعوديين عندهم اشتراك واحد على الأقل ناسيه ومو مستخدمه" },
-  { num: "٤,٥٨٤ ريال", text: "متوسط التوفير السنوي لو ألغيت الاشتراكات اللي ما تحتاجها" },
+  { num: "٣٨٢ ريال", numEn: "382 SAR", text: "متوسط ما يدفعه السعودي على الاشتراكات الرقمية كل شهر", textEn: "Average monthly spend on digital subscriptions in Saudi" },
+  { num: "٧٣٪", numEn: "73%", text: "من السعوديين عندهم اشتراك واحد على الأقل ناسيه ومو مستخدمه", textEn: "of Saudis have at least one forgotten, unused subscription" },
+  { num: "٤,٥٨٤ ريال", numEn: "4,584 SAR", text: "متوسط التوفير السنوي لو ألغيت الاشتراكات اللي ما تحتاجها", textEn: "Average yearly savings from canceling unused subscriptions" },
 ];
 
 const FEATURES = [
   {
     icon: Shield,
-    title: "آمن وخاص",
-    desc: "كل التحليل يصير داخل متصفحك مباشرة — ملفك ما يوصل لأي سيرفر خارجي.",
+    title: "آمن وخاص", titleEn: "Private & secure",
+    desc: "كل التحليل يصير داخل متصفحك مباشرة — ملفك ما يوصل لأي سيرفر خارجي.", descEn: "All analysis happens in your browser — your file never leaves your device.",
   },
   {
     icon: Lock,
-    title: "يقرأ كشف بنكك",
-    desc: "يتعرف على كشوفات ٩ بنوك سعودية ويفك رموز العمليات الغريبة تلقائيا.",
+    title: "يقرأ كشف بنكك", titleEn: "Reads your bank statement",
+    desc: "يتعرف على كشوفات ٩ بنوك سعودية ويفك رموز العمليات الغريبة تلقائيا.", descEn: "Supports 9 Saudi banks and automatically decodes cryptic transaction names.",
   },
   {
     icon: Zap,
-    title: "نتائج في ثواني",
-    desc: "ارفع الكشف وخلال ثواني تشوف قائمة كاملة باشتراكاتك مع تكلفة كل واحد.",
+    title: "نتائج في ثواني", titleEn: "Results in seconds",
+    desc: "ارفع الكشف وخلال ثواني تشوف قائمة كاملة باشتراكاتك مع تكلفة كل واحد.", descEn: "Upload your statement and instantly see every subscription with its cost.",
   },
   {
     icon: BarChart3,
-    title: "تقرير واضح",
-    desc: "نوريك المبلغ الشهري والسنوي لكل اشتراك وتقدر تحدد وش تبقي ووش تلغي.",
+    title: "تقرير واضح", titleEn: "Clear report",
+    desc: "نوريك المبلغ الشهري والسنوي لكل اشتراك وتقدر تحدد وش تبقي ووش تلغي.", descEn: "See monthly and yearly cost per subscription — decide what to keep and what to cancel.",
   },
   {
     icon: Link2,
-    title: "روابط إلغاء مباشرة",
-    desc: "كل اشتراك معه رابط يوديك مباشرة لصفحة الإلغاء — بدون دوخة.",
+    title: "روابط إلغاء مباشرة", titleEn: "Direct cancel links",
+    desc: "كل اشتراك معه رابط يوديك مباشرة لصفحة الإلغاء — بدون دوخة.", descEn: "Each subscription includes a direct link to its cancellation page — no runaround.",
   },
   {
     icon: FileText,
-    title: "أدلة تفصيلية",
-    desc: "أكثر من ٢٠٠ دليل إلغاء خطوة بخطوة لأشهر الخدمات في السعودية والعالم.",
+    title: "أدلة تفصيلية", titleEn: "Step-by-step guides",
+    desc: "أكثر من ٢٠٠ دليل إلغاء خطوة بخطوة لأشهر الخدمات في السعودية والعالم.", descEn: "200+ cancellation guides for the most popular services in Saudi and worldwide.",
   },
 ];
 
@@ -117,44 +117,47 @@ const SUB_CHIPS = [
 const TESTIMONIALS = [
   {
     quote: "ما توقعت إن Calm وDropbox وشي اسمه Adobe Stock ما فتحته من سنتين ينخصمون كلهم. ألغيتهم كلهم في دقيقتين وأنا أشرب قهوتي.",
-    name: "محمد ع.",
-    role: "مهندس برمجيات — الرياض",
-    initial: "م",
+    quoteEn: "I had no idea Calm, Dropbox, and something called Adobe Stock I hadn't opened in 2 years were all charging me. Canceled them all in 2 minutes over coffee.",
+    name: "محمد ع.", nameEn: "Mohammed A.",
+    role: "مهندس برمجيات — الرياض", roleEn: "Software Engineer — Riyadh",
+    initial: "M", initialAr: "م",
   },
   {
     quote: "كنت اشوف APPLE.COM/BILL كل شهر وما اعرف وش هي بالضبط. يلا كنسل فكها وعرفتني انها iCloud+ و Apple Music وApple TV+ — دفعت فيهم ثلاثتهم بدون ما اقصد!",
-    name: "نورة الغامدي",
-    role: "معلمة — جدة",
-    initial: "ن",
+    quoteEn: "I kept seeing APPLE.COM/BILL every month with no idea what it was. YallaCancel decoded it — iCloud+, Apple Music, and Apple TV+ all bundled. I was paying for all three without knowing!",
+    name: "نورة الغامدي", nameEn: "Noura G.",
+    role: "معلمة — جدة", roleEn: "Teacher — Jeddah",
+    initial: "N", initialAr: "ن",
   },
   {
     quote: "كنت ادفع لاشتراكات نسيتها تماما.",
-    name: "عبدالله الشهري",
-    role: "محاسب — الخبر",
-    initial: "ع",
+    quoteEn: "I was paying for subscriptions I completely forgot about.",
+    name: "عبدالله الشهري", nameEn: "Abdullah S.",
+    role: "محاسب — الخبر", roleEn: "Accountant — Khobar",
+    initial: "A", initialAr: "ع",
   },
 ];
 
 const FAQ_ITEMS = [
   {
-    q: "هل بياناتي آمنة؟",
-    a: "نعم. كل التحليل يتم داخل متصفحك — ملفك ما يتم رفعه لأي سيرفر. ما نحتفظ بأي بيانات.",
+    q: "هل بياناتي آمنة؟", qEn: "Is my data safe?",
+    a: "نعم. كل التحليل يتم داخل متصفحك — ملفك ما يتم رفعه لأي سيرفر. ما نحتفظ بأي بيانات.", aEn: "Yes. All analysis happens in your browser — your file is never uploaded to any server. We don't store any data.",
   },
   {
-    q: "أي بنوك تدعمون؟",
-    a: "ندعم جميع البنوك السعودية: الراجحي، الأهلي، بنك الرياض، البلاد، الإنماء، ساب، الفرنسي، العربي الوطني، و stc bank.",
+    q: "أي بنوك تدعمون؟", qEn: "Which banks do you support?",
+    a: "ندعم جميع البنوك السعودية: الراجحي، الأهلي، بنك الرياض، البلاد، الإنماء، ساب، الفرنسي، العربي الوطني، و stc bank.", aEn: "We support all major Saudi banks: Al Rajhi, SNB, Riyad Bank, Al Bilad, Alinma, SABB, BSF, ANB, and stc bank.",
   },
   {
-    q: "كيف انزل كشف حسابي؟",
-    a: "افتح تطبيق بنكك → الحسابات → كشف الحساب → اختر اخر ٣-٦ اشهر → نزله كـ CSV او PDF.",
+    q: "كيف انزل كشف حسابي؟", qEn: "How do I download my bank statement?",
+    a: "افتح تطبيق بنكك → الحسابات → كشف الحساب → اختر اخر ٣-٦ اشهر → نزله كـ CSV او PDF.", aEn: "Open your banking app → Accounts → Statement → Select last 3-6 months → Download as CSV or PDF.",
   },
   {
-    q: "هل الأداة مجانية؟",
-    a: "التحليل الأول مجاني. بعدها تقدر تترقى بـ ٤٩ ريال لمرة واحدة — بدون اشتراك شهري.",
+    q: "كم يكلف؟", qEn: "How much does it cost?",
+    a: "التحليل الاول يوريك نبذة. التقرير الكامل بـ ٤٩ ريال لمرة واحدة — بدون اشتراك شهري.", aEn: "The first scan gives you a preview. The full report is 49 SAR one-time — no monthly subscription.",
   },
   {
-    q: "هل يلا كنسل يلغي الاشتراكات عني؟",
-    a: "حاليا نوفر لك تقرير تفصيلي مع روابط إلغاء مباشرة. الإلغاء نفسه تسويه بنفسك عبر الرابط — عادة يأخذ أقل من دقيقة لكل اشتراك.",
+    q: "هل يلا كنسل يلغي الاشتراكات عني؟", qEn: "Does YallaCancel cancel subscriptions for me?",
+    a: "حاليا نوفر لك تقرير تفصيلي مع روابط إلغاء مباشرة. الإلغاء نفسه تسويه بنفسك عبر الرابط — عادة يأخذ أقل من دقيقة لكل اشتراك.", aEn: "Currently we provide a detailed report with direct cancel links. You cancel each subscription yourself via the link — usually takes less than a minute each.",
   },
 ];
 
@@ -855,17 +858,17 @@ export default function HomePage() {
                 transition={{ duration: 0.5 }}
               >
                 <span className="section-label inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full mb-5">
-                  <Shield size={12} strokeWidth={1.5} /> {ar ? "متتبع اشتراكاتك الشخصي" : "Your personal subscription tracker"}
+                  <Shield size={12} strokeWidth={1.5} /> {ar ? "اشتراكاتك المنسية تكلفك اكثر مما تتوقع" : "Your forgotten subscriptions cost more than you think"}
                 </span>
-                <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-4 max-w-3xl mx-auto leading-[1.1]" style={{ color: "#1A3A35" }}>
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 max-w-3xl mx-auto leading-[1.1]" style={{ color: "#1A3A35" }}>
                   {ar
-                    ? "اعرف وين تروح فلوسك كل شهر"
-                    : "See exactly where your money goes each month"}
+                    ? "الغي اشتراكاتك اللي ما تستخدمها ووفر فلوسك"
+                    : "Cancel your unused subscriptions and save money"}
                 </h1>
-                <p className="text-lg max-w-[600px] mx-auto mb-12 leading-relaxed" style={{ color: "#4A6862" }}>
+                <p className="text-base sm:text-lg max-w-[600px] mx-auto mb-12 leading-relaxed" style={{ color: "#4A6862" }}>
                   {ar
-                    ? "ارفع كشف حسابك البنكي وفي ثواني نجيب لك كل اشتراكاتك الشهرية مع رابط الغاء مباشر لكل خدمة."
-                    : "Upload your bank statement and in seconds we'll list every subscription you're paying for — with a direct cancel link for each one."}
+                    ? "ارفع كشف بنكك — نكشف لك كل اشتراك منسي ونعطيك رابط الغاء مباشر. ناس وفروا اكثر من ٤,٠٠٠ ريال بالسنة."
+                    : "Upload your bank statement — we'll find every hidden subscription and give you a direct cancel link. Users save over 4,000 SAR/year."}
                 </p>
               </motion.div>
 
@@ -881,7 +884,7 @@ export default function HomePage() {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-6 max-w-[560px] mx-auto bento-card bg-red-50 border-red-100 p-5 text-right"
+                  className={`mt-6 max-w-[560px] mx-auto bento-card bg-red-50 border-red-100 p-5 ${ar ? "text-right" : "text-left"}`}
                 >
                   <p className="font-bold text-red-700 mb-1">
                     {ar ? parseError.messageAr : parseError.message}
@@ -989,8 +992,8 @@ export default function HomePage() {
                   transition={{ duration: 0.5, delay: i * 0.1 }}
                   className="bento-card text-center py-8 px-4"
                 >
-                  <div className="text-3xl font-extrabold tracking-tight mb-2" style={{ color: "#00A651" }}>{stat.num}</div>
-                  <p className="text-sm" style={{ color: "#4A6862" }}>{stat.text}</p>
+                  <div className="text-3xl font-extrabold tracking-tight mb-2" style={{ color: "#00A651" }}>{ar ? stat.num : stat.numEn}</div>
+                  <p className="text-sm" style={{ color: "#4A6862" }}>{ar ? stat.text : stat.textEn}</p>
                 </motion.div>
               ))}
             </div>
@@ -1015,13 +1018,13 @@ export default function HomePage() {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.5, delay: i * 0.08 }}
-                      className="bento-card text-right p-6"
+                      className={`bento-card p-6 ${ar ? "text-right" : "text-left"}`}
                     >
                       <div className="w-10 h-10 rounded-2xl flex items-center justify-center mb-4" style={{ background: "#E8F7EE" }}>
                         <Icon size={20} strokeWidth={1.5} style={{ color: "#00A651" }} />
                       </div>
-                      <h3 className="font-bold text-base mb-2" style={{ color: "#1A3A35" }}>{f.title}</h3>
-                      <p className="text-sm leading-relaxed" style={{ color: "#4A6862" }}>{f.desc}</p>
+                      <h3 className="font-bold text-base mb-2" style={{ color: "#1A3A35" }}>{ar ? f.title : f.titleEn}</h3>
+                      <p className="text-sm leading-relaxed" style={{ color: "#4A6862" }}>{ar ? f.desc : f.descEn}</p>
                     </motion.div>
                   );
                 })}
@@ -1046,16 +1049,16 @@ export default function HomePage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: i * 0.1 }}
-                    className="bento-card p-6 text-right"
+                    className={`bento-card p-6 ${ar ? "text-right" : "text-left"}`}
                   >
-                    <p className="text-sm leading-relaxed mb-4" style={{ color: "#4A6862" }}>&ldquo;{t.quote}&rdquo;</p>
+                    <p className="text-sm leading-relaxed mb-4" style={{ color: "#4A6862" }}>&ldquo;{ar ? t.quote : t.quoteEn}&rdquo;</p>
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: "#E5EFED", color: "#1A3A35" }}>
-                        {t.initial}
+                        {ar ? t.initialAr : t.initial}
                       </div>
                       <div>
-                        <p className="text-sm font-bold" style={{ color: "#1A3A35" }}>{t.name}</p>
-                        <p className="text-xs" style={{ color: "#8AADA8" }}>{t.role}</p>
+                        <p className="text-sm font-bold" style={{ color: "#1A3A35" }}>{ar ? t.name : t.nameEn}</p>
+                        <p className="text-xs" style={{ color: "#8AADA8" }}>{ar ? t.role : t.roleEn}</p>
                       </div>
                     </div>
                   </motion.div>
@@ -1083,9 +1086,9 @@ export default function HomePage() {
                   >
                     <button
                       onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                      className="w-full flex items-center justify-between py-1 text-right"
+                      className={`w-full flex items-center justify-between py-1 ${ar ? "text-right" : "text-left"}`}
                     >
-                      <span className="font-bold text-sm" style={{ color: "#1A3A35" }}>{faq.q}</span>
+                      <span className="font-bold text-sm" style={{ color: "#1A3A35" }}>{ar ? faq.q : faq.qEn}</span>
                       {openFaq === i
                         ? <ChevronUp size={16} strokeWidth={1.5} style={{ color: "#8AADA8" }} className="flex-shrink-0" />
                         : <ChevronDown size={16} strokeWidth={1.5} style={{ color: "#8AADA8" }} className="flex-shrink-0" />}
@@ -1100,7 +1103,7 @@ export default function HomePage() {
                           className="overflow-hidden"
                         >
                           <p className="text-sm leading-relaxed pt-3 mt-3" style={{ color: "#4A6862", borderTop: "1px solid #E5EFED" }}>
-                            {faq.a}
+                            {ar ? faq.a : faq.aEn}
                           </p>
                         </motion.div>
                       )}
@@ -1119,7 +1122,7 @@ export default function HomePage() {
                 <div>
                   <div className="nav-logo mb-2" style={{ color: "#C5DDD9" }}>yallacancel</div>
                   <p className="text-sm" style={{ color: "#8AADA8" }}>
-                    {ar ? "اداة مجانية لكشف الاشتراكات المنسية" : "Free tool to find forgotten subscriptions"}
+                    {ar ? "اكتشف اشتراكاتك المنسية والغيها بضغطة" : "Find your forgotten subscriptions and cancel them instantly"}
                   </p>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-x-10 gap-y-8">
