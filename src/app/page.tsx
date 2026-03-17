@@ -177,6 +177,7 @@ export default function HomePage() {
   const [manualBankId, setManualBankId] = useState<BankId | null>(null);
   const [pasteText, setPasteText] = useState("");
   const [retryFiles, setRetryFiles] = useState<File[]>([]);
+  const [paidNoReport, setPaidNoReport] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -224,6 +225,8 @@ export default function HomePage() {
             setReport(cached.report);
             setSpendingData(cached.spending);
             setStep("results");
+          } else {
+            setPaidNoReport(true);
           }
         }
       })
@@ -236,6 +239,8 @@ export default function HomePage() {
           setReport(cached.report);
           setSpendingData(cached.spending);
           setStep("results");
+        } else {
+          setPaidNoReport(true);
         }
       });
   }, []);
@@ -745,6 +750,33 @@ export default function HomePage() {
                 </div>
               </motion.div>
 
+              {/* Nudge: upload more statements when few subs found */}
+              {subs.length <= 3 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.15 }}
+                  className="flex items-center gap-3 rounded-2xl p-4 mb-6 cursor-pointer transition-all hover:shadow-md"
+                  style={{ background: "#FFF7ED", border: "1px solid #FDE8CD" }}
+                  onClick={handleStartOver}
+                >
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "#FDE8CD" }}>
+                    <Upload size={16} strokeWidth={1.5} style={{ color: "#92400E" }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm mb-0.5" style={{ color: "#92400E" }}>
+                      {ar ? "ارفع كشوفات اكثر عشان نلقى كل اشتراكاتك" : "Upload more statements to find all your subscriptions"}
+                    </p>
+                    <p className="text-xs" style={{ color: "#B45309" }}>
+                      {ar
+                        ? "كشف ٢-٣ اشهر او بطاقات مختلفة يعطيك صورة اوضح"
+                        : "2-3 months or different cards gives you a clearer picture"}
+                    </p>
+                  </div>
+                  <ArrowRight size={16} strokeWidth={1.5} style={{ color: "#92400E" }} className="flex-shrink-0" />
+                </motion.div>
+              )}
+
               {/* Subscription list */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -871,6 +903,30 @@ export default function HomePage() {
                     : "Upload your bank statement — we'll find every hidden subscription and give you a direct cancel link. Users save over 4,000 SAR/year."}
                 </p>
               </motion.div>
+
+              {/* Welcome back banner for paid users returning without cached report */}
+              {paidNoReport && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="max-w-[560px] mx-auto mb-6 rounded-2xl p-4 flex items-center gap-3"
+                  style={{ background: "#E8F7EE", border: "1px solid #B7E4C7" }}
+                >
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "#B7E4C7" }}>
+                    <CheckCircle2 size={16} strokeWidth={1.5} style={{ color: "#065F46" }} />
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm" style={{ color: "#065F46" }}>
+                      {ar ? "اهلا مرة ثانية — دفعتك محفوظة" : "Welcome back — your payment is saved"}
+                    </p>
+                    <p className="text-xs" style={{ color: "#047857" }}>
+                      {ar
+                        ? "ارفع كشفك مرة ثانية وتقريرك الكامل جاهز لك بدون دفع"
+                        : "Upload your statement again and your full report is ready — no extra charge"}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
 
               {/* Upload zone */}
               <UploadZone
