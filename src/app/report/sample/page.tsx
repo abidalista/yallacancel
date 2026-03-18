@@ -20,13 +20,20 @@ import {
   saveReportData,
   getReportData,
 } from "@/lib/payment-store";
+import { getStoredLocale, setStoredLocale } from "@/lib/locale-store";
 
 type Step = "analyzing" | "identify" | "results";
 
 export default function SampleReportPage() {
   const router = useRouter();
-  const [locale, setLocale] = useState<"ar" | "en">("ar");
+  const [locale, setLocaleState] = useState<"ar" | "en">("ar");
+  const setLocale = (l: "ar" | "en") => { setLocaleState(l); setStoredLocale(l); };
   const ar = locale === "ar";
+
+  useEffect(() => {
+    const stored = getStoredLocale();
+    if (stored !== "ar") setLocaleState(stored);
+  }, []);
 
   const [step, setStep] = useState<Step>("analyzing");
   const [report, setReport] = useState<Report | null>(null);

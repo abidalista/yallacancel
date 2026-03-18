@@ -1,15 +1,17 @@
 "use client";
 
-import { use } from "react";
-import { ArrowLeft, Clock, ArrowRight } from "lucide-react";
+import { use, useState, useEffect } from "react";
+import { ArrowLeft, Clock, ArrowRight, Globe } from "lucide-react";
 import { getBlogPost, BLOG_POSTS } from "@/lib/blog-data";
+import { getStoredLocale, setStoredLocale } from "@/lib/locale-store";
 
-function renderContent(content: string) {
+function renderContent(content: string, ar: boolean) {
   const lines = content.split("\n");
   const elements: React.ReactNode[] = [];
   let inTable = false;
   let tableRows: string[][] = [];
   let tableHeader: string[] = [];
+  const textAlign = ar ? "right" as const : "left" as const;
 
   function flushTable() {
     if (tableRows.length === 0) return;
@@ -19,7 +21,7 @@ function renderContent(content: string) {
           <thead>
             <tr>
               {tableHeader.map((h, i) => (
-                <th key={i} style={{ padding: "10px 14px", textAlign: "right", fontWeight: 700, color: "#1A3A35", borderBottom: "2px solid #C5DDD9", background: "#EDF5F3" }}>
+                <th key={i} style={{ padding: "10px 14px", textAlign, fontWeight: 700, color: "#1A3A35", borderBottom: "2px solid #C5DDD9", background: "#EDF5F3" }}>
                   {h.trim()}
                 </th>
               ))}
@@ -29,7 +31,7 @@ function renderContent(content: string) {
             {tableRows.map((row, ri) => (
               <tr key={ri}>
                 {row.map((cell, ci) => (
-                  <td key={ci} style={{ padding: "10px 14px", textAlign: "right", color: "#4A6862", borderBottom: "1px solid #E5EFED" }}>
+                  <td key={ci} style={{ padding: "10px 14px", textAlign, color: "#4A6862", borderBottom: "1px solid #E5EFED" }}>
                     {cell.trim()}
                   </td>
                 ))}
@@ -76,7 +78,7 @@ function renderContent(content: string) {
       );
     } else if (line.startsWith("- ")) {
       elements.push(
-        <li key={i} style={{ fontSize: 14, color: "#4A6862", lineHeight: 1.8, marginRight: 20, listStyleType: "disc" }}
+        <li key={i} style={{ fontSize: 14, color: "#4A6862", lineHeight: 1.8, ...(ar ? { marginRight: 20 } : { marginLeft: 20 }), listStyleType: "disc" }}
           dangerouslySetInnerHTML={{ __html: formatInline(line.replace("- ", "")) }}
         />
       );
@@ -105,12 +107,26 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
   const { slug } = use(params);
   const post = getBlogPost(slug);
 
+  const [locale, setLocaleState] = useState<"ar" | "en">("ar");
+  const setLocale = (l: "ar" | "en") => { setLocaleState(l); setStoredLocale(l); };
+  const ar = locale === "ar";
+
+  useEffect(() => {
+    const stored = getStoredLocale();
+    if (stored !== "ar") setLocaleState(stored);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dir = ar ? "rtl" : "ltr";
+    document.documentElement.lang = ar ? "ar" : "en";
+  }, [ar]);
+
   if (!post) {
     return (
-      <div dir="rtl" style={{ background: "#EDF5F3", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Noto Sans Arabic', 'Plus Jakarta Sans', sans-serif" }}>
+      <div dir={ar ? "rtl" : "ltr"} style={{ background: "#EDF5F3", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: ar ? "'Noto Sans Arabic', 'Plus Jakarta Sans', sans-serif" : "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
         <div style={{ textAlign: "center" }}>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1A3A35", marginBottom: 12 }}>المقال مو موجود</h1>
-          <a href="/blog" style={{ color: "#00A651", fontWeight: 700, textDecoration: "none" }}>ارجع للمقالات</a>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1A3A35", marginBottom: 12 }}>{ar ? "المقال مو موجود" : "Post not found"}</h1>
+          <a href="/blog" style={{ color: "#00A651", fontWeight: 700, textDecoration: "none" }}>{ar ? "ارجع للمقالات" : "Back to articles"}</a>
         </div>
       </div>
     );
@@ -119,7 +135,7 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
   const related = BLOG_POSTS.filter((p) => p.slug !== slug).slice(0, 2);
 
   return (
-    <div dir="rtl" style={{ background: "#EDF5F3", minHeight: "100vh", fontFamily: "'Noto Sans Arabic', 'Plus Jakarta Sans', sans-serif" }}>
+    <div dir={ar ? "rtl" : "ltr"} style={{ background: "#EDF5F3", minHeight: "100vh", fontFamily: ar ? "'Noto Sans Arabic', 'Plus Jakarta Sans', sans-serif" : "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
       {/* Nav */}
       <header style={{
         position: "sticky", top: 0, zIndex: 50,
@@ -128,22 +144,38 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
         WebkitBackdropFilter: "blur(20px)",
         borderBottom: "1px solid #C9E0DA",
       }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <a href="/blog" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}>
-            <ArrowLeft size={16} color="#1A3A35" strokeWidth={2.5} style={{ transform: "scaleX(-1)" }} />
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#4A6862" }}>المقالات</span>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+          <a href="/blog" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}>
+            <ArrowLeft size={14} color="#1A3A35" strokeWidth={2.5} style={{ transform: ar ? "scaleX(-1)" : "none" }} />
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#4A6862" }}>{ar ? "المقالات" : "Articles"}</span>
           </a>
           <a href="/" style={{ textDecoration: "none" }}>
-            <span className="nav-logo" style={{ color: "#1A3A35" }}>yallacancel</span>
+            <span className="nav-logo" style={{ color: "#1A3A35", fontSize: "1.3rem" }}>yallacancel</span>
           </a>
-          <a href="/" style={{
-            background: "#1A3A35", color: "#fff",
-            padding: "8px 18px", borderRadius: 999,
-            fontWeight: 700, fontSize: 13,
-            textDecoration: "none",
-          }}>
-            حلل كشفك
-          </a>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button
+              onClick={() => setLocale(ar ? "en" : "ar")}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 4,
+                background: "white", border: "1.5px solid #C5DDD9",
+                padding: "6px 12px", borderRadius: 999,
+                fontWeight: 600, fontSize: 11, color: "#4A6862",
+                cursor: "pointer",
+              }}
+            >
+              <Globe size={13} strokeWidth={1.5} />
+              {ar ? "EN" : "ع"}
+            </button>
+            <a href="/" style={{
+              background: "#1A3A35", color: "#fff",
+              padding: "7px 14px", borderRadius: 999,
+              fontWeight: 700, fontSize: 12,
+              textDecoration: "none",
+              whiteSpace: "nowrap",
+            }}>
+              {ar ? "حلل كشفك" : "Scan now"}
+            </a>
+          </div>
         </div>
       </header>
 
@@ -156,7 +188,7 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
               padding: "3px 10px", borderRadius: 999,
               background: "#D1FAE5", color: "#065F46",
             }}>
-              {post.category}
+              {ar ? post.category : post.categoryEn}
             </span>
             <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#8AADA8" }}>
               <Clock size={12} strokeWidth={2} />
@@ -169,12 +201,12 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
             color: "#1A3A35", margin: 0,
             letterSpacing: "-0.5px",
           }}>
-            {post.title}
+            {ar ? post.title : post.titleEn}
           </h1>
         </div>
 
         <div style={{ background: "#fff", borderRadius: 24, padding: "32px 28px", border: "1.5px solid #E5EFED" }}>
-          {renderContent(post.content)}
+          {renderContent(ar ? post.content : post.contentEn, ar)}
         </div>
 
         {/* CTA */}
@@ -184,10 +216,10 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
           textAlign: "center",
         }}>
           <h3 style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 10 }}>
-            تبي تعرف اشتراكاتك؟
+            {ar ? "تبي تعرف اشتراكاتك؟" : "Want to find your subscriptions?"}
           </h3>
           <p style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", marginBottom: 20 }}>
-            ارفع كشف حسابك ونكشف كل الاشتراكات في ثواني
+            {ar ? "ارفع كشف حسابك ونكشف كل الاشتراكات في ثواني" : "Upload your statement and we'll find all subscriptions in seconds"}
           </p>
           <a href="/" style={{
             display: "inline-flex", alignItems: "center", gap: 8,
@@ -196,14 +228,14 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
             fontWeight: 700, fontSize: 14, textDecoration: "none",
             boxShadow: "0 4px 16px rgba(0,166,81,0.3)",
           }}>
-            حلل كشفك مجانا <ArrowRight size={14} strokeWidth={2.5} style={{ transform: "scaleX(-1)" }} />
+            {ar ? "حلل كشفك" : "Scan your statement"} {ar ? <ArrowRight size={14} strokeWidth={2.5} style={{ transform: "scaleX(-1)" }} /> : <ArrowRight size={14} strokeWidth={2.5} />}
           </a>
         </div>
 
         {/* Related */}
         {related.length > 0 && (
           <div style={{ marginTop: 40 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 800, color: "#1A3A35", marginBottom: 16 }}>مقالات ذات صلة</h3>
+            <h3 style={{ fontSize: 16, fontWeight: 800, color: "#1A3A35", marginBottom: 16 }}>{ar ? "مقالات ذات صلة" : "Related articles"}</h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: 12 }}>
               {related.map((r) => (
                 <a key={r.slug} href={`/blog/${r.slug}`} style={{
@@ -214,9 +246,9 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
                   onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#00A651"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#E5EFED"; }}
                 >
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#8AADA8" }}>{r.category}</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#8AADA8" }}>{ar ? r.category : r.categoryEn}</span>
                   <h4 style={{ fontSize: 14, fontWeight: 700, color: "#1A3A35", margin: "6px 0 0", lineHeight: 1.4 }}>
-                    {r.title}
+                    {ar ? r.title : r.titleEn}
                   </h4>
                 </a>
               ))}
@@ -230,7 +262,7 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
         <a href="/" style={{ textDecoration: "none" }}>
           <span className="nav-logo" style={{ color: "rgba(255,255,255,0.45)", justifyContent: "center" }}>yallacancel</span>
         </a>
-        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", marginTop: 8 }}>&copy; ٢٠٢٦ Yalla Cancel</p>
+        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", marginTop: 8 }}>&copy; 2026 Yalla Cancel</p>
       </footer>
     </div>
   );

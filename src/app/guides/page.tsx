@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ArrowLeft } from "lucide-react";
+import { Search, ArrowLeft, Globe } from "lucide-react";
 import MerchantLogo from "@/components/MerchantLogo";
+import { getStoredLocale, setStoredLocale } from "@/lib/locale-store";
 
 type Difficulty = "easy" | "hard";
 
@@ -234,9 +235,16 @@ const ALL_GUIDES: Guide[] = [
 
 const CATEGORIES = [...new Set(ALL_GUIDES.map((g) => g.category))];
 
-const DIFFICULTY_CONFIG: Record<Difficulty, { label: string; color: string; bg: string; dot: string }> = {
-  easy: { label: "سهل", color: "#065F46", bg: "#D1FAE5", dot: "#10B981" },
-  hard: { label: "صعب", color: "#991B1B", bg: "#FEE2E2", dot: "#EF4444" },
+const CATEGORY_EN: Record<string, string> = {
+  "سعودية": "Saudi", "بث فيديو": "Video Streaming", "موسيقى": "Music",
+  "إنتاجية": "Productivity", "ألعاب": "Gaming", "VPN وأمان": "VPN & Security",
+  "صحة": "Health", "تواصل": "Social", "تعليم": "Education",
+  "أخبار": "News", "تسوق": "Shopping", "أعمال": "Business",
+};
+
+const DIFFICULTY_CONFIG: Record<Difficulty, { ar: string; en: string; color: string; bg: string; dot: string }> = {
+  easy: { ar: "سهل", en: "Easy", color: "#065F46", bg: "#D1FAE5", dot: "#10B981" },
+  hard: { ar: "صعب", en: "Hard", color: "#991B1B", bg: "#FEE2E2", dot: "#EF4444" },
 };
 
 const stagger = {
@@ -245,6 +253,20 @@ const stagger = {
 };
 
 export default function GuidesPage() {
+  const [locale, setLocaleState] = useState<"ar" | "en">("ar");
+  const setLocale = (l: "ar" | "en") => { setLocaleState(l); setStoredLocale(l); };
+  const ar = locale === "ar";
+
+  useEffect(() => {
+    const stored = getStoredLocale();
+    if (stored !== "ar") setLocaleState(stored);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dir = ar ? "rtl" : "ltr";
+    document.documentElement.lang = ar ? "ar" : "en";
+  }, [ar]);
+
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
@@ -274,7 +296,7 @@ export default function GuidesPage() {
   }, [search]);
 
   return (
-    <div dir="rtl" style={{ background: "#EDF5F3", minHeight: "100vh", fontFamily: "'Noto Sans Arabic', 'Plus Jakarta Sans', sans-serif" }}>
+    <div dir={ar ? "rtl" : "ltr"} style={{ background: "#EDF5F3", minHeight: "100vh", fontFamily: ar ? "'Noto Sans Arabic', 'Plus Jakarta Sans', sans-serif" : "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
 
       {/* ── Nav ── */}
       <header style={{
@@ -284,28 +306,44 @@ export default function GuidesPage() {
         WebkitBackdropFilter: "blur(20px)",
         borderBottom: "1px solid #C9E0DA",
       }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}>
-            <ArrowLeft size={16} color="#1A3A35" strokeWidth={2.5} style={{ transform: "scaleX(-1)" }} />
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#4A6862" }}>الرئيسية</span>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+          <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}>
+            <ArrowLeft size={14} color="#1A3A35" strokeWidth={2.5} style={{ transform: ar ? "scaleX(-1)" : "none" }} />
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#4A6862" }}>{ar ? "الرئيسية" : "Home"}</span>
           </a>
           <a href="/" style={{ textDecoration: "none" }}>
-            <span className="nav-logo" style={{ color: "#1A3A35" }}>
+            <span className="nav-logo" style={{ color: "#1A3A35", fontSize: "1.3rem" }}>
               yallacancel
             </span>
           </a>
-          <a
-            href="/"
-            style={{
-              background: "#1A3A35", color: "#fff",
-              padding: "8px 18px", borderRadius: 999,
-              fontWeight: 700, fontSize: 13,
-              textDecoration: "none",
-              transition: "background 0.15s",
-            }}
-          >
-            حلل كشفك
-          </a>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button
+              onClick={() => setLocale(ar ? "en" : "ar")}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 4,
+                background: "white", border: "1.5px solid #C5DDD9",
+                padding: "6px 12px", borderRadius: 999,
+                fontWeight: 600, fontSize: 11, color: "#4A6862",
+                cursor: "pointer",
+              }}
+            >
+              <Globe size={13} strokeWidth={1.5} />
+              {ar ? "EN" : "ع"}
+            </button>
+            <a
+              href="/"
+              style={{
+                background: "#1A3A35", color: "#fff",
+                padding: "7px 14px", borderRadius: 999,
+                fontWeight: 700, fontSize: 12,
+                textDecoration: "none",
+                transition: "background 0.15s",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {ar ? "حلل كشفك" : "Scan now"}
+            </a>
+          </div>
         </div>
       </header>
 
@@ -318,34 +356,35 @@ export default function GuidesPage() {
             padding: "5px 14px", marginBottom: 20,
           }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#00A651", display: "inline-block" }} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: "#1A3A35" }}>محدث ٢٠٢٦</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#1A3A35" }}>{ar ? "محدث ٢٠٢٦" : "Updated 2026"}</span>
           </div>
 
           <h1 style={{
-            fontSize: "clamp(2.4rem, 6vw, 3.75rem)",
+            fontSize: "clamp(2rem, 6vw, 3.75rem)",
             fontWeight: 900, lineHeight: 1.15,
             color: "#1A3A35", margin: "0 0 16px",
             letterSpacing: "-1px",
           }}>
-            أدلة إلغاء<br />الاشتراكات
+            {ar ? <>ادلة الغاء<br />الاشتراكات</> : <>Subscription<br />Cancel Guides</>}
           </h1>
           <p style={{ fontSize: 17, color: "#4A6862", marginBottom: 36, lineHeight: 1.7 }}>
-            {ALL_GUIDES.length} دليل خطوة بخطوة — لكل خدمة، بالعربي
+            {ar ? `${ALL_GUIDES.length} دليل خطوة بخطوة — لكل خدمة` : `${ALL_GUIDES.length} step-by-step guides — for every service`}
           </p>
 
           {/* Search */}
           <div style={{ position: "relative", maxWidth: 500, margin: "0 auto" }}>
             <Search
               size={18} color="#8AADA8" strokeWidth={2}
-              style={{ position: "absolute", right: 18, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
+              style={{ position: "absolute", ...(ar ? { right: 18 } : { left: 18 }), top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
             />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="ابحث... Netflix، شاهد، Adobe..."
+              placeholder={ar ? "ابحث... Netflix، شاهد، Adobe..." : "Search... Netflix, Shahid, Adobe..."}
               style={{
-                width: "100%", paddingRight: 48, paddingLeft: 20,
+                width: "100%",
+                ...(ar ? { paddingRight: 48, paddingLeft: 20 } : { paddingLeft: 48, paddingRight: 20 }),
                 paddingTop: 15, paddingBottom: 15,
                 borderRadius: 16, border: "2px solid #C5DDD9",
                 background: "#fff", fontSize: 15, fontWeight: 600,
@@ -382,7 +421,7 @@ export default function GuidesPage() {
               boxShadow: !activeCategory ? "0 2px 12px rgba(26,58,53,0.18)" : "0 1px 4px rgba(0,0,0,0.06)",
             }}
           >
-            الكل · {search.trim() ? filtered.length : ALL_GUIDES.length}
+            {ar ? "الكل" : "All"} · {search.trim() ? filtered.length : ALL_GUIDES.length}
           </button>
           {CATEGORIES.map((cat) => (
             <button
@@ -396,7 +435,7 @@ export default function GuidesPage() {
                 boxShadow: activeCategory === cat ? "0 2px 12px rgba(26,58,53,0.18)" : "0 1px 4px rgba(0,0,0,0.06)",
               }}
             >
-              {cat} · {countByCategory[cat] || 0}
+              {ar ? cat : (CATEGORY_EN[cat] || cat)} · {countByCategory[cat] || 0}
             </button>
           ))}
         </div>
@@ -404,7 +443,7 @@ export default function GuidesPage() {
         {/* Result count */}
         {search.trim() && (
           <p style={{ fontSize: 13, color: "#8AADA8", marginBottom: 20, fontWeight: 600 }}>
-            {filtered.length === 0 ? "ما في نتائج" : `${filtered.length} نتيجة`}
+            {filtered.length === 0 ? (ar ? "ما في نتائج" : "No results") : (ar ? `${filtered.length} نتيجة` : `${filtered.length} results`)}
           </p>
         )}
 
@@ -439,10 +478,10 @@ export default function GuidesPage() {
                     <MerchantLogo name={g.nameAr || g.name} domain={g.domain} size={36} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontWeight: 700, fontSize: 14, color: "#1A3A35", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {g.nameAr}
+                        {ar ? g.nameAr : g.name}
                       </div>
                       <div style={{ fontSize: 12, color: "#8AADA8", marginTop: 1 }}>
-                        كيف ألغي {g.name}
+                        {ar ? `كيف ألغي ${g.name}` : `How to cancel ${g.name}`}
                       </div>
                     </div>
                     <span style={{
@@ -453,7 +492,7 @@ export default function GuidesPage() {
                       flexShrink: 0,
                     }}>
                       <span style={{ width: 5, height: 5, borderRadius: "50%", background: diff.dot, display: "inline-block" }} />
-                      {diff.label}
+                      {ar ? diff.ar : diff.en}
                     </span>
                   </motion.a>
                 );
@@ -473,15 +512,15 @@ export default function GuidesPage() {
               }}>
                 <Search size={28} color="#8AADA8" />
               </div>
-              <p style={{ fontSize: 18, fontWeight: 800, color: "#1A3A35", marginBottom: 8 }}>ما لقينا الخدمة</p>
-              <p style={{ fontSize: 14, color: "#8AADA8", marginBottom: 28 }}>ارفع كشف حسابك ونكتشف اشتراكاتك تلقائيا</p>
+              <p style={{ fontSize: 18, fontWeight: 800, color: "#1A3A35", marginBottom: 8 }}>{ar ? "ما لقينا الخدمة" : "Service not found"}</p>
+              <p style={{ fontSize: 14, color: "#8AADA8", marginBottom: 28 }}>{ar ? "ارفع كشف حسابك ونكتشف اشتراكاتك تلقائيا" : "Upload your statement and we'll detect your subscriptions automatically"}</p>
               <a href="/" style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
                 background: "#1A3A35", color: "#fff",
                 padding: "12px 28px", borderRadius: 999,
                 fontWeight: 700, fontSize: 14, textDecoration: "none",
               }}>
-                ارفع كشفك مجانا
+                {ar ? "ارفع كشفك" : "Upload your statement"}
               </a>
             </motion.div>
           )}
@@ -505,10 +544,10 @@ export default function GuidesPage() {
         }} />
         <div style={{ position: "relative", zIndex: 1, maxWidth: 540, margin: "0 auto" }}>
           <h2 style={{ fontSize: "clamp(1.6rem, 4vw, 2.4rem)", fontWeight: 900, color: "#fff", marginBottom: 14, letterSpacing: "-0.5px" }}>
-            مو لاقي الخدمة؟
+            {ar ? "مو لاقي الخدمة؟" : "Can't find your service?"}
           </h2>
           <p style={{ fontSize: 16, color: "rgba(255,255,255,0.65)", marginBottom: 36, lineHeight: 1.7 }}>
-            ارفع كشف حسابك ونكتشف كل اشتراكاتك المخفية تلقائيا — مع روابط الإلغاء.
+            {ar ? "ارفع كشف حسابك ونكتشف كل اشتراكاتك المخفية تلقائيا — مع روابط الالغاء." : "Upload your bank statement and we'll automatically find all your hidden subscriptions — with cancel links."}
           </p>
           <a href="/" style={{
             display: "inline-flex", alignItems: "center", gap: 10,
@@ -527,9 +566,9 @@ export default function GuidesPage() {
               e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,166,81,0.35)";
             }}
           >
-            ارفع كشفك مجانا
+            {ar ? "ارفع كشفك" : "Upload your statement"}
           </a>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 14 }}>لا بريد إلكتروني · لا تسجيل · ١٠٠٪ مجاني</p>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 14 }}>{ar ? "لا بريد الكتروني · لا تسجيل" : "No email · No signup"}</p>
         </div>
       </section>
 

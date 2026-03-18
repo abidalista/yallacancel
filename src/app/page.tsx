@@ -31,6 +31,7 @@ import {
   getReportData,
   clearReportData,
 } from "@/lib/payment-store";
+import { getStoredLocale, setStoredLocale } from "@/lib/locale-store";
 
 type Step = "landing" | "analyzing" | "identify" | "results";
 
@@ -163,7 +164,14 @@ const FAQ_ITEMS = [
 
 export default function HomePage() {
   const router = useRouter();
-  const [locale, setLocale] = useState<"ar" | "en">("ar");
+  const [locale, setLocaleState] = useState<"ar" | "en">("ar");
+  const setLocale = (l: "ar" | "en") => { setLocaleState(l); setStoredLocale(l); };
+
+  // Restore locale from localStorage on mount
+  useEffect(() => {
+    const stored = getStoredLocale();
+    if (stored !== "ar") setLocaleState(stored);
+  }, []);
   const [step, setStep] = useState<Step>("landing");
   const [report, setReport] = useState<Report | null>(null);
   const [parseError, setParseError] = useState<ParseError | null>(null);
@@ -1006,10 +1014,10 @@ export default function HomePage() {
           <section className="py-16 px-6" style={{ background: "#EDF5F3" }}>
             <div className="max-w-[800px] mx-auto text-center">
               <h2 className="text-xl font-extrabold tracking-tight mb-2" style={{ color: "#1A3A35" }}>
-                {ar ? "تبي تلغي اشتراك؟" : "Want to cancel a subscription?"}
+                {ar ? "ادلة الغاء لاكثر من ٢٠٠ خدمة" : "Cancel guides for 200+ services"}
               </h2>
               <p className="text-sm mb-6" style={{ color: "#8AADA8" }}>
-                {ar ? "عندنا اكثر من ٢٠٠ دليل الغاء خطوة بخطوة" : "200+ step-by-step cancellation guides"}
+                {ar ? "شرح خطوة بخطوة لكل خدمة — من Netflix الى stc" : "Step-by-step instructions for every service — from Netflix to stc"}
               </p>
               <div className="flex flex-wrap justify-center gap-3 mb-8">
                 {SUB_CHIPS.map((chip) => (
