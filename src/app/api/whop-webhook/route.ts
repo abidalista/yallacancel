@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac } from "crypto";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 const WEBHOOK_SECRET = process.env.WHOP_WEBHOOK_SECRET;
 
@@ -40,6 +41,11 @@ export async function POST(request: NextRequest) {
       case "payment.succeeded":
         // Payment successful — user gets access via client-side onComplete callback
         // This webhook is for server-side record keeping
+        getPostHogClient().capture({
+          distinctId: data?.id || "unknown",
+          event: "payment_webhook_received",
+          properties: { plan_id: data?.plan_id, payment_id: data?.id, status: data?.status },
+        });
         break;
 
       case "payment.failed":

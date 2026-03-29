@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { CreditCard, TrendingDown, CalendarDays, Eye, EyeOff, Info, Search, FileDown } from "lucide-react";
 import { AuditReport as Report, SubscriptionStatus } from "@/lib/types";
+import posthog from "posthog-js";
 import type { SpendingBreakdown } from "@/lib/services";
 import SubscriptionCard from "./SubscriptionCard";
 
@@ -155,6 +156,7 @@ export default function AuditReport({
         {isPaid && (
           <button
             onClick={async () => {
+              posthog.capture("pdf_downloaded", { locale, subscription_count: report.subscriptions.length });
               const { generateReport } = await import("@/lib/generate-pdf");
               generateReport(report, spendingData || null, locale);
             }}

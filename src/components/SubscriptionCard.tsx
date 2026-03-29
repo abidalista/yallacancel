@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ExternalLink, FileText, AlertTriangle } from "lucide-react";
 import { Subscription, SubscriptionStatus } from "@/lib/types";
+import posthog from "posthog-js";
 import { getCancelInfo, CancelDifficulty } from "@/lib/cancel-db";
 import MerchantLogo from "@/components/MerchantLogo";
 
@@ -127,6 +128,7 @@ export default function SubscriptionCard({
             href={cancelInfo!.cancelUrl}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => posthog.capture("cancel_link_clicked", { locale, subscription_name: sub.name })}
             className="inline-flex items-center gap-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-4 py-2 rounded-full transition-all hover:-translate-y-0.5 no-underline"
           >
             <ExternalLink size={12} strokeWidth={1.5} />
@@ -137,6 +139,7 @@ export default function SubscriptionCard({
         {hasGuide && (
           <a
             href={`/${cancelInfo!.guideSlug}.html`}
+            onClick={() => posthog.capture("cancel_guide_opened", { locale, subscription_name: sub.name })}
             className="inline-flex items-center gap-1.5 bg-white text-xs font-bold px-4 py-2 rounded-full transition-all no-underline hover:-translate-y-0.5"
             style={{ border: "1px solid #E5EFED", color: "#4A6862" }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = "#00A651"; e.currentTarget.style.color = "#1A3A35"; }}
@@ -151,7 +154,7 @@ export default function SubscriptionCard({
 
         <div className="flex gap-1.5">
           <button
-            onClick={() => onStatusChange(sub.id, "keep")}
+            onClick={() => { posthog.capture("subscription_marked_keep", { locale, subscription_name: sub.name }); onStatusChange(sub.id, "keep"); }}
             className="text-[10px] font-bold px-3 py-1.5 rounded-full border transition-all"
             style={sub.status === "keep"
               ? { background: "#10B981", color: "white", borderColor: "#10B981" }
@@ -160,7 +163,7 @@ export default function SubscriptionCard({
             {ar ? "خليه" : "Keep"}
           </button>
           <button
-            onClick={() => onStatusChange(sub.id, "cancel")}
+            onClick={() => { posthog.capture("subscription_marked_cancel", { locale, subscription_name: sub.name }); onStatusChange(sub.id, "cancel"); }}
             className="text-[10px] font-bold px-3 py-1.5 rounded-full border transition-all"
             style={sub.status === "cancel"
               ? { background: "#EF4444", color: "white", borderColor: "#EF4444" }

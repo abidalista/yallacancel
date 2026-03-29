@@ -5,6 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const LLAMA_API_KEY = process.env.LLAMA_CLOUD_API_KEY;
@@ -198,6 +199,11 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await analyzeWithClaude(rawText);
+    getPostHogClient().capture({
+      distinctId: ip,
+      event: "pdf_analysis_requested",
+      properties: { file_type: ext, file_size: file.size },
+    });
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(

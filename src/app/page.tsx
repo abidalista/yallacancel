@@ -32,6 +32,7 @@ import {
   clearReportData,
 } from "@/lib/payment-store";
 import { getStoredLocale, setStoredLocale } from "@/lib/locale-store";
+import posthog from "posthog-js";
 
 type Step = "landing" | "analyzing" | "identify" | "results";
 
@@ -313,6 +314,7 @@ export default function HomePage() {
   }
 
   async function handleScan(files: File[], bankOverride?: BankId) {
+    posthog.capture("analysis_started", { file_count: files.length, locale });
     setParseError(null);
     setStep("analyzing");
     setAnalyzeTimer(0);
@@ -342,6 +344,7 @@ export default function HomePage() {
             await new Promise(r => setTimeout(r, MIN_LOADING_MS - elapsed));
           }
           if (timerRef.current) clearInterval(timerRef.current);
+          posthog.capture("analysis_completed", { locale, subscription_count: aiResult.report.subscriptions.length, method: "ai" });
           setReport(aiResult.report);
           setSpendingData(null);
           saveReportData(aiResult.report, null);
@@ -384,6 +387,7 @@ export default function HomePage() {
 
       if (allTx.length === 0) {
         if (timerRef.current) clearInterval(timerRef.current);
+        posthog.capture("analysis_failed", { locale, reason: "no_transactions" });
         setParseError(buildParseError(failedFiles, allWarnings));
         setRetryFiles(files);
         setStep("landing");
@@ -401,6 +405,7 @@ export default function HomePage() {
       }
       if (timerRef.current) clearInterval(timerRef.current);
 
+      posthog.capture("analysis_completed", { locale, subscription_count: result.subscriptions.length, method: "local" });
       setReport(result);
       setSpendingData(spending);
       saveReportData(result, spending);
@@ -411,6 +416,7 @@ export default function HomePage() {
     } catch (err) {
       console.error("Scan failed:", err);
       if (timerRef.current) clearInterval(timerRef.current);
+      posthog.capture("analysis_failed", { locale, reason: "unexpected_error" });
       setParseError({
         type: "file_error",
         message: "Something went wrong",

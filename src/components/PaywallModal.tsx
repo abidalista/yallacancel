@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Zap, FolderOpen, FileDown, Link2, BookOpen, Loader2, Mail } from "lucide-react";
 import { WhopCheckoutEmbed } from "@whop/checkout/react";
+import posthog from "posthog-js";
 
 interface PaywallModalProps {
   locale: "ar" | "en";
@@ -31,6 +32,10 @@ export default function PaywallModal({ locale, onClose, onPaymentSuccess }: Payw
   const [showCheckout, setShowCheckout] = useState(false);
 
   const planId = process.env.NEXT_PUBLIC_WHOP_PLAN_ID || "plan_3E0V8cxU8VYXI";
+
+  useEffect(() => {
+    posthog.capture("paywall_viewed", { locale, plan_id: planId });
+  }, []);
 
   return (
     <AnimatePresence>
@@ -100,7 +105,7 @@ export default function PaywallModal({ locale, onClose, onPaymentSuccess }: Payw
 
                 <button
                   className="btn-primary w-full text-center"
-                  onClick={() => setShowCheckout(true)}
+                  onClick={() => { posthog.capture("checkout_started", { locale, plan_id: planId }); setShowCheckout(true); }}
                 >
                   {ar ? "تقريرك الكامل — ٤٩ ريال" : "Your full report — 49 SAR"}
                 </button>
@@ -128,6 +133,7 @@ export default function PaywallModal({ locale, onClose, onPaymentSuccess }: Payw
                 theme="light"
                 skipRedirect
                 onComplete={(_planId, receiptId) => {
+                  posthog.capture("payment_completed", { locale, plan_id: _planId, receipt_id: receiptId });
                   onPaymentSuccess(receiptId || "");
                 }}
                 fallback={

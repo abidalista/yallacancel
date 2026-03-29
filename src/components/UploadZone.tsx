@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, X, FileText, Sparkles, AlertTriangle } from "lucide-react";
+import posthog from "posthog-js";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 const MAX_FILES = 5;
@@ -97,6 +98,11 @@ export default function UploadZone({
 
   function handleScan() {
     if (selectedFiles.length === 0) return;
+    posthog.capture("file_uploaded", {
+      file_count: selectedFiles.length,
+      file_types: selectedFiles.map((f) => f.file.name.split(".").pop()?.toLowerCase()),
+      locale,
+    });
     onScan(selectedFiles.map((f) => f.file));
   }
 
@@ -202,7 +208,7 @@ export default function UploadZone({
         <div className="mt-5 text-center">
           <span className="text-xs font-medium" style={{ color: "#8AADA8" }}>{ar ? "او" : "or"}</span>
           <button
-            onClick={onTestClick}
+            onClick={() => { posthog.capture("sample_data_tried", { locale }); onTestClick(); }}
             className="font-bold text-sm py-3 px-7 rounded-full mx-auto block mt-3 transition-all hover:-translate-y-0.5"
             style={{
               background: "#00A651",

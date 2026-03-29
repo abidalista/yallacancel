@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add src/app/blog/page.tsx 'src/app/blog/[slug]/BlogPostClient.tsx')",
+      "Bash(xargs perl -pi -e 's/[\\\\x{064B}-\\\\x{0652}]//g')",
+      "Bash(git add src/)",
+      "Bash(npx tsc:*)"
+    ],
+    "additionalDirectories": [
+      "/tmp"
+    ]
+  }
+}
