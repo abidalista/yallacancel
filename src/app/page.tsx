@@ -380,6 +380,7 @@ export default function HomePage() {
           }
         } catch (err) {
           console.error(`Failed to parse ${file.name}:`, err);
+          posthog.captureException(err instanceof Error ? err : new Error(String(err)));
           failedFiles.push(file.name);
           allWarnings.push("file_exception");
         }
@@ -416,6 +417,7 @@ export default function HomePage() {
     } catch (err) {
       console.error("Scan failed:", err);
       if (timerRef.current) clearInterval(timerRef.current);
+      posthog.captureException(err instanceof Error ? err : new Error(String(err)));
       posthog.capture("analysis_failed", { locale, reason: "unexpected_error" });
       setParseError({
         type: "file_error",

@@ -44,7 +44,7 @@ export default function PaywallModal({ locale, onClose, onPaymentSuccess }: Payw
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-        onClick={(e) => e.target === e.currentTarget && onClose()}
+        onClick={(e) => { if (e.target === e.currentTarget) { posthog.capture("paywall_dismissed", { locale }); onClose(); } }}
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -57,7 +57,7 @@ export default function PaywallModal({ locale, onClose, onPaymentSuccess }: Payw
           {/* Header */}
           <div className="px-6 py-6 text-white text-center relative" style={{ background: "#1A3A35" }}>
             <button
-              onClick={onClose}
+              onClick={() => { posthog.capture("paywall_dismissed", { locale }); onClose(); }}
               className="absolute top-4 left-4 p-1 rounded-full transition-colors"
               style={{ color: "rgba(197,221,217,0.7)" }}
               onMouseEnter={e => (e.currentTarget.style.color = "white")}

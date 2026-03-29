@@ -1,0 +1,22 @@
+[
+  {
+    "event": "language_switched",
+    "description": "Fired when the user toggles the locale between Arabic and English via the Header button.",
+    "file": "src/components/Header.tsx"
+  },
+  {
+    "event": "paywall_dismissed",
+    "description": "Fired when the user closes the paywall modal without completing payment.",
+    "file": "src/components/PaywallModal.tsx"
+  },
+  {
+    "event": "$exception",
+    "description": "Automatic exception capture via posthog.captureException() in analysis error catch blocks.",
+    "file": "src/app/page.tsx"
+  },
+  {
+    "event": "$exception",
+    "description": "Automatic exception capture via posthog.captureException() in the whop-webhook error catch block.",
+    "file": "src/app/api/whop-webhook/route.ts"
+  }
+]

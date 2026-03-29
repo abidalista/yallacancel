@@ -67,6 +67,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error("[whop-webhook] Error:", error);
+    getPostHogClient().capture({
+      distinctId: "server",
+      event: "$exception",
+      properties: { $exception_message: error instanceof Error ? error.message : String(error) },
+    });
     return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
   }
 }

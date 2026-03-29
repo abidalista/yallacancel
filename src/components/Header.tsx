@@ -1,6 +1,7 @@
 "use client";
 
 import { Globe } from "lucide-react";
+import posthog from "posthog-js";
 
 interface HeaderProps {
   locale: "ar" | "en";
@@ -44,7 +45,11 @@ export default function Header({ locale, onLocaleChange, onLogoClick }: HeaderPr
             {locale === "ar" ? "المقالات" : "Articles"}
           </a>
           <button
-            onClick={() => onLocaleChange(locale === "ar" ? "en" : "ar")}
+            onClick={() => {
+              const next = locale === "ar" ? "en" : "ar";
+              posthog.capture("language_switched", { from: locale, to: next });
+              onLocaleChange(next);
+            }}
             className="inline-flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full transition-all flex-shrink-0"
             style={{ border: "1.5px solid #C5DDD9", color: "#4A6862", background: "white" }}
             onMouseEnter={(e) => {
