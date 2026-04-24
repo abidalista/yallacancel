@@ -43,14 +43,14 @@ export const translations = {
     // Categories
     cancelSection: "🚫 الغيها",
     cancelDesc: "اشتراكات ما تستخدمها وتسحب فلوسك",
-    keepSection: "✅ خلها",
+    keepSection: "✅ خلّها",
     keepDesc: "اشتراكات تستخدمها وتستاهل",
     investigateSection: "🔍 راجعها",
     investigateDesc: "اشتراكات تحتاج تتأكد منها",
 
     // Actions
     markCancel: "الغي",
-    markKeep: "خله",
+    markKeep: "خلّه",
     markInvestigate: "راجع",
     copyList: "نسخ القائمة",
     copied: "تم النسخ!",
@@ -60,22 +60,22 @@ export const translations = {
 
     // How it works
     step1Title: "ارفع كشف حسابك",
-    step1Desc: "نزل كشف الحساب من تطبيق بنكك بصيغة CSV وارفعه هنا",
+    step1Desc: "نزّل كشف الحساب من تطبيق بنكك بصيغة CSV وارفعه هنا",
     step2Title: "نحلل لك الاشتراكات",
-    step2Desc: "نكتشف كل الاشتراكات المتكررة ونصنفها لك",
+    step2Desc: "نكتشف كل الاشتراكات المتكررة ونصنّفها لك",
     step3Title: "قرر والغي",
     step3Desc: "اختر اللي تبي تلغيه واللي تبي تخليه",
 
     // Privacy
-    privacyTitle: "خصوصيتك أولا",
+    privacyTitle: "خصوصيتك أولاً",
     privacyDesc: "كل التحليل يتم على جهازك. ما نرسل أي بيانات لأي سيرفر.",
-    privacyPoint1: "بياناتك ما تطلع من جهازك أبدا",
+    privacyPoint1: "بياناتك ما تطلع من جهازك أبداً",
     privacyPoint2: "ما نخزن أي معلومات بنكية",
     privacyPoint3: "الكود مفتوح المصدر وتقدر تتأكد بنفسك",
     privacyPoint4: "تقدر تخفي أسماء الاشتراكات في التقرير",
 
     // Footer
-    madeWith: "صنع بحب في السعودية 🇸🇦",
+    madeWith: "صُنع بحب في السعودية 🇸🇦",
     openSource: "مفتوح المصدر",
 
     // Misc

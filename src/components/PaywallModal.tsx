@@ -1,41 +1,34 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Zap, FolderOpen, FileDown, Link2, BookOpen, Loader2, Mail } from "lucide-react";
-import { WhopCheckoutEmbed } from "@whop/checkout/react";
-import posthog from "posthog-js";
+import { X, Zap, FolderOpen, FileDown, Link2, BookOpen, MessageSquare, Infinity } from "lucide-react";
 
 interface PaywallModalProps {
   locale: "ar" | "en";
   onClose: () => void;
-  onPaymentSuccess: (receiptId: string) => void;
 }
 
 const FEATURES_AR = [
-  { icon: FolderOpen, text: "ارفع كشوفات بدون حد — كل بطاقاتك وبنوكك" },
-  { icon: FileDown, text: "حمل تقرير PDF كامل — نسختك تبقى معك" },
-  { icon: Link2, text: "روابط إلغاء مباشرة — أكثر من ٥٠ خدمة" },
-  { icon: BookOpen, text: "شرح خطوة بخطوة — كيف تلغي كل اشتراك" },
+  { icon: FolderOpen, text: "رفع كشوفات غير محدودة — كل بطاقاتك وبنوكك" },
+  { icon: FileDown, text: "تصدير تقرير PDF بالعربي — احتفظ بنسخة" },
+  { icon: Link2, text: "روابط إلغاء مباشرة لأكثر من ٥٠ خدمة سعودية" },
+  { icon: BookOpen, text: "دليل خطوة بخطوة لإلغاء كل اشتراك" },
+  { icon: MessageSquare, text: "قوالب رسائل إلغاء جاهزة بالعربي" },
+  { icon: Infinity, text: "تحديثات مدى الحياة — دفعة واحدة وخلاص" },
 ];
 
 const FEATURES_EN = [
-  { icon: FolderOpen, text: "Unlimited uploads — all your cards and banks" },
-  { icon: FileDown, text: "Download full PDF report — keep your copy" },
-  { icon: Link2, text: "Direct cancel links — 50+ services" },
-  { icon: BookOpen, text: "Step-by-step guide to cancel each subscription" },
+  { icon: FolderOpen, text: "Unlimited CSV uploads — all your cards and banks" },
+  { icon: FileDown, text: "Export Arabic PDF report — keep a copy" },
+  { icon: Link2, text: "Direct cancel links for 50+ Saudi services" },
+  { icon: BookOpen, text: "Step-by-step cancellation guide for each service" },
+  { icon: MessageSquare, text: "Ready-to-send Arabic cancellation message templates" },
+  { icon: Infinity, text: "Lifetime updates — pay once, done" },
 ];
 
-export default function PaywallModal({ locale, onClose, onPaymentSuccess }: PaywallModalProps) {
+export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
   const ar = locale === "ar";
   const features = ar ? FEATURES_AR : FEATURES_EN;
-  const [showCheckout, setShowCheckout] = useState(false);
-
-  const planId = process.env.NEXT_PUBLIC_WHOP_PLAN_ID || "plan_3E0V8cxU8VYXI";
-
-  useEffect(() => {
-    posthog.capture("paywall_viewed", { locale, plan_id: planId });
-  }, []);
 
   return (
     <AnimatePresence>
@@ -44,113 +37,73 @@ export default function PaywallModal({ locale, onClose, onPaymentSuccess }: Payw
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-        onClick={(e) => { if (e.target === e.currentTarget) { posthog.capture("paywall_dismissed", { locale }); onClose(); } }}
+        onClick={(e) => e.target === e.currentTarget && onClose()}
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ duration: 0.3 }}
-          className="bg-white rounded-[24px] shadow-2xl w-full max-w-md overflow-hidden max-h-[90vh] overflow-y-auto"
+          className="bg-white rounded-[24px] shadow-2xl w-full max-w-md overflow-hidden"
           dir={ar ? "rtl" : "ltr"}
         >
           {/* Header */}
-          <div className="px-6 py-6 text-white text-center relative" style={{ background: "#1A3A35" }}>
+          <div className="bg-gradient-to-br from-indigo-500 to-violet-600 px-6 py-6 text-white text-center relative">
             <button
-              onClick={() => { posthog.capture("paywall_dismissed", { locale }); onClose(); }}
-              className="absolute top-4 left-4 p-1 rounded-full transition-colors"
-              style={{ color: "rgba(197,221,217,0.7)" }}
-              onMouseEnter={e => (e.currentTarget.style.color = "white")}
-              onMouseLeave={e => (e.currentTarget.style.color = "rgba(197,221,217,0.7)")}
+              onClick={onClose}
+              className="absolute top-4 left-4 text-white/70 hover:text-white p-1 rounded-full transition-colors"
               aria-label="Close"
             >
               <X size={18} strokeWidth={1.5} />
             </button>
             <Zap size={28} strokeWidth={1.5} className="mx-auto mb-2" />
-            <h2 className="text-xl font-extrabold">YallaCancel</h2>
-            <p className="text-sm mt-1" style={{ color: "rgba(197,221,217,0.7)" }}>
-              {ar ? "تخلص من الاشتراكات اللي ما تبيها" : "Get rid of subscriptions you don't need"}
+            <h2 className="text-xl font-extrabold">Yalla Cancel Pro</h2>
+            <p className="text-white/70 text-sm mt-1">
+              {ar ? "كل شيء تحتاجه لتنظيف اشتراكاتك" : "Everything you need to clean up your subscriptions"}
             </p>
           </div>
 
-          {!showCheckout ? (
-            <>
-              {/* Features */}
-              <div className="px-6 py-5 space-y-3">
-                {features.map((f, i) => {
-                  const Icon = f.icon;
-                  return (
-                    <div key={i} className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#E8F7EE" }}>
-                        <Icon size={16} strokeWidth={1.5} style={{ color: "#00A651" }} />
-                      </div>
-                      <span className="text-sm leading-snug pt-1" style={{ color: "#4A6862" }}>
-                        {f.text}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Pricing */}
-              <div className="px-6 pb-6 space-y-3">
-                <div className="rounded-2xl p-4 text-center" style={{ background: "#E5EFED", border: "1px solid #C5DDD9" }}>
-                  <div className="text-3xl font-extrabold tracking-tight" style={{ color: "#1A3A35" }}>
-                    {ar ? "٤٩ ريال" : "49 SAR"}
+          {/* Features */}
+          <div className="px-6 py-5 space-y-3">
+            {features.map((f, i) => {
+              const Icon = f.icon;
+              return (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                    <Icon size={16} strokeWidth={1.5} className="text-indigo-500" />
                   </div>
-                  <div className="text-sm" style={{ color: "#4A6862" }}>
-                    {ar ? "دفعة واحدة — بدون اشتراك شهري" : "One-time payment — no monthly fee"}
-                  </div>
+                  <span className="text-sm text-slate-700 leading-snug pt-1">
+                    {f.text}
+                  </span>
                 </div>
+              );
+            })}
+          </div>
 
-                <button
-                  className="btn-primary w-full text-center"
-                  onClick={() => { posthog.capture("checkout_started", { locale, plan_id: planId }); setShowCheckout(true); }}
-                >
-                  {ar ? "تقريرك الكامل — ٤٩ ريال" : "Your full report — 49 SAR"}
-                </button>
-
-                <p className="text-xs text-center" style={{ color: "#8AADA8" }}>
-                  {ar
-                    ? "دفع آمن ومشفر · يقبل مدى وفيزا وماستر و Apple Pay"
-                    : "Secure & encrypted · Accepts mada, Visa, Mastercard & Apple Pay"}
-                </p>
+          {/* Pricing */}
+          <div className="px-6 pb-6 space-y-3">
+            <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-center">
+              <div className="text-3xl font-extrabold text-indigo-600 tracking-tight">
+                {ar ? "٤٩ ريال" : "49 SAR"}
               </div>
-            </>
-          ) : (
-            /* Whop Checkout Embed */
-            <div className="px-4 py-5" dir="ltr">
-              <div className="flex items-center gap-2 px-3 py-2.5 mb-3 rounded-xl text-xs" style={{ background: "#FFF7ED", color: "#92400E" }} dir={ar ? "rtl" : "ltr"}>
-                <Mail size={14} strokeWidth={1.5} className="flex-shrink-0" />
-                <span>
-                  {ar
-                    ? "حط ايميلك الصحيح عشان يوصلك الوصل والتقرير"
-                    : "Use your real email — your receipt and report will be sent there"}
-                </span>
+              <div className="text-sm text-slate-500">
+                {ar ? "دفعة واحدة — بدون اشتراك شهري" : "One-time payment — no monthly fee"}
               </div>
-              <WhopCheckoutEmbed
-                planId={planId}
-                theme="light"
-                skipRedirect
-                onComplete={(_planId, receiptId) => {
-                  posthog.capture("payment_completed", { locale, plan_id: _planId, receipt_id: receiptId });
-                  onPaymentSuccess(receiptId || "");
-                }}
-                fallback={
-                  <div className="flex items-center justify-center py-16">
-                    <Loader2 size={24} className="animate-spin" style={{ color: "#00A651" }} />
-                  </div>
-                }
-              />
-              <button
-                onClick={() => setShowCheckout(false)}
-                className="w-full text-center text-sm mt-3 py-2"
-                style={{ color: "#8AADA8" }}
-              >
-                {ar ? "← رجوع" : "← Back"}
-              </button>
             </div>
-          )}
+
+            <button
+              className="btn-primary w-full text-center"
+              onClick={() => alert(ar ? "قريباً — جاري ربط بوابة الدفع" : "Coming soon — payment gateway integration in progress")}
+            >
+              {ar ? "ادفع بمدى أو بطاقة — ٤٩ ريال" : "Pay with mada or card — 49 SAR"}
+            </button>
+
+            <p className="text-xs text-center text-slate-400">
+              {ar
+                ? "الدفع عبر موياسر · آمن ومشفر · يقبل مدى وفيزا وماستر"
+                : "Powered by Moyasar · Secure & encrypted · Accepts mada, Visa, Mastercard"}
+            </p>
+          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>

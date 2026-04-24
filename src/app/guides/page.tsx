@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Search, ArrowLeft, Globe } from "lucide-react";
-import MerchantLogo from "@/components/MerchantLogo";
-import { getStoredLocale, setStoredLocale } from "@/lib/locale-store";
+import { useState, useMemo } from "react";
 
-type Difficulty = "easy" | "hard";
+const LOGO = (domain: string) =>
+  `https://logo.clearbit.com/${domain}`;
+const FAV = (domain: string) =>
+  `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+
+type Difficulty = "easy" | "medium" | "hard";
 
 interface Guide {
   name: string;
@@ -19,9 +20,9 @@ interface Guide {
 
 const ALL_GUIDES: Guide[] = [
   // ── Saudi Services ──
-  { name: "stc", nameAr: "stc", slug: "cancel-stc", domain: "stc.com.sa", difficulty: "easy", category: "سعودية" },
-  { name: "Mobily", nameAr: "موبايلي", slug: "cancel-mobily", domain: "mobily.com.sa", difficulty: "easy", category: "سعودية" },
-  { name: "Zain", nameAr: "زين", slug: "cancel-zain", domain: "sa.zain.com", difficulty: "easy", category: "سعودية" },
+  { name: "stc", nameAr: "stc", slug: "cancel-stc", domain: "stc.com.sa", difficulty: "medium", category: "سعودية" },
+  { name: "Mobily", nameAr: "موبايلي", slug: "cancel-mobily", domain: "mobily.com.sa", difficulty: "medium", category: "سعودية" },
+  { name: "Zain", nameAr: "زين", slug: "cancel-zain", domain: "sa.zain.com", difficulty: "medium", category: "سعودية" },
   { name: "Hungerstation Pro", nameAr: "هنقرستيشن برو", slug: "cancel-hungerstation-pro", domain: "hungerstation.com", difficulty: "easy", category: "سعودية" },
   { name: "Jahez Plus", nameAr: "جاهز بلس", slug: "cancel-jahez-plus", domain: "jahez.net", difficulty: "easy", category: "سعودية" },
   { name: "Careem Plus", nameAr: "كريم بلس", slug: "cancel-careem-plus", domain: "careem.com", difficulty: "easy", category: "سعودية" },
@@ -29,22 +30,22 @@ const ALL_GUIDES: Guide[] = [
   { name: "Tamara", nameAr: "تمارا", slug: "cancel-tamara", domain: "tamara.co", difficulty: "easy", category: "سعودية" },
   { name: "Tabby", nameAr: "تابي", slug: "cancel-tabby", domain: "tabby.ai", difficulty: "easy", category: "سعودية" },
   { name: "Nana Direct", nameAr: "نانا", slug: "cancel-nana-direct", domain: "nana.sa", difficulty: "easy", category: "سعودية" },
-  { name: "stc pay", nameAr: "stc pay", slug: "cancel-stc-pay", domain: "stcpay.com.sa", difficulty: "easy", category: "سعودية" },
-  { name: "Jawwy", nameAr: "جوي", slug: "cancel-jawwy", domain: "jawwy.sa", difficulty: "easy", category: "سعودية" },
+  { name: "stc pay", nameAr: "stc pay", slug: "cancel-stc-pay", domain: "stcpay.com.sa", difficulty: "medium", category: "سعودية" },
+  { name: "Jawwy", nameAr: "جوّي", slug: "cancel-jawwy", domain: "jawwy.sa", difficulty: "easy", category: "سعودية" },
   { name: "Mrsool", nameAr: "مرسول", slug: "cancel-mrsool", domain: "mrsool.com", difficulty: "easy", category: "سعودية" },
   { name: "ToYou", nameAr: "ToYou", slug: "cancel-toyou", domain: "toyou.io", difficulty: "easy", category: "سعودية" },
-  { name: "Wssel", nameAr: "وصل", slug: "cancel-wssel", domain: "wssel.com", difficulty: "easy", category: "سعودية" },
+  { name: "Wssel", nameAr: "وصّل", slug: "cancel-wssel", domain: "wssel.com", difficulty: "easy", category: "سعودية" },
   { name: "Extra Rewards", nameAr: "اكسترا", slug: "cancel-extra-rewards", domain: "extra.com", difficulty: "easy", category: "سعودية" },
-  { name: "Salam Mobile", nameAr: "سلام موبايل", slug: "cancel-salam-mobile", domain: "salam.sa", difficulty: "easy", category: "سعودية" },
-  { name: "Virgin Mobile SA", nameAr: "فيرجن موبايل", slug: "cancel-virgin-mobile-sa", domain: "virginmobile.sa", difficulty: "easy", category: "سعودية" },
+  { name: "Salam Mobile", nameAr: "سلام موبايل", slug: "cancel-salam-mobile", domain: "salam.sa", difficulty: "medium", category: "سعودية" },
+  { name: "Virgin Mobile SA", nameAr: "فيرجن موبايل", slug: "cancel-virgin-mobile-sa", domain: "virginmobile.sa", difficulty: "medium", category: "سعودية" },
   { name: "Riyadh Season", nameAr: "موسم الرياض", slug: "cancel-riyadh-season", domain: "riyadhseason.sa", difficulty: "easy", category: "سعودية" },
-  { name: "The Entertainer", nameAr: "The Entertainer", slug: "cancel-the-entertainer", domain: "theentertainerme.com", difficulty: "easy", category: "سعودية" },
+  { name: "The Entertainer", nameAr: "The Entertainer", slug: "cancel-the-entertainer", domain: "theentertainerme.com", difficulty: "medium", category: "سعودية" },
   { name: "Yajny", nameAr: "يجني", slug: "cancel-yajny", domain: "yajny.com", difficulty: "easy", category: "سعودية" },
   { name: "Floward", nameAr: "فلاورد", slug: "cancel-floward", domain: "floward.com", difficulty: "easy", category: "سعودية" },
   { name: "Golden Scent", nameAr: "قولدن سنت", slug: "cancel-golden-scent", domain: "goldenscent.com", difficulty: "easy", category: "سعودية" },
   { name: "Al Dawaa", nameAr: "الدواء", slug: "cancel-al-dawaa-delivery", domain: "al-dawaa.com", difficulty: "easy", category: "سعودية" },
   { name: "Sehha App", nameAr: "صحة", slug: "cancel-sehha-app", domain: "sehha.sa", difficulty: "easy", category: "سعودية" },
-  { name: "Alfursan", nameAr: "الفرسان", slug: "cancel-saudi-airlines-alfursan", domain: "saudia.com", difficulty: "easy", category: "سعودية" },
+  { name: "Alfursan", nameAr: "الفرسان", slug: "cancel-saudi-airlines-alfursan", domain: "saudia.com", difficulty: "medium", category: "سعودية" },
   { name: "Lulu", nameAr: "لولو", slug: "cancel-lulu-hypermarket", domain: "luluhypermarket.com", difficulty: "easy", category: "سعودية" },
   { name: "Deliveroo Plus", nameAr: "ديليفرو بلس", slug: "cancel-deliveroo-plus", domain: "deliveroo.com", difficulty: "easy", category: "سعودية" },
   { name: "Talabat Pro", nameAr: "طلبات برو", slug: "cancel-talabat-pro", domain: "talabat.com", difficulty: "easy", category: "سعودية" },
@@ -57,15 +58,15 @@ const ALL_GUIDES: Guide[] = [
   { name: "YouTube Premium", nameAr: "YouTube Premium", slug: "cancel-youtube-premium", domain: "youtube.com", difficulty: "easy", category: "بث فيديو" },
   { name: "Apple TV+", nameAr: "Apple TV+", slug: "cancel-apple-tv-plus", domain: "apple.com", difficulty: "easy", category: "بث فيديو" },
   { name: "Amazon Prime", nameAr: "Amazon Prime", slug: "cancel-amazon-prime", domain: "amazon.sa", difficulty: "easy", category: "بث فيديو" },
-  { name: "OSN+", nameAr: "OSN+", slug: "cancel-osn-plus", domain: "osnplus.com", difficulty: "easy", category: "بث فيديو" },
+  { name: "OSN+", nameAr: "OSN+", slug: "cancel-osn-plus", domain: "osnplus.com", difficulty: "medium", category: "بث فيديو" },
   { name: "Max (HBO)", nameAr: "Max HBO", slug: "cancel-max-hbo", domain: "max.com", difficulty: "easy", category: "بث فيديو" },
   { name: "beIN CONNECT", nameAr: "beIN", slug: "cancel-bein-connect", domain: "bein.com", difficulty: "hard", category: "بث فيديو" },
   { name: "Paramount+", nameAr: "Paramount+", slug: "cancel-paramount-plus", domain: "paramountplus.com", difficulty: "easy", category: "بث فيديو" },
   { name: "Hulu", nameAr: "Hulu", slug: "cancel-hulu", domain: "hulu.com", difficulty: "easy", category: "بث فيديو" },
   { name: "Crunchyroll", nameAr: "Crunchyroll", slug: "cancel-crunchyroll", domain: "crunchyroll.com", difficulty: "easy", category: "بث فيديو" },
-  { name: "STARZ Play", nameAr: "STARZ Play", slug: "cancel-starz-play", domain: "starzplay.com", difficulty: "easy", category: "بث فيديو" },
-  { name: "TOD", nameAr: "TOD", slug: "cancel-tod", domain: "tod.tv", difficulty: "easy", category: "بث فيديو" },
-  { name: "Shahid Sports", nameAr: "شاهد رياضة", slug: "cancel-mbc-shahid-sports", domain: "shahid.mbc.net", difficulty: "easy", category: "بث فيديو" },
+  { name: "STARZ Play", nameAr: "STARZ Play", slug: "cancel-starz-play", domain: "starzplay.com", difficulty: "medium", category: "بث فيديو" },
+  { name: "TOD", nameAr: "TOD", slug: "cancel-tod", domain: "tod.tv", difficulty: "medium", category: "بث فيديو" },
+  { name: "Shahid Sports", nameAr: "شاهد رياضة", slug: "cancel-mbc-shahid-sports", domain: "shahid.mbc.net", difficulty: "medium", category: "بث فيديو" },
   { name: "Discovery+", nameAr: "Discovery+", slug: "cancel-discovery-plus", domain: "discoveryplus.com", difficulty: "easy", category: "بث فيديو" },
   { name: "Peacock", nameAr: "Peacock", slug: "cancel-peacock", domain: "peacocktv.com", difficulty: "easy", category: "بث فيديو" },
   { name: "AMC+", nameAr: "AMC+", slug: "cancel-amc-plus", domain: "amcplus.com", difficulty: "easy", category: "بث فيديو" },
@@ -102,8 +103,8 @@ const ALL_GUIDES: Guide[] = [
   { name: "Adobe Illustrator", nameAr: "Adobe Illustrator", slug: "cancel-adobe-illustrator", domain: "adobe.com", difficulty: "hard", category: "إنتاجية" },
   { name: "Adobe Lightroom", nameAr: "Adobe Lightroom", slug: "cancel-adobe-lightroom", domain: "adobe.com", difficulty: "hard", category: "إنتاجية" },
   { name: "Adobe Express", nameAr: "Adobe Express", slug: "cancel-adobe-express", domain: "adobe.com", difficulty: "hard", category: "إنتاجية" },
-  { name: "Microsoft 365", nameAr: "Microsoft 365", slug: "cancel-microsoft-365", domain: "microsoft.com", difficulty: "easy", category: "إنتاجية" },
-  { name: "Microsoft Teams", nameAr: "Microsoft Teams", slug: "cancel-microsoft-teams", domain: "microsoft.com", difficulty: "easy", category: "إنتاجية" },
+  { name: "Microsoft 365", nameAr: "Microsoft 365", slug: "cancel-microsoft-365", domain: "microsoft.com", difficulty: "medium", category: "إنتاجية" },
+  { name: "Microsoft Teams", nameAr: "Microsoft Teams", slug: "cancel-microsoft-teams", domain: "microsoft.com", difficulty: "medium", category: "إنتاجية" },
   { name: "iCloud+", nameAr: "iCloud+", slug: "cancel-icloud", domain: "icloud.com", difficulty: "easy", category: "إنتاجية" },
   { name: "Dropbox", nameAr: "Dropbox", slug: "cancel-dropbox", domain: "dropbox.com", difficulty: "easy", category: "إنتاجية" },
   { name: "Notion", nameAr: "Notion", slug: "cancel-notion", domain: "notion.so", difficulty: "easy", category: "إنتاجية" },
@@ -114,9 +115,9 @@ const ALL_GUIDES: Guide[] = [
   { name: "Slack Pro", nameAr: "Slack Pro", slug: "cancel-slack-pro", domain: "slack.com", difficulty: "easy", category: "إنتاجية" },
   { name: "Zoom", nameAr: "Zoom", slug: "cancel-zoom", domain: "zoom.us", difficulty: "easy", category: "إنتاجية" },
   { name: "Google One", nameAr: "Google One", slug: "cancel-google-one", domain: "one.google.com", difficulty: "easy", category: "إنتاجية" },
-  { name: "Google Workspace", nameAr: "Google Workspace", slug: "cancel-google-workspace", domain: "workspace.google.com", difficulty: "easy", category: "إنتاجية" },
+  { name: "Google Workspace", nameAr: "Google Workspace", slug: "cancel-google-workspace", domain: "workspace.google.com", difficulty: "medium", category: "إنتاجية" },
   { name: "Google Play Pass", nameAr: "Google Play Pass", slug: "cancel-google-play-pass", domain: "play.google.com", difficulty: "easy", category: "إنتاجية" },
-  { name: "OneDrive", nameAr: "OneDrive", slug: "cancel-onedrive-standalone", domain: "onedrive.live.com", difficulty: "easy", category: "إنتاجية" },
+  { name: "OneDrive", nameAr: "OneDrive", slug: "cancel-onedrive-standalone", domain: "onedrive.live.com", difficulty: "medium", category: "إنتاجية" },
   { name: "Midjourney", nameAr: "Midjourney", slug: "cancel-midjourney", domain: "midjourney.com", difficulty: "easy", category: "إنتاجية" },
   { name: "Jasper AI", nameAr: "Jasper AI", slug: "cancel-jasper-ai", domain: "jasper.ai", difficulty: "easy", category: "إنتاجية" },
   { name: "Copy.ai", nameAr: "Copy.ai", slug: "cancel-copy-ai", domain: "copy.ai", difficulty: "easy", category: "إنتاجية" },
@@ -124,9 +125,9 @@ const ALL_GUIDES: Guide[] = [
   { name: "Runway ML", nameAr: "Runway ML", slug: "cancel-runway-ml", domain: "runwayml.com", difficulty: "easy", category: "إنتاجية" },
   { name: "Writesonic", nameAr: "Writesonic", slug: "cancel-writesonic", domain: "writesonic.com", difficulty: "easy", category: "إنتاجية" },
   { name: "Framer", nameAr: "Framer", slug: "cancel-framer", domain: "framer.com", difficulty: "easy", category: "إنتاجية" },
-  { name: "Webflow", nameAr: "Webflow", slug: "cancel-webflow", domain: "webflow.com", difficulty: "easy", category: "إنتاجية" },
-  { name: "Squarespace", nameAr: "Squarespace", slug: "cancel-squarespace", domain: "squarespace.com", difficulty: "easy", category: "إنتاجية" },
-  { name: "Shopify", nameAr: "Shopify", slug: "cancel-shopify", domain: "shopify.com", difficulty: "easy", category: "إنتاجية" },
+  { name: "Webflow", nameAr: "Webflow", slug: "cancel-webflow", domain: "webflow.com", difficulty: "medium", category: "إنتاجية" },
+  { name: "Squarespace", nameAr: "Squarespace", slug: "cancel-squarespace", domain: "squarespace.com", difficulty: "medium", category: "إنتاجية" },
+  { name: "Shopify", nameAr: "Shopify", slug: "cancel-shopify", domain: "shopify.com", difficulty: "medium", category: "إنتاجية" },
   { name: "Sketch", nameAr: "Sketch", slug: "cancel-sketch", domain: "sketch.com", difficulty: "easy", category: "إنتاجية" },
   { name: "InVision", nameAr: "InVision", slug: "cancel-invision", domain: "invisionapp.com", difficulty: "easy", category: "إنتاجية" },
   { name: "Evernote", nameAr: "Evernote", slug: "cancel-evernote-premium", domain: "evernote.com", difficulty: "easy", category: "إنتاجية" },
@@ -135,36 +136,36 @@ const ALL_GUIDES: Guide[] = [
   { name: "Obsidian Sync", nameAr: "Obsidian Sync", slug: "cancel-obsidian-sync", domain: "obsidian.md", difficulty: "easy", category: "إنتاجية" },
   { name: "Replit Pro", nameAr: "Replit Pro", slug: "cancel-replit-pro", domain: "replit.com", difficulty: "easy", category: "إنتاجية" },
   { name: "Setapp", nameAr: "Setapp", slug: "cancel-setapp", domain: "setapp.com", difficulty: "easy", category: "إنتاجية" },
-  { name: "Parallels", nameAr: "Parallels", slug: "cancel-parallels", domain: "parallels.com", difficulty: "easy", category: "إنتاجية" },
+  { name: "Parallels", nameAr: "Parallels", slug: "cancel-parallels", domain: "parallels.com", difficulty: "medium", category: "إنتاجية" },
   { name: "Principle", nameAr: "Principle", slug: "cancel-principle-app", domain: "principleformac.com", difficulty: "easy", category: "إنتاجية" },
   // ── Gaming ──
   { name: "Xbox Game Pass", nameAr: "Xbox Game Pass", slug: "cancel-xbox-game-pass", domain: "xbox.com", difficulty: "easy", category: "ألعاب" },
-  { name: "PlayStation+", nameAr: "PlayStation+", slug: "cancel-playstation-plus", domain: "playstation.com", difficulty: "easy", category: "ألعاب" },
-  { name: "Nintendo Switch Online", nameAr: "Nintendo Switch", slug: "cancel-nintendo-switch-online", domain: "nintendo.com", difficulty: "easy", category: "ألعاب" },
+  { name: "PlayStation+", nameAr: "PlayStation+", slug: "cancel-playstation-plus", domain: "playstation.com", difficulty: "medium", category: "ألعاب" },
+  { name: "Nintendo Switch Online", nameAr: "Nintendo Switch", slug: "cancel-nintendo-switch-online", domain: "nintendo.com", difficulty: "medium", category: "ألعاب" },
   { name: "EA Play", nameAr: "EA Play", slug: "cancel-ea-play", domain: "ea.com", difficulty: "easy", category: "ألعاب" },
   { name: "EA Play Pro", nameAr: "EA Play Pro", slug: "cancel-ea-play-pro", domain: "ea.com", difficulty: "easy", category: "ألعاب" },
   { name: "Apple Arcade", nameAr: "Apple Arcade", slug: "cancel-apple-arcade", domain: "apple.com", difficulty: "easy", category: "ألعاب" },
-  { name: "Ubisoft+", nameAr: "Ubisoft+", slug: "cancel-ubisoft-plus", domain: "ubisoft.com", difficulty: "easy", category: "ألعاب" },
+  { name: "Ubisoft+", nameAr: "Ubisoft+", slug: "cancel-ubisoft-plus", domain: "ubisoft.com", difficulty: "medium", category: "ألعاب" },
   { name: "GeForce NOW", nameAr: "GeForce NOW", slug: "cancel-geforce-now", domain: "nvidia.com", difficulty: "easy", category: "ألعاب" },
   { name: "Amazon Luna", nameAr: "Amazon Luna", slug: "cancel-amazon-luna", domain: "amazon.com", difficulty: "easy", category: "ألعاب" },
   { name: "Humble Choice", nameAr: "Humble Choice", slug: "cancel-humble-choice", domain: "humblebundle.com", difficulty: "easy", category: "ألعاب" },
   { name: "Discord Nitro", nameAr: "Discord Nitro", slug: "cancel-discord-nitro", domain: "discord.com", difficulty: "easy", category: "ألعاب" },
   { name: "Prime Gaming", nameAr: "Prime Gaming", slug: "cancel-amazon-prime-gaming", domain: "amazon.com", difficulty: "easy", category: "ألعاب" },
   // ── VPN & Security ──
-  { name: "NordVPN", nameAr: "NordVPN", slug: "cancel-nordvpn", domain: "nordvpn.com", difficulty: "hard", category: "VPN وأمان" },
-  { name: "ExpressVPN", nameAr: "ExpressVPN", slug: "cancel-expressvpn", domain: "expressvpn.com", difficulty: "hard", category: "VPN وأمان" },
-  { name: "Surfshark", nameAr: "Surfshark", slug: "cancel-surfshark", domain: "surfshark.com", difficulty: "hard", category: "VPN وأمان" },
-  { name: "CyberGhost", nameAr: "CyberGhost", slug: "cancel-cyberghost", domain: "cyberghostvpn.com", difficulty: "hard", category: "VPN وأمان" },
+  { name: "NordVPN", nameAr: "NordVPN", slug: "cancel-nordvpn", domain: "nordvpn.com", difficulty: "medium", category: "VPN وأمان" },
+  { name: "ExpressVPN", nameAr: "ExpressVPN", slug: "cancel-expressvpn", domain: "expressvpn.com", difficulty: "medium", category: "VPN وأمان" },
+  { name: "Surfshark", nameAr: "Surfshark", slug: "cancel-surfshark", domain: "surfshark.com", difficulty: "medium", category: "VPN وأمان" },
+  { name: "CyberGhost", nameAr: "CyberGhost", slug: "cancel-cyberghost", domain: "cyberghostvpn.com", difficulty: "medium", category: "VPN وأمان" },
   { name: "ProtonVPN", nameAr: "ProtonVPN", slug: "cancel-protonvpn", domain: "protonvpn.com", difficulty: "easy", category: "VPN وأمان" },
-  { name: "PIA", nameAr: "PIA", slug: "cancel-private-internet-access", domain: "privateinternetaccess.com", difficulty: "hard", category: "VPN وأمان" },
+  { name: "PIA", nameAr: "PIA", slug: "cancel-private-internet-access", domain: "privateinternetaccess.com", difficulty: "medium", category: "VPN وأمان" },
   { name: "Mullvad", nameAr: "Mullvad", slug: "cancel-mullvad", domain: "mullvad.net", difficulty: "easy", category: "VPN وأمان" },
   { name: "1Password", nameAr: "1Password", slug: "cancel-1password", domain: "1password.com", difficulty: "easy", category: "VPN وأمان" },
-  { name: "LastPass", nameAr: "LastPass", slug: "cancel-lastpass", domain: "lastpass.com", difficulty: "hard", category: "VPN وأمان" },
+  { name: "LastPass", nameAr: "LastPass", slug: "cancel-lastpass", domain: "lastpass.com", difficulty: "medium", category: "VPN وأمان" },
   { name: "Dashlane", nameAr: "Dashlane", slug: "cancel-dashlane", domain: "dashlane.com", difficulty: "easy", category: "VPN وأمان" },
   { name: "Bitwarden", nameAr: "Bitwarden", slug: "cancel-bitwarden-premium", domain: "bitwarden.com", difficulty: "easy", category: "VPN وأمان" },
   { name: "Norton 360", nameAr: "Norton 360", slug: "cancel-norton-360", domain: "norton.com", difficulty: "hard", category: "VPN وأمان" },
   { name: "McAfee", nameAr: "McAfee", slug: "cancel-mcafee", domain: "mcafee.com", difficulty: "hard", category: "VPN وأمان" },
-  { name: "Kaspersky", nameAr: "Kaspersky", slug: "cancel-kaspersky", domain: "kaspersky.com", difficulty: "hard", category: "VPN وأمان" },
+  { name: "Kaspersky", nameAr: "Kaspersky", slug: "cancel-kaspersky", domain: "kaspersky.com", difficulty: "medium", category: "VPN وأمان" },
   { name: "ProtonMail", nameAr: "ProtonMail", slug: "cancel-protonmail", domain: "proton.me", difficulty: "easy", category: "VPN وأمان" },
   // ── Health ──
   { name: "Headspace", nameAr: "Headspace", slug: "cancel-headspace", domain: "headspace.com", difficulty: "easy", category: "صحة" },
@@ -173,7 +174,7 @@ const ALL_GUIDES: Guide[] = [
   { name: "Fitbit Premium", nameAr: "Fitbit Premium", slug: "cancel-fitbit-premium", domain: "fitbit.com", difficulty: "easy", category: "صحة" },
   { name: "MyFitnessPal", nameAr: "MyFitnessPal", slug: "cancel-myfitnesspal", domain: "myfitnesspal.com", difficulty: "easy", category: "صحة" },
   { name: "Strava", nameAr: "Strava", slug: "cancel-strava", domain: "strava.com", difficulty: "easy", category: "صحة" },
-  { name: "Peloton", nameAr: "Peloton", slug: "cancel-peloton", domain: "onepeloton.com", difficulty: "easy", category: "صحة" },
+  { name: "Peloton", nameAr: "Peloton", slug: "cancel-peloton", domain: "onepeloton.com", difficulty: "medium", category: "صحة" },
   { name: "Whoop", nameAr: "Whoop", slug: "cancel-whoop", domain: "whoop.com", difficulty: "hard", category: "صحة" },
   { name: "Flo", nameAr: "Flo", slug: "cancel-flo-premium", domain: "flo.health", difficulty: "easy", category: "صحة" },
   { name: "Nike Training", nameAr: "Nike Training", slug: "cancel-nike-training-club", domain: "nike.com", difficulty: "easy", category: "صحة" },
@@ -184,7 +185,7 @@ const ALL_GUIDES: Guide[] = [
   { name: "Snapchat+", nameAr: "Snapchat+", slug: "cancel-snapchat-plus", domain: "snapchat.com", difficulty: "easy", category: "تواصل" },
   { name: "Telegram Premium", nameAr: "Telegram Premium", slug: "cancel-telegram-premium", domain: "telegram.org", difficulty: "easy", category: "تواصل" },
   { name: "WhatsApp Business", nameAr: "WhatsApp Business", slug: "cancel-whatsapp-business", domain: "whatsapp.com", difficulty: "easy", category: "تواصل" },
-  { name: "Tinder Gold", nameAr: "Tinder Gold", slug: "cancel-tinder-gold", domain: "tinder.com", difficulty: "easy", category: "تواصل" },
+  { name: "Tinder Gold", nameAr: "Tinder Gold", slug: "cancel-tinder-gold", domain: "tinder.com", difficulty: "medium", category: "تواصل" },
   { name: "Bumble Premium", nameAr: "Bumble Premium", slug: "cancel-bumble-premium", domain: "bumble.com", difficulty: "easy", category: "تواصل" },
   { name: "Hinge+", nameAr: "Hinge+", slug: "cancel-hinge-plus", domain: "hinge.co", difficulty: "easy", category: "تواصل" },
   { name: "Match.com", nameAr: "Match.com", slug: "cancel-match-com", domain: "match.com", difficulty: "hard", category: "تواصل" },
@@ -201,13 +202,13 @@ const ALL_GUIDES: Guide[] = [
   // ── News ──
   { name: "Medium", nameAr: "Medium", slug: "cancel-medium-membership", domain: "medium.com", difficulty: "easy", category: "أخبار" },
   { name: "NY Times", nameAr: "NY Times", slug: "cancel-nytimes", domain: "nytimes.com", difficulty: "hard", category: "أخبار" },
-  { name: "Bloomberg", nameAr: "Bloomberg", slug: "cancel-bloomberg", domain: "bloomberg.com", difficulty: "hard", category: "أخبار" },
+  { name: "Bloomberg", nameAr: "Bloomberg", slug: "cancel-bloomberg", domain: "bloomberg.com", difficulty: "medium", category: "أخبار" },
   { name: "Financial Times", nameAr: "Financial Times", slug: "cancel-financial-times", domain: "ft.com", difficulty: "hard", category: "أخبار" },
-  { name: "Washington Post", nameAr: "Washington Post", slug: "cancel-washington-post", domain: "washingtonpost.com", difficulty: "hard", category: "أخبار" },
+  { name: "Washington Post", nameAr: "Washington Post", slug: "cancel-washington-post", domain: "washingtonpost.com", difficulty: "medium", category: "أخبار" },
   { name: "WSJ", nameAr: "WSJ", slug: "cancel-wsj", domain: "wsj.com", difficulty: "hard", category: "أخبار" },
   { name: "Al Arabiya Premium", nameAr: "العربية بريميوم", slug: "cancel-al-arabiya-premium", domain: "alarabiya.net", difficulty: "easy", category: "أخبار" },
   // ── Shopping ──
-  { name: "Costco", nameAr: "Costco", slug: "cancel-costco", domain: "costco.com", difficulty: "easy", category: "تسوق" },
+  { name: "Costco", nameAr: "Costco", slug: "cancel-costco", domain: "costco.com", difficulty: "medium", category: "تسوق" },
   { name: "Sam's Club", nameAr: "Sam's Club", slug: "cancel-sams-club", domain: "samsclub.com", difficulty: "easy", category: "تسوق" },
   { name: "Walmart+", nameAr: "Walmart+", slug: "cancel-walmart-plus", domain: "walmart.com", difficulty: "easy", category: "تسوق" },
   { name: "Instacart+", nameAr: "Instacart+", slug: "cancel-instacart-plus", domain: "instacart.com", difficulty: "easy", category: "تسوق" },
@@ -222,10 +223,10 @@ const ALL_GUIDES: Guide[] = [
   { name: "Ahrefs", nameAr: "Ahrefs", slug: "cancel-ahrefs", domain: "ahrefs.com", difficulty: "easy", category: "أعمال" },
   { name: "Mailchimp", nameAr: "Mailchimp", slug: "cancel-mailchimp", domain: "mailchimp.com", difficulty: "easy", category: "أعمال" },
   { name: "Buffer", nameAr: "Buffer", slug: "cancel-buffer", domain: "buffer.com", difficulty: "easy", category: "أعمال" },
-  { name: "Hootsuite", nameAr: "Hootsuite", slug: "cancel-hootsuite", domain: "hootsuite.com", difficulty: "easy", category: "أعمال" },
+  { name: "Hootsuite", nameAr: "Hootsuite", slug: "cancel-hootsuite", domain: "hootsuite.com", difficulty: "medium", category: "أعمال" },
   { name: "Zapier", nameAr: "Zapier", slug: "cancel-zapier", domain: "zapier.com", difficulty: "easy", category: "أعمال" },
   { name: "IFTTT Pro", nameAr: "IFTTT Pro", slug: "cancel-ifttt-pro", domain: "ifttt.com", difficulty: "easy", category: "أعمال" },
-  { name: "Webex", nameAr: "Webex", slug: "cancel-webex", domain: "webex.com", difficulty: "easy", category: "أعمال" },
+  { name: "Webex", nameAr: "Webex", slug: "cancel-webex", domain: "webex.com", difficulty: "medium", category: "أعمال" },
   // ── Cloud Storage ──
   { name: "pCloud", nameAr: "pCloud", slug: "cancel-pcloud", domain: "pcloud.com", difficulty: "easy", category: "أعمال" },
   { name: "Box", nameAr: "Box", slug: "cancel-box-cloud", domain: "box.com", difficulty: "easy", category: "أعمال" },
@@ -235,38 +236,13 @@ const ALL_GUIDES: Guide[] = [
 
 const CATEGORIES = [...new Set(ALL_GUIDES.map((g) => g.category))];
 
-const CATEGORY_EN: Record<string, string> = {
-  "سعودية": "Saudi", "بث فيديو": "Video Streaming", "موسيقى": "Music",
-  "إنتاجية": "Productivity", "ألعاب": "Gaming", "VPN وأمان": "VPN & Security",
-  "صحة": "Health", "تواصل": "Social", "تعليم": "Education",
-  "أخبار": "News", "تسوق": "Shopping", "أعمال": "Business",
-};
-
-const DIFFICULTY_CONFIG: Record<Difficulty, { ar: string; en: string; color: string; bg: string; dot: string }> = {
-  easy: { ar: "سهل", en: "Easy", color: "#065F46", bg: "#D1FAE5", dot: "#10B981" },
-  hard: { ar: "صعب", en: "Hard", color: "#991B1B", bg: "#FEE2E2", dot: "#EF4444" },
-};
-
-const stagger = {
-  container: { hidden: {}, show: { transition: { staggerChildren: 0.04 } } },
-  item: { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.25 } } },
+const DIFFICULTY_LABELS: Record<Difficulty, { ar: string; color: string; bg: string }> = {
+  easy: { ar: "سهل", color: "#065F46", bg: "#ECFDF5" },
+  medium: { ar: "متوسط", color: "#92400E", bg: "#FFFBEB" },
+  hard: { ar: "صعب", color: "#B91C1C", bg: "#FEF2F2" },
 };
 
 export default function GuidesPage() {
-  const [locale, setLocaleState] = useState<"ar" | "en">("ar");
-  const setLocale = (l: "ar" | "en") => { setLocaleState(l); setStoredLocale(l); };
-  const ar = locale === "ar";
-
-  useEffect(() => {
-    const stored = getStoredLocale();
-    if (stored !== "ar") setLocaleState(stored);
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.dir = ar ? "rtl" : "ltr";
-    document.documentElement.lang = ar ? "ar" : "en";
-  }, [ar]);
-
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
@@ -296,290 +272,171 @@ export default function GuidesPage() {
   }, [search]);
 
   return (
-    <div dir={ar ? "rtl" : "ltr"} style={{ background: "#EDF5F3", minHeight: "100vh", fontFamily: ar ? "'Noto Sans Arabic', 'Plus Jakarta Sans', sans-serif" : "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
-
-      {/* ── Nav ── */}
-      <header style={{
-        position: "sticky", top: 0, zIndex: 50,
-        background: "rgba(237,245,243,0.85)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        borderBottom: "1px solid #C9E0DA",
-      }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-          <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}>
-            <ArrowLeft size={14} color="#1A3A35" strokeWidth={2.5} style={{ transform: ar ? "scaleX(-1)" : "none" }} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: "#4A6862" }}>{ar ? "الرئيسية" : "Home"}</span>
+    <div className="min-h-screen" style={{ background: "var(--color-surface)" }}>
+      {/* Header */}
+      <header
+        className="sticky top-0 z-50 px-6 py-4"
+        style={{
+          background: "rgba(15,23,42,0.92)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+        }}
+      >
+        <div className="max-w-[1200px] mx-auto flex items-center justify-between">
+          <a href="/" className="no-underline" style={{ direction: "ltr", unicodeBidi: "bidi-override" }}>
+            <span className="nav-logo nav-logo-light text-xl">yalla<span className="accent">cancel</span></span>
           </a>
-          <a href="/" style={{ textDecoration: "none" }}>
-            <span className="nav-logo" style={{ color: "#1A3A35", fontSize: "1.3rem" }}>
-              yallacancel
-            </span>
+          <a
+            href="/"
+            className="inline-flex items-center gap-2 bg-[var(--color-primary)] text-white px-5 py-2 rounded-xl font-bold text-sm no-underline transition-all hover:-translate-y-0.5"
+          >
+            حلل كشفك مجاناً
           </a>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button
-              onClick={() => setLocale(ar ? "en" : "ar")}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 4,
-                background: "white", border: "1.5px solid #C5DDD9",
-                padding: "6px 12px", borderRadius: 999,
-                fontWeight: 600, fontSize: 11, color: "#4A6862",
-                cursor: "pointer",
-              }}
-            >
-              <Globe size={13} strokeWidth={1.5} />
-              {ar ? "EN" : "ع"}
-            </button>
-            <a
-              href="/"
-              style={{
-                background: "#1A3A35", color: "#fff",
-                padding: "7px 14px", borderRadius: 999,
-                fontWeight: 700, fontSize: 12,
-                textDecoration: "none",
-                transition: "background 0.15s",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {ar ? "حلل كشفك" : "Scan now"}
-            </a>
-          </div>
         </div>
       </header>
 
-      {/* ── Hero ── */}
-      <section style={{ padding: "72px 24px 56px", textAlign: "center" }}>
-        <div style={{ maxWidth: 640, margin: "0 auto" }}>
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            background: "#C5DDD9", borderRadius: 999,
-            padding: "5px 14px", marginBottom: 20,
-          }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#00A651", display: "inline-block" }} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: "#1A3A35" }}>{ar ? "محدث ٢٠٢٦" : "Updated 2026"}</span>
-          </div>
-
-          <h1 style={{
-            fontSize: "clamp(2rem, 6vw, 3.75rem)",
-            fontWeight: 900, lineHeight: 1.15,
-            color: "#1A3A35", margin: "0 0 16px",
-            letterSpacing: "-1px",
-          }}>
-            {ar ? <>ادلة الغاء<br />الاشتراكات</> : <>Subscription<br />Cancel Guides</>}
+      {/* Hero + Search */}
+      <section
+        className="px-6 py-14 text-center"
+        style={{ background: "linear-gradient(135deg, #0F172A 0%, #1E1B4B 50%, #312E81 100%)" }}
+      >
+        <div className="max-w-[600px] mx-auto">
+          <h1 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-3">
+            أدلة إلغاء الاشتراكات
           </h1>
-          <p style={{ fontSize: 17, color: "#4A6862", marginBottom: 36, lineHeight: 1.7 }}>
-            {ar ? `${ALL_GUIDES.length} دليل خطوة بخطوة — لكل خدمة` : `${ALL_GUIDES.length} step-by-step guides — for every service`}
+          <p className="text-base text-white/55 leading-relaxed mb-8">
+            {ALL_GUIDES.length}+ دليل خطوة بخطوة — ابحث عن الخدمة اللي تبغى تلغيها
           </p>
-
-          {/* Search */}
-          <div style={{ position: "relative", maxWidth: 500, margin: "0 auto" }}>
-            <Search
-              size={18} color="#8AADA8" strokeWidth={2}
-              style={{ position: "absolute", ...(ar ? { right: 18 } : { left: 18 }), top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
-            />
+          {/* Search bar */}
+          <div className="relative max-w-[480px] mx-auto">
+            <svg className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" width="20" height="20" fill="none" viewBox="0 0 24 24">
+              <path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder={ar ? "ابحث... Netflix، شاهد، Adobe..." : "Search... Netflix, Shahid, Adobe..."}
-              style={{
-                width: "100%",
-                ...(ar ? { paddingRight: 48, paddingLeft: 20 } : { paddingLeft: 48, paddingRight: 20 }),
-                paddingTop: 15, paddingBottom: 15,
-                borderRadius: 16, border: "2px solid #C5DDD9",
-                background: "#fff", fontSize: 15, fontWeight: 600,
-                color: "#1A3A35", outline: "none",
-                boxShadow: "0 4px 20px rgba(0,166,81,0.06)",
-                transition: "border-color 0.15s, box-shadow 0.15s",
-                fontFamily: "inherit",
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = "#00A651";
-                e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,166,81,0.12)";
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = "#C5DDD9";
-                e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,166,81,0.06)";
-              }}
+              placeholder="ابحث... Netflix, شاهد, Adobe..."
+              className="w-full pr-12 pl-5 py-4 rounded-2xl border-2 border-white/10 bg-white/5 text-white placeholder-white/35 text-base font-semibold outline-none transition-all focus:border-[var(--color-primary)] focus:bg-white/10"
             />
           </div>
         </div>
       </section>
 
-      {/* ── Main content ── */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 80px" }}>
-
+      {/* Category filters + Results */}
+      <div className="max-w-[1200px] mx-auto px-6 py-10">
         {/* Category pills */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 32 }}>
+        <div className="flex flex-wrap gap-2 mb-8">
           <button
             onClick={() => setActiveCategory(null)}
-            style={{
-              padding: "8px 18px", borderRadius: 999, fontSize: 13, fontWeight: 700,
-              cursor: "pointer", border: "none", transition: "all 0.15s",
-              background: !activeCategory ? "#1A3A35" : "#fff",
-              color: !activeCategory ? "#fff" : "#4A6862",
-              boxShadow: !activeCategory ? "0 2px 12px rgba(26,58,53,0.18)" : "0 1px 4px rgba(0,0,0,0.06)",
-            }}
+            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+              !activeCategory
+                ? "bg-[var(--color-dark)] text-white"
+                : "bg-white border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-primary)]"
+            }`}
           >
-            {ar ? "الكل" : "All"} · {search.trim() ? filtered.length : ALL_GUIDES.length}
+            الكل ({search.trim() ? filtered.length : ALL_GUIDES.length})
           </button>
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
-              style={{
-                padding: "8px 18px", borderRadius: 999, fontSize: 13, fontWeight: 700,
-                cursor: "pointer", border: "none", transition: "all 0.15s",
-                background: activeCategory === cat ? "#1A3A35" : "#fff",
-                color: activeCategory === cat ? "#fff" : "#4A6862",
-                boxShadow: activeCategory === cat ? "0 2px 12px rgba(26,58,53,0.18)" : "0 1px 4px rgba(0,0,0,0.06)",
-              }}
+              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                activeCategory === cat
+                  ? "bg-[var(--color-dark)] text-white"
+                  : "bg-white border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-primary)]"
+              }`}
             >
-              {ar ? cat : (CATEGORY_EN[cat] || cat)} · {countByCategory[cat] || 0}
+              {cat} ({countByCategory[cat] || 0})
             </button>
           ))}
         </div>
 
-        {/* Result count */}
-        {search.trim() && (
-          <p style={{ fontSize: 13, color: "#8AADA8", marginBottom: 20, fontWeight: 600 }}>
-            {filtered.length === 0 ? (ar ? "ما في نتائج" : "No results") : (ar ? `${filtered.length} نتيجة` : `${filtered.length} results`)}
-          </p>
-        )}
+        {/* Results count */}
+        <p className="text-sm text-[var(--color-text-muted)] mb-5">
+          {filtered.length === 0
+            ? "ما لقينا نتائج — جرب كلمة ثانية"
+            : `${filtered.length} دليل إلغاء`}
+        </p>
 
-        {/* Grid */}
-        <AnimatePresence mode="wait">
-          {filtered.length > 0 ? (
-            <motion.div
-              key={`${search}-${activeCategory}`}
-              variants={stagger.container}
-              initial="hidden"
-              animate="show"
-              style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}
-            >
-              {filtered.map((g) => {
-                const diff = DIFFICULTY_CONFIG[g.difficulty];
-                return (
-                  <motion.a
-                    key={g.slug}
-                    variants={stagger.item}
-                    href={`/${g.slug}.html`}
-                    style={{
-                      display: "flex", alignItems: "center", gap: 12,
-                      background: "#fff", borderRadius: 20,
-                      padding: "14px 18px",
-                      border: "1.5px solid #E5EFED",
-                      textDecoration: "none",
-                      transition: "border-color 0.15s, box-shadow 0.15s, transform 0.15s",
-                      cursor: "pointer",
-                    }}
-                    whileHover={{ y: -2, boxShadow: "0 8px 24px rgba(0,166,81,0.1)", borderColor: "#00A651" }}
-                  >
-                    <MerchantLogo name={g.nameAr || g.name} domain={g.domain} size={36} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 14, color: "#1A3A35", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {ar ? g.nameAr : g.name}
-                      </div>
-                      <div style={{ fontSize: 12, color: "#8AADA8", marginTop: 1 }}>
-                        {ar ? `كيف ألغي ${g.name}` : `How to cancel ${g.name}`}
-                      </div>
-                    </div>
-                    <span style={{
-                      display: "inline-flex", alignItems: "center", gap: 4,
-                      fontSize: 11, fontWeight: 700,
-                      padding: "3px 9px", borderRadius: 999,
-                      background: diff.bg, color: diff.color,
-                      flexShrink: 0,
-                    }}>
-                      <span style={{ width: 5, height: 5, borderRadius: "50%", background: diff.dot, display: "inline-block" }} />
-                      {ar ? diff.ar : diff.en}
-                    </span>
-                  </motion.a>
-                );
-              })}
-            </motion.div>
-          ) : (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              style={{ textAlign: "center", padding: "80px 24px" }}
-            >
-              <div style={{
-                width: 64, height: 64, borderRadius: 20,
-                background: "#E5EFED", margin: "0 auto 20px",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                <Search size={28} color="#8AADA8" />
-              </div>
-              <p style={{ fontSize: 18, fontWeight: 800, color: "#1A3A35", marginBottom: 8 }}>{ar ? "ما لقينا الخدمة" : "Service not found"}</p>
-              <p style={{ fontSize: 14, color: "#8AADA8", marginBottom: 28 }}>{ar ? "ارفع كشف حسابك ونكتشف اشتراكاتك تلقائيا" : "Upload your statement and we'll detect your subscriptions automatically"}</p>
-              <a href="/" style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
-                background: "#1A3A35", color: "#fff",
-                padding: "12px 28px", borderRadius: 999,
-                fontWeight: 700, fontSize: 14, textDecoration: "none",
-              }}>
-                {ar ? "ارفع كشفك" : "Upload your statement"}
+        {/* Guide cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {filtered.map((g) => {
+            const diff = DIFFICULTY_LABELS[g.difficulty];
+            return (
+              <a
+                key={g.slug}
+                href={`/${g.slug}.html`}
+                className="flex items-center gap-3 bg-white border border-[var(--color-border)] rounded-2xl px-5 py-4 transition-all hover:border-[var(--color-primary)] hover:-translate-y-0.5 hover:shadow-md no-underline"
+              >
+                <img
+                  src={LOGO(g.domain)}
+                  alt=""
+                  className="w-8 h-8 rounded-lg flex-shrink-0 object-contain"
+                  loading="lazy"
+                  onError={(e) => {
+                    const img = e.currentTarget;
+                    if (!img.dataset.fallback) {
+                      img.dataset.fallback = "1";
+                      img.src = FAV(g.domain);
+                    }
+                  }}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-sm text-[var(--color-text-primary)] truncate">
+                    {g.nameAr}
+                  </div>
+                  <div className="text-xs text-[var(--color-text-muted)]">
+                    كيف ألغي {g.name}
+                  </div>
+                </div>
+                <span
+                  className="text-[10px] font-bold px-2 py-1 rounded-lg flex-shrink-0"
+                  style={{ background: diff.bg, color: diff.color }}
+                >
+                  {diff.ar}
+                </span>
               </a>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            );
+          })}
+        </div>
+
+        {/* Empty state */}
+        {filtered.length === 0 && (
+          <div className="text-center py-16">
+            <p className="text-lg font-bold text-[var(--color-text-secondary)] mb-3">ما لقينا الخدمة</p>
+            <p className="text-sm text-[var(--color-text-muted)] mb-6">ارفع كشف حسابك ونكتشف اشتراكاتك تلقائياً</p>
+            <a
+              href="/"
+              className="inline-flex items-center gap-2 bg-[var(--color-primary)] text-white px-8 py-3.5 rounded-xl font-bold text-sm no-underline transition-all hover:-translate-y-0.5"
+            >
+              ارفع كشفك مجاناً
+            </a>
+          </div>
+        )}
       </div>
 
-      {/* ── CTA section ── */}
-      <section style={{
-        background: "#1A3A35",
-        padding: "72px 24px",
-        textAlign: "center",
-        position: "relative",
-        overflow: "hidden",
-      }}>
-        {/* Subtle dot grid */}
-        <div aria-hidden style={{
-          position: "absolute", inset: 0,
-          backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-          pointerEvents: "none",
-        }} />
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 540, margin: "0 auto" }}>
-          <h2 style={{ fontSize: "clamp(1.6rem, 4vw, 2.4rem)", fontWeight: 900, color: "#fff", marginBottom: 14, letterSpacing: "-0.5px" }}>
-            {ar ? "مو لاقي الخدمة؟" : "Can't find your service?"}
-          </h2>
-          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.65)", marginBottom: 36, lineHeight: 1.7 }}>
-            {ar ? "ارفع كشف حسابك ونكتشف كل اشتراكاتك المخفية تلقائيا — مع روابط الالغاء." : "Upload your bank statement and we'll automatically find all your hidden subscriptions — with cancel links."}
-          </p>
-          <a href="/" style={{
-            display: "inline-flex", alignItems: "center", gap: 10,
-            background: "#00A651", color: "#fff",
-            padding: "15px 36px", borderRadius: 999,
-            fontWeight: 800, fontSize: 15, textDecoration: "none",
-            boxShadow: "0 4px 20px rgba(0,166,81,0.35)",
-            transition: "transform 0.15s, box-shadow 0.15s",
-          }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow = "0 8px 28px rgba(0,166,81,0.45)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,166,81,0.35)";
-            }}
+      {/* CTA */}
+      <section className="py-14 px-8 text-center" style={{ background: "var(--color-primary)" }}>
+        <div className="max-w-[600px] mx-auto">
+          <h2 className="text-2xl font-black text-white mb-3">مو لاقي الخدمة؟</h2>
+          <p className="text-base text-white/85 mb-6">ارفع كشف حسابك ونكتشف كل اشتراكاتك تلقائياً مع روابط الإلغاء.</p>
+          <a
+            href="/"
+            className="inline-flex items-center gap-2.5 bg-white text-[var(--color-primary-dark)] px-10 py-4 rounded-xl font-black text-base no-underline transition-all hover:-translate-y-0.5"
+            style={{ boxShadow: "0 4px 20px rgba(0,0,0,0.15)" }}
           >
-            {ar ? "ارفع كشفك" : "Upload your statement"}
+            ارفع كشفك مجاناً
           </a>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 14 }}>{ar ? "لا بريد الكتروني · لا تسجيل" : "No email · No signup"}</p>
         </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer style={{ background: "#112920", padding: "28px 24px", textAlign: "center" }}>
-        <a href="/" style={{ textDecoration: "none" }}>
-          <span className="nav-logo" style={{ color: "rgba(255,255,255,0.45)", justifyContent: "center" }}>
-            yallacancel
-          </span>
+      {/* Footer */}
+      <footer className="py-8 px-6 text-center" style={{ background: "var(--color-dark)" }}>
+        <a href="/" className="no-underline" style={{ direction: "ltr", unicodeBidi: "bidi-override" }}>
+          <span className="nav-logo nav-logo-light text-lg justify-center">yalla<span className="accent">cancel</span></span>
         </a>
-        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", marginTop: 8 }}>&copy; ٢٠٢٦ Yalla Cancel</p>
+        <p className="text-xs text-white/30 mt-3">&copy; ٢٠٢٦ Yalla Cancel</p>
       </footer>
     </div>
   );
