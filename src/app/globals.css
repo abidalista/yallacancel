@@ -1,5 +1,41 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "ITF Fatimah Arabic";
+  src: url("/fonts/itfFatimahArabic-Light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "ITF Fatimah Arabic";
+  src: url("/fonts/itfFatimahArabic-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "ITF Fatimah Arabic";
+  src: url("/fonts/itfFatimahArabic-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "ITF Fatimah Arabic";
+  src: url("/fonts/itfFatimahArabic-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "ITF Fatimah Arabic";
+  src: url("/fonts/itfFatimahArabic-Black.otf") format("opentype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --color-primary: #6366F1;
   --color-primary-hover: #5558E6;
@@ -32,7 +68,7 @@
   }
 
   [lang="ar"] {
-    font-family: "Noto Sans Arabic", "Plus Jakarta Sans", "Inter", -apple-system, sans-serif;
+    font-family: "ITF Fatimah Arabic", "Noto Sans Arabic", "Plus Jakarta Sans", "Inter", -apple-system, sans-serif;
   }
 
   body {
@@ -153,7 +189,7 @@
 
   /* ── Logo ── */
   .nav-logo {
-    font-family: "Plus Jakarta Sans", "Inter", -apple-system, sans-serif;
+    font-family: "ITF Fatimah Arabic", "Plus Jakarta Sans", "Inter", -apple-system, sans-serif;
     font-size: 1.35rem;
     font-weight: 800;
     color: var(--color-dark);
