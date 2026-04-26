@@ -25,7 +25,7 @@ export const BLOG_POSTS: BlogPost[] = [
     categoryEn: "Stats",
     content: `## المشكلة اللي ما أحد يتكلم عنها
 
-كل شهر، السعودي يدفع بالمتوسط **٣٨٢ ريال** على اشتراكات رقمية. يعني تقريبا **٤,٥٨٤ ريال في السنة** — وهذا المبلغ ممكن يكون أكثر من إيجار شهر في بعض المدن.
+كل شهر، السعودي يدفع بالمتوسط **٣٨٢ ريال** على اشتراكات رقمية. يعني تقريبا **٤٥٨٤ ريال في السنة** — وهذا المبلغ ممكن يكون أكثر من إيجار شهر في بعض المدن.
 
 المشكلة مو إنك مشترك — المشكلة إن **٧٣٪ من السعوديين** عندهم اشتراك واحد على الأقل ناسينه ومو مستخدمينه.
 
@@ -61,7 +61,7 @@ export const BLOG_POSTS: BlogPost[] = [
 **الخطوة الثالثة**: وفر. بالمتوسط، مستخدمينا يوفرون **١٥٠-٣٠٠ ريال** شهريا بعد أول تحليل.`,
     contentEn: `## The Problem No One Talks About
 
-Every month, the average Saudi pays **382 SAR** on digital subscriptions. That's roughly **4,584 SAR per year** — more than a month's rent in some cities.
+Every month, the average Saudi pays **382 SAR** on digital subscriptions. That's roughly **4584 SAR per year** — more than a month's rent in some cities.
 
 The problem isn't subscribing — it's that **73% of Saudis** have at least one subscription they've forgotten about and aren't using.
 
@@ -280,7 +280,7 @@ Adobe يعطيك **١٤ يوم ضمان استرداد كامل**. لو لغيت
 - طلب تحويل لخطة شهرية بدل سنوية (اللي ما فيها رسوم إلغاء)
 
 ### الطريقة الرابعة: حول لخطة Photography
-لو تحتاج Photoshop بس، خطة Photography تكلف **٥٢ ريال/شهر** بدل ٢٦٥ ريال — توفير ٢,٥٠٠ ريال بالسنة.
+لو تحتاج Photoshop بس، خطة Photography تكلف **٥٢ ريال/شهر** بدل ٢٦٥ ريال — توفير ٢٥٠٠ ريال بالسنة.
 
 ## خطوات الإلغاء
 
@@ -382,7 +382,7 @@ Adobe Creative Cloud is one of the hardest subscriptions to cancel because most 
 
 ## ابدأ الآن
 
-ارفع كشف حسابك على يلا كنسل وشوف وين تقدر توفر. بالمتوسط، مستخدمينا يوفرون **١,٨٠٠-٣,٦٠٠ ريال سنويا**.`,
+ارفع كشف حسابك على يلا كنسل وشوف وين تقدر توفر. بالمتوسط، مستخدمينا يوفرون **١٨٠٠-٣٦٠٠ ريال سنويا**.`,
     contentEn: `## Subscriptions Don't Have to Be Expensive
 
 The problem isn't having many subscriptions — it's paying more than you need to.

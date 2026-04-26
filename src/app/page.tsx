@@ -65,7 +65,7 @@ const BANKS = [
 const PROBLEM_STATS = [
   { num: "٣٨٢ ريال", numEn: "382 SAR", text: "متوسط ما يدفعه السعودي على الاشتراكات الرقمية كل شهر", textEn: "Average monthly spend on digital subscriptions in Saudi" },
   { num: "٧٣٪", numEn: "73%", text: "من السعوديين عندهم اشتراك واحد على الأقل ناسيه ومو مستخدمه", textEn: "of Saudis have at least one forgotten, unused subscription" },
-  { num: "٤,٥٨٤ ريال", numEn: "4,584 SAR", text: "متوسط التوفير السنوي لو ألغيت الاشتراكات اللي ما تحتاجها", textEn: "Average yearly savings from canceling unused subscriptions" },
+  { num: "٤٥٨٤ ريال", numEn: "4584 SAR", text: "متوسط التوفير السنوي لو ألغيت الاشتراكات اللي ما تحتاجها", textEn: "Average yearly savings from canceling unused subscriptions" },
 ];
 
 const FEATURES = [
@@ -908,15 +908,15 @@ export default function HomePage() {
                 <span className="section-label inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full mb-5">
                   <Shield size={12} strokeWidth={1.5} /> {ar ? "اشتراكاتك المنسية تكلفك اكثر مما تتوقع" : "Your forgotten subscriptions cost more than you think"}
                 </span>
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 max-w-3xl mx-auto leading-[1.6]" style={{ color: "#1A3A35" }}>
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 max-w-3xl mx-auto leading-[1.75]" style={{ color: "#1A3A35" }}>
                   {ar
                     ? "الغي اشتراكاتك اللي ما تستخدمها ووفر فلوسك"
                     : "Cancel your unused subscriptions and save money"}
                 </h1>
                 <p className="text-base sm:text-lg max-w-[600px] mx-auto mb-12 leading-relaxed" style={{ color: "#4A6862" }}>
                   {ar
-                    ? "ارفع كشف بنكك — نكشف لك كل اشتراك منسي ونعطيك رابط الغاء مباشر. ناس وفروا اكثر من ٤,٠٠٠ ريال بالسنة."
-                    : "Upload your bank statement — we'll find every hidden subscription and give you a direct cancel link. Users save over 4,000 SAR/year."}
+                    ? "ارفع كشف بنكك — نكشف لك كل اشتراك منسي ونعطيك رابط الغاء مباشر. ناس وفروا اكثر من ٤٠٠٠ ريال بالسنة."
+                    : "Upload your bank statement — we'll find every hidden subscription and give you a direct cancel link. Users save over 4000 SAR/year."}
                 </p>
               </motion.div>
 
