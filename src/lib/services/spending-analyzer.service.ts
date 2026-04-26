@@ -54,7 +54,7 @@ const CATEGORY_RULES: { category: string; categoryEn: string; keywords: string[]
   {
     category: "اتصالات",
     categoryEn: "Telecom",
-    keywords: ["stc", "mobily", "موبايلي", "zain", "زين", "jawwy", "جوّي", "virgin", "فيرجن", "lebara", "ليبارا", "salam", "سلام"],
+    keywords: ["stc", "mobily", "موبايلي", "zain", "زين", "jawwy", "جوي", "virgin", "فيرجن", "lebara", "ليبارا", "salam", "سلام"],
   },
   {
     category: "تحويلات",
@@ -174,7 +174,7 @@ export function analyzeSpending(transactions: Transaction[]): SpendingBreakdown 
   const subscriptions = categories.find((c) => c.nameEn === "Subscriptions");
   if (subscriptions) {
     takeaways.push({
-      ar: `**الاشتراكات** تكلفك ${subscriptions.monthlyAvg.toLocaleString()} ريال/شهر — وش منها تحتاجه فعلاً؟`,
+      ar: `**الاشتراكات** تكلفك ${subscriptions.monthlyAvg.toLocaleString()} ريال/شهر — وش منها تحتاجه فعلا؟`,
       en: `**Subscriptions** cost you ${subscriptions.monthlyAvg.toLocaleString()} SAR/mo — which ones do you actually use?`,
     });
   }

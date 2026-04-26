@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Shield, Zap, Link2, BarChart3, FileText, ArrowRight,
   Lock, ChevronDown, ChevronUp, Clock, CheckCircle2,
-  RotateCcw, Loader2,
+  RotateCcw, Loader2, Search, Upload, CalendarRange, AlertCircle,
 } from "lucide-react";
 import Header from "@/components/Header";
 import UploadZone from "@/components/UploadZone";
@@ -17,10 +18,21 @@ import {
   parsePDFRobust,
   analyzeTransactions,
   analyzeSpending,
+  analyzeFileWithAI,
 } from "@/lib/services";
 import type { SpendingBreakdown as SpendingData } from "@/lib/services";
-import { AuditReport as Report, Subscription, SubscriptionStatus, Transaction, BankId } from "@/lib/types";
+import { AuditReport as Report, SubscriptionStatus, Transaction, BankId } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
+import MerchantLogo from "@/components/MerchantLogo";
+import {
+  savePaymentReceipt,
+  getPaymentReceipt,
+  saveReportData,
+  getReportData,
+  clearReportData,
+} from "@/lib/payment-store";
+import { getStoredLocale, setStoredLocale } from "@/lib/locale-store";
+import posthog from "posthog-js";
 
 type Step = "landing" | "analyzing" | "identify" | "results";
 
@@ -38,28 +50,6 @@ interface ParseError {
   warnings: string[];
 }
 
-const LOGO = (domain: string) =>
-  `https://logo.clearbit.com/${domain}`;
-const FAV = (domain: string) =>
-  `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-
-function BrandLogo({ domain, alt, className }: { domain: string; alt: string; className?: string }) {
-  return (
-    <img
-      src={LOGO(domain)}
-      alt={alt}
-      className={className || "w-5 h-5 rounded-sm object-contain"}
-      onError={(e) => {
-        const img = e.currentTarget;
-        if (!img.dataset.fallback) {
-          img.dataset.fallback = "1";
-          img.src = FAV(domain);
-        }
-      }}
-    />
-  );
-}
-
 const BANKS = [
   { name: "الراجحي", domain: "alrajhibank.com.sa" },
   { name: "الأهلي", domain: "alahli.com" },
@@ -73,41 +63,41 @@ const BANKS = [
 ];
 
 const PROBLEM_STATS = [
-  { num: "٣٨٢ ريال", text: "متوسط إنفاق السعودي على الاشتراكات شهرياً" },
-  { num: "٧٣٪", text: "من السعوديين ناسين على الأقل اشتراك واحد" },
-  { num: "٥,٠٠٠ ريال", text: "متوسط التوفير المحتمل سنوياً" },
+  { num: "٣٨٢ ريال", numEn: "382 SAR", text: "متوسط ما يدفعه السعودي على الاشتراكات الرقمية كل شهر", textEn: "Average monthly spend on digital subscriptions in Saudi" },
+  { num: "٧٣٪", numEn: "73%", text: "من السعوديين عندهم اشتراك واحد على الأقل ناسيه ومو مستخدمه", textEn: "of Saudis have at least one forgotten, unused subscription" },
+  { num: "٤,٥٨٤ ريال", numEn: "4,584 SAR", text: "متوسط التوفير السنوي لو ألغيت الاشتراكات اللي ما تحتاجها", textEn: "Average yearly savings from canceling unused subscriptions" },
 ];
 
 const FEATURES = [
   {
     icon: Shield,
-    title: "خصوصية كاملة",
-    desc: "كل التحليل يتم على جهازك — ما نحتفظ بأي بيانات.",
+    title: "آمن وخاص", titleEn: "Private & secure",
+    desc: "كل التحليل يصير داخل متصفحك مباشرة — ملفك ما يوصل لأي سيرفر خارجي.", descEn: "All analysis happens in your browser — your file never leaves your device.",
   },
   {
     icon: Lock,
-    title: "يفهم بنكك",
-    desc: "يقرأ كشوفات ٩ بنوك سعودية ويفكك الرموز الغريبة تلقائياً.",
+    title: "يقرأ كشف بنكك", titleEn: "Reads your bank statement",
+    desc: "يتعرف على كشوفات ٩ بنوك سعودية ويفك رموز العمليات الغريبة تلقائيا.", descEn: "Supports 9 Saudi banks and automatically decodes cryptic transaction names.",
   },
   {
     icon: Zap,
-    title: "نتيجة في ثوانٍ",
-    desc: "ارفع الكشف وخلال ثوانٍ تشوف كل اشتراكاتك مع روابط الإلغاء.",
+    title: "نتائج في ثواني", titleEn: "Results in seconds",
+    desc: "ارفع الكشف وخلال ثواني تشوف قائمة كاملة باشتراكاتك مع تكلفة كل واحد.", descEn: "Upload your statement and instantly see every subscription with its cost.",
   },
   {
     icon: BarChart3,
-    title: "تقرير تفصيلي",
-    desc: "نوريك المبلغ الشهري والسنوي ونقترح لك وش تلغي ووش تخلي.",
+    title: "تقرير واضح", titleEn: "Clear report",
+    desc: "نوريك المبلغ الشهري والسنوي لكل اشتراك وتقدر تحدد وش تبقي ووش تلغي.", descEn: "See monthly and yearly cost per subscription — decide what to keep and what to cancel.",
   },
   {
     icon: Link2,
-    title: "روابط إلغاء مباشرة",
-    desc: "لكل اشتراك رابط مباشر يوديك صفحة الإلغاء — بدون دوخة.",
+    title: "روابط إلغاء مباشرة", titleEn: "Direct cancel links",
+    desc: "كل اشتراك معه رابط يوديك مباشرة لصفحة الإلغاء — بدون دوخة.", descEn: "Each subscription includes a direct link to its cancellation page — no runaround.",
   },
   {
     icon: FileText,
-    title: "أدلة إلغاء خطوة بخطوة",
-    desc: "٢٠٠+ دليل إلغاء مفصّل لأشهر الخدمات في السعودية والعالم.",
+    title: "أدلة تفصيلية", titleEn: "Step-by-step guides",
+    desc: "أكثر من ٢٠٠ دليل إلغاء خطوة بخطوة لأشهر الخدمات في السعودية والعالم.", descEn: "200+ cancellation guides for the most popular services in Saudi and worldwide.",
   },
 ];
 
@@ -129,53 +119,65 @@ const SUB_CHIPS = [
 const TESTIMONIALS = [
   {
     quote: "ما توقعت إن Calm وDropbox وشي اسمه Adobe Stock ما فتحته من سنتين ينخصمون كلهم. ألغيتهم كلهم في دقيقتين وأنا أشرب قهوتي.",
-    name: "محمد ع.",
-    role: "مهندس برمجيات — الرياض",
-    initial: "م",
+    quoteEn: "I had no idea Calm, Dropbox, and something called Adobe Stock I hadn't opened in 2 years were all charging me. Canceled them all in 2 minutes over coffee.",
+    name: "محمد ع.", nameEn: "Mohammed A.",
+    role: "مهندس برمجيات — الرياض", roleEn: "Software Engineer — Riyadh",
+    initial: "M", initialAr: "م",
   },
   {
-    quote: "كنت أشوف APPLE.COM/BILL كل شهر وما أعرف وش هي بالضبط. يلا كانسل فكّها وعرّفتني إنها iCloud+ و Apple Music وApple TV+ — دفعت فيهم ثلاثتهم بدون ما أقصد!",
-    name: "نورة الغامدي",
-    role: "معلمة — جدة",
-    initial: "ن",
+    quote: "كنت اشوف APPLE.COM/BILL كل شهر وما اعرف وش هي بالضبط. يلا كنسل فكها وعرفتني انها iCloud+ و Apple Music وApple TV+ — دفعت فيهم ثلاثتهم بدون ما اقصد!",
+    quoteEn: "I kept seeing APPLE.COM/BILL every month with no idea what it was. YallaCancel decoded it — iCloud+, Apple Music, and Apple TV+ all bundled. I was paying for all three without knowing!",
+    name: "نورة الغامدي", nameEn: "Noura G.",
+    role: "معلمة — جدة", roleEn: "Teacher — Jeddah",
+    initial: "N", initialAr: "ن",
   },
   {
-    quote: "كنت مشترك في Adobe وأنا ما أحتاجه — بس خفت من رسوم الإلغاء المبكر. الموقع حذّرني من التوقيت الصح وأنقذني من دفع رسوم إضافية. وفرت ١,٦٠٨ ريال.",
-    name: "عبدالرحمن ف.",
-    role: "مصمم مستقل — الدمام",
-    initial: "ع",
+    quote: "كنت ادفع لاشتراكات نسيتها تماما.",
+    quoteEn: "I was paying for subscriptions I completely forgot about.",
+    name: "عبدالله الشهري", nameEn: "Abdullah S.",
+    role: "محاسب — الخبر", roleEn: "Accountant — Khobar",
+    initial: "A", initialAr: "ع",
   },
 ];
 
 const FAQ_ITEMS = [
   {
-    q: "هل بياناتي آمنة؟",
-    a: "نعم. كل التحليل يتم داخل متصفحك — ملفك ما يتم رفعه لأي سيرفر. ما نحتفظ بأي بيانات.",
+    q: "هل بياناتي آمنة؟", qEn: "Is my data safe?",
+    a: "نعم. كل التحليل يتم داخل متصفحك — ملفك ما يتم رفعه لأي سيرفر. ما نحتفظ بأي بيانات.", aEn: "Yes. All analysis happens in your browser — your file is never uploaded to any server. We don't store any data.",
   },
   {
-    q: "أي بنوك تدعمون؟",
-    a: "ندعم جميع البنوك السعودية: الراجحي، الأهلي، بنك الرياض، البلاد، الإنماء، ساب، الفرنسي، العربي الوطني، و stc bank.",
+    q: "أي بنوك تدعمون؟", qEn: "Which banks do you support?",
+    a: "ندعم جميع البنوك السعودية: الراجحي، الأهلي، بنك الرياض، البلاد، الإنماء، ساب، الفرنسي، العربي الوطني، و stc bank.", aEn: "We support all major Saudi banks: Al Rajhi, SNB, Riyad Bank, Al Bilad, Alinma, SABB, BSF, ANB, and stc bank.",
   },
   {
-    q: "كيف أنزّل كشف حسابي؟",
-    a: "افتح تطبيق بنكك → الحسابات → كشف الحساب → اختر آخر ٣-٦ أشهر → نزّله كـ CSV أو PDF.",
+    q: "كيف انزل كشف حسابي؟", qEn: "How do I download my bank statement?",
+    a: "افتح تطبيق بنكك → الحسابات → كشف الحساب → اختر اخر ٣-٦ اشهر → نزله كـ CSV او PDF.", aEn: "Open your banking app → Accounts → Statement → Select last 3-6 months → Download as CSV or PDF.",
   },
   {
-    q: "هل الأداة مجانية؟",
-    a: "التحليل الأول مجاني. بعدها تقدر تترقى بـ ٤٩ ريال لمرة واحدة — بدون اشتراك شهري.",
+    q: "كم يكلف؟", qEn: "How much does it cost?",
+    a: "التحليل الاول يوريك نبذة. التقرير الكامل بـ ٤٩ ريال لمرة واحدة — بدون اشتراك شهري.", aEn: "The first scan gives you a preview. The full report is 49 SAR one-time — no monthly subscription.",
   },
   {
-    q: "هل يلا كانسل يلغي الاشتراكات عني؟",
-    a: "حالياً نوفر لك تقرير تفصيلي مع روابط إلغاء مباشرة. الإلغاء نفسه تسويه بنفسك عبر الرابط — عادة يأخذ أقل من دقيقة لكل اشتراك.",
+    q: "هل يلا كنسل يلغي الاشتراكات عني؟", qEn: "Does YallaCancel cancel subscriptions for me?",
+    a: "حاليا نوفر لك تقرير تفصيلي مع روابط إلغاء مباشرة. الإلغاء نفسه تسويه بنفسك عبر الرابط — عادة يأخذ أقل من دقيقة لكل اشتراك.", aEn: "Currently we provide a detailed report with direct cancel links. You cancel each subscription yourself via the link — usually takes less than a minute each.",
   },
 ];
 
 export default function HomePage() {
-  const [locale, setLocale] = useState<"ar" | "en">("ar");
+  const router = useRouter();
+  const [locale, setLocaleState] = useState<"ar" | "en">("ar");
+  const setLocale = (l: "ar" | "en") => { setLocaleState(l); setStoredLocale(l); };
+
+  // Restore locale from localStorage on mount
+  useEffect(() => {
+    const stored = getStoredLocale();
+    if (stored !== "ar") setLocaleState(stored);
+  }, []);
   const [step, setStep] = useState<Step>("landing");
   const [report, setReport] = useState<Report | null>(null);
   const [parseError, setParseError] = useState<ParseError | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [txCount, setTxCount] = useState(0);
   const [analyzeTimer, setAnalyzeTimer] = useState(0);
@@ -184,6 +186,7 @@ export default function HomePage() {
   const [manualBankId, setManualBankId] = useState<BankId | null>(null);
   const [pasteText, setPasteText] = useState("");
   const [retryFiles, setRetryFiles] = useState<File[]>([]);
+  const [paidNoReport, setPaidNoReport] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -193,6 +196,63 @@ export default function HomePage() {
     document.documentElement.setAttribute("dir", ar ? "rtl" : "ltr");
     document.documentElement.setAttribute("lang", locale);
   }, [locale, ar]);
+
+  // Push browser history when leaving landing so back button returns to landing
+  useEffect(() => {
+    if (step !== "landing") {
+      window.history.pushState({ step }, "", window.location.pathname);
+    }
+  }, [step]);
+
+  // Handle browser back button
+  useEffect(() => {
+    function onPopState() {
+      if (step !== "landing") {
+        handleStartOver();
+      }
+    }
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [step]);
+
+  // Restore payment state from localStorage on mount
+  useEffect(() => {
+    const receiptId = getPaymentReceipt();
+    if (!receiptId) return;
+
+    fetch("/api/verify-payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ receiptId }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.valid) {
+          setIsPaid(true);
+          const cached = getReportData();
+          if (cached.report) {
+            setReport(cached.report);
+            setSpendingData(cached.spending);
+            setStep("results");
+          } else {
+            setPaidNoReport(true);
+          }
+        }
+      })
+      .catch(() => {
+        // Verification failed (network error or no API key) —
+        // still trust the local receipt so paid users aren't blocked offline
+        setIsPaid(true);
+        const cached = getReportData();
+        if (cached.report) {
+          setReport(cached.report);
+          setSpendingData(cached.spending);
+          setStep("results");
+        } else {
+          setPaidNoReport(true);
+        }
+      });
+  }, []);
 
   async function parseFile(file: File, bankOverride?: BankId): Promise<{ transactions: Transaction[]; warnings: string[] }> {
     const ext = file.name.split(".").pop()?.toLowerCase();
@@ -227,7 +287,7 @@ export default function HomePage() {
 
     if (hasCsvFail || hasHeaderIssue) {
       suggestions.push("Select your bank manually below and try again");
-      suggestionsAr.push("اختر بنكك يدوياً تحت وجرب مرة ثانية");
+      suggestionsAr.push("اختر بنكك يدويا تحت وجرب مرة ثانية");
     }
 
     if (hasColumnIssue) {
@@ -254,6 +314,7 @@ export default function HomePage() {
   }
 
   async function handleScan(files: File[], bankOverride?: BankId) {
+    posthog.capture("analysis_started", { file_count: files.length, locale });
     setParseError(null);
     setStep("analyzing");
     setAnalyzeTimer(0);
@@ -266,7 +327,42 @@ export default function HomePage() {
       setAnalyzeTimer(Math.floor((Date.now() - start) / 1000));
     }, 1000);
 
+    const MIN_LOADING_MS = 4000;
+
     try {
+      // ── Try AI analysis first (Claude API) ──
+      setAnalyzeStatus(ar ? "الذكاء الاصطناعي يحلل كشفك..." : "AI is analyzing your statement...");
+
+      let aiSuccess = false;
+      for (const file of files) {
+        const aiResult = await analyzeFileWithAI(file);
+        if (aiResult.success) {
+          console.log("[handleScan] AI analysis succeeded");
+          const elapsed = Date.now() - start;
+          if (elapsed < MIN_LOADING_MS) {
+            setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
+            await new Promise(r => setTimeout(r, MIN_LOADING_MS - elapsed));
+          }
+          if (timerRef.current) clearInterval(timerRef.current);
+          posthog.capture("analysis_completed", { locale, subscription_count: aiResult.report.subscriptions.length, method: "ai" });
+          setReport(aiResult.report);
+          setSpendingData(null);
+          saveReportData(aiResult.report, null);
+          setStep("results");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          aiSuccess = true;
+          break;
+        } else {
+          console.warn("[handleScan] AI analysis failed:", aiResult.error);
+        }
+      }
+
+      if (aiSuccess) return;
+
+      // ── Fallback: old parser + analyzer ──
+      console.log("[handleScan] Falling back to local parser");
+      setAnalyzeStatus(ar ? "نجرب طريقة ثانية..." : "Trying alternative method...");
+
       let allTx: Transaction[] = [];
       const failedFiles: string[] = [];
       let allWarnings: string[] = [];
@@ -284,6 +380,7 @@ export default function HomePage() {
           }
         } catch (err) {
           console.error(`Failed to parse ${file.name}:`, err);
+          posthog.captureException(err instanceof Error ? err : new Error(String(err)));
           failedFiles.push(file.name);
           allWarnings.push("file_exception");
         }
@@ -291,6 +388,7 @@ export default function HomePage() {
 
       if (allTx.length === 0) {
         if (timerRef.current) clearInterval(timerRef.current);
+        posthog.capture("analysis_failed", { locale, reason: "no_transactions" });
         setParseError(buildParseError(failedFiles, allWarnings));
         setRetryFiles(files);
         setStep("landing");
@@ -298,14 +396,20 @@ export default function HomePage() {
       }
 
       setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
-      await new Promise((r) => setTimeout(r, 1500));
 
       const result = analyzeTransactions(allTx);
       const spending = analyzeSpending(allTx);
+
+      const elapsed = Date.now() - start;
+      if (elapsed < MIN_LOADING_MS) {
+        await new Promise(r => setTimeout(r, MIN_LOADING_MS - elapsed));
+      }
       if (timerRef.current) clearInterval(timerRef.current);
 
+      posthog.capture("analysis_completed", { locale, subscription_count: result.subscriptions.length, method: "local" });
       setReport(result);
       setSpendingData(spending);
+      saveReportData(result, spending);
 
       // Go straight to results — everything is a subscription by default
       setStep("results");
@@ -313,6 +417,8 @@ export default function HomePage() {
     } catch (err) {
       console.error("Scan failed:", err);
       if (timerRef.current) clearInterval(timerRef.current);
+      posthog.captureException(err instanceof Error ? err : new Error(String(err)));
+      posthog.capture("analysis_failed", { locale, reason: "unexpected_error" });
       setParseError({
         type: "file_error",
         message: "Something went wrong",
@@ -345,134 +451,8 @@ export default function HomePage() {
     }
   }
 
-  async function handleTestStatement() {
-    // ── HARDCODED FALLBACK: proves the UI renders results correctly ──
-    // If fetch fails (e.g. static export without server), use hardcoded data
-    setParseError(null);
-    setStep("analyzing");
-    setAnalyzeTimer(0);
-    setTxCount(0);
-    setAnalyzeStatus(ar ? "نقرأ الملفات..." : "Reading files...");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-
-    const start = Date.now();
-    const timer = setInterval(() => {
-      setAnalyzeTimer(Math.floor((Date.now() - start) / 1000));
-    }, 1000);
-
-    try {
-      // Try fetching the real file first
-      const res = await fetch("/test-statement.csv");
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const text = await res.text();
-      if (!text || text.length < 50) throw new Error("Empty response");
-      clearInterval(timer);
-
-      console.log("[test] Fetched test-statement.csv, length:", text.length);
-      const bankId = detectBank(text);
-      console.log("[test] Detected bank:", bankId);
-      const parsed = parseCSVRobust(text, bankId);
-      console.log("[test] Parsed transactions:", parsed.transactions.length);
-
-      if (parsed.transactions.length === 0) {
-        throw new Error("Parser returned 0 transactions");
-      }
-
-      setTxCount(parsed.transactions.length);
-      setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
-      await new Promise((r) => setTimeout(r, 1200));
-
-      const result = analyzeTransactions(parsed.transactions);
-      const spending = analyzeSpending(parsed.transactions);
-      console.log("[test] Subscriptions found:", result.subscriptions.length);
-
-      setReport(result);
-      setSpendingData(spending);
-
-      const suspicious = result.subscriptions.filter((s) => s.confidence === "suspicious");
-      setStep(suspicious.length > 0 ? "identify" : "results");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    } catch (fetchErr) {
-      console.warn("[test] Fetch/parse failed, using hardcoded data:", fetchErr);
-    }
-
-    // ── Hardcoded fallback data ──
-    setTxCount(72);
-    setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
-    await new Promise((r) => setTimeout(r, 1500));
-    clearInterval(timer);
-
-    const now = "2026-02-27";
-    const makeSub = (
-      name: string, amount: number, freq: "monthly" | "yearly", occ: number,
-      confidence: "confirmed" | "suspicious", status: "investigate" | "cancel" | "keep"
-    ): Subscription => ({
-      id: name.toLowerCase().replace(/\s+/g, "-"),
-      name,
-      normalizedName: name.toLowerCase(),
-      amount,
-      frequency: freq,
-      monthlyEquivalent: freq === "yearly" ? +(amount / 12).toFixed(2) : amount,
-      yearlyEquivalent: freq === "yearly" ? amount : +(amount * 12).toFixed(2),
-      occurrences: occ,
-      lastCharge: now,
-      firstCharge: "2025-11-01",
-      status,
-      confidence,
-      transactions: [],
-    });
-
-    const hardcodedReport: Report = {
-      subscriptions: [
-        makeSub("Spotify", 32.99, "monthly", 4, "confirmed", "investigate"),
-        makeSub("Netflix", 59.99, "monthly", 4, "confirmed", "investigate"),
-        makeSub("ChatGPT Plus", 74.99, "monthly", 4, "confirmed", "investigate"),
-        makeSub("Adobe Creative Cloud", 133.99, "monthly", 4, "confirmed", "investigate"),
-        makeSub("شاهد VIP", 45.00, "monthly", 4, "confirmed", "investigate"),
-        makeSub("Calm", 44.99, "monthly", 4, "confirmed", "investigate"),
-        makeSub("Apple", 14.99, "monthly", 4, "confirmed", "investigate"),
-        makeSub("iCloud+", 14.99, "monthly", 4, "confirmed", "investigate"),
-        makeSub("هنقرستيشن", 29.00, "monthly", 4, "confirmed", "investigate"),
-        makeSub("بنده ماركت", 272.91, "monthly", 8, "suspicious", "investigate"),
-        makeSub("ARAMCO محطة وقود", 182.56, "monthly", 9, "suspicious", "investigate"),
-        makeSub("مطعم البيك - الرياض", 76.43, "monthly", 7, "suspicious", "investigate"),
-        makeSub("كريم - مشوار", 29.20, "monthly", 5, "suspicious", "investigate"),
-        makeSub("Amazon", 256.25, "monthly", 4, "suspicious", "investigate"),
-      ],
-      totalMonthly: 1268.28,
-      totalYearly: 15219.36,
-      potentialMonthlySavings: 0,
-      potentialYearlySavings: 0,
-      analyzedTransactions: 72,
-      dateRange: { from: "2025-11-01", to: "2026-02-27" },
-    };
-
-    const hardcodedSpending: SpendingData = {
-      totalSpend: 6341.40,
-      monthlyAvg: 1585.35,
-      transactionCount: 72,
-      months: 4,
-      dateRange: { from: "2025-11-01", to: "2026-02-27" },
-      categories: [
-        { name: "اشتراكات", nameEn: "Subscriptions", total: 2033.52, percent: 32, monthlyAvg: 508.38, count: 36, topMerchants: ["Adobe Creative Cloud", "ChatGPT Plus", "Netflix"] },
-        { name: "بقالة", nameEn: "Groceries", total: 1885.30, percent: 30, monthlyAvg: 471.33, count: 8, topMerchants: ["بنده ماركت", "NANA GROCERY"] },
-        { name: "مطاعم", nameEn: "Eating Out", total: 465.00, percent: 7, monthlyAvg: 116.25, count: 7, topMerchants: ["مطعم البيك - الرياض"] },
-        { name: "وقود", nameEn: "Transport", total: 1471.00, percent: 23, monthlyAvg: 367.75, count: 9, topMerchants: ["ARAMCO محطة وقود", "كريم - مشوار"] },
-        { name: "تسوق", nameEn: "Shopping", total: 486.58, percent: 8, monthlyAvg: 121.65, count: 7, topMerchants: ["AMAZON.SA", "JARIR BOOKSTORE"] },
-      ],
-      takeaways: [
-        { ar: "اشتراكاتك تمثل <b>٣٢٪</b> من إجمالي مصاريفك.", en: "Subscriptions make up <b>32%</b> of your total spending." },
-        { ar: "أعلى اشتراك هو <b>Adobe Creative Cloud</b> بـ ١٣٤ ريال/شهر.", en: "Your most expensive subscription is <b>Adobe Creative Cloud</b> at 134 SAR/mo." },
-        { ar: "تصرف على البقالة حوالي <b>٤٧١ ريال/شهر</b>.", en: "You spend about <b>471 SAR/mo</b> on groceries." },
-      ],
-    };
-
-    setReport(hardcodedReport);
-    setSpendingData(hardcodedSpending);
-    // Go straight to results — everything is a subscription by default
-    setStep("results");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  function handleTestStatement() {
+    router.push("/report/sample");
   }
 
   function handleIdentifyConfirm(id: string, choice: "subscription" | "not" | "unknown") {
@@ -519,6 +499,7 @@ export default function HomePage() {
     setRetryFiles([]);
     setTxCount(0);
     setAnalyzeTimer(0);
+    clearReportData();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -529,7 +510,7 @@ export default function HomePage() {
   // ── Render ──
 
   return (
-    <div className="min-h-screen bg-[#F8FAFF]">
+    <div className="min-h-screen bg-[#EDF5F3]">
       <Header
         locale={locale}
         onLocaleChange={setLocale}
@@ -537,7 +518,7 @@ export default function HomePage() {
       />
 
       {showPaywall && (
-        <PaywallModal locale={locale} onClose={() => setShowPaywall(false)} />
+        <PaywallModal locale={locale} onClose={() => setShowPaywall(false)} onPaymentSuccess={(receiptId) => { setIsPaid(true); setShowPaywall(false); savePaymentReceipt(receiptId); if (report) saveReportData(report, spendingData); }} />
       )}
 
       {/* ── ANALYZING ── */}
@@ -547,7 +528,7 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="min-h-screen flex flex-col items-center justify-center px-6 pt-20 bg-[#F8FAFF]"
+            className="min-h-screen flex flex-col items-center justify-center px-6 pt-20 bg-[#EDF5F3]"
           >
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -555,22 +536,22 @@ export default function HomePage() {
               transition={{ duration: 0.5 }}
               className="w-full max-w-[500px] bento-card py-16 px-8 text-center"
             >
-              <div className="text-5xl sm:text-6xl font-extrabold tracking-tight text-slate-900 mb-2">
+              <div className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-2" style={{ color: "#1A3A35" }}>
                 {txCount.toLocaleString()}
               </div>
-              <div className="text-sm text-slate-400 mb-6">
+              <div className="text-sm mb-6" style={{ color: "#8AADA8" }}>
                 {ar ? "عملية" : "transactions"}
               </div>
               <div className="flex items-center justify-center gap-2 mb-4">
-                <Loader2 size={14} strokeWidth={1.5} className="text-indigo-500 animate-spin" />
-                <span className="text-sm text-slate-500">{analyzeStatus}</span>
+                <Loader2 size={14} strokeWidth={1.5} className="animate-spin" style={{ color: "#00A651" }} />
+                <span className="text-sm" style={{ color: "#4A6862" }}>{analyzeStatus}</span>
               </div>
-              <div className="text-lg font-bold text-slate-300 mb-6">
+              <div className="text-lg font-bold mb-6" style={{ color: "#C5DDD9" }}>
                 {analyzeTimer}s
               </div>
-              <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-full px-4 py-2 text-xs text-slate-400">
+              <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs" style={{ background: "#E5EFED", color: "#8AADA8" }}>
                 <Clock size={12} strokeWidth={1.5} />
-                {ar ? "تقريباً خلصنا — لا تطلع من الصفحة" : "Almost there – stay on this page"}
+                {ar ? "تقريبا خلصنا — لا تطلع من الصفحة" : "Almost there – stay on this page"}
               </div>
             </motion.div>
           </motion.div>
@@ -582,19 +563,19 @@ export default function HomePage() {
         const confirmed = report.subscriptions.filter((s) => s.confidence === "confirmed");
         const suspicious = report.subscriptions.filter((s) => s.confidence === "suspicious");
         return (
-          <div className="min-h-screen bg-[#F8FAFF] pt-24 pb-16 px-6">
+          <div className="min-h-screen bg-[#EDF5F3] pt-24 pb-16 px-6">
             <div className="max-w-[700px] mx-auto">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                <p className="text-indigo-500 font-bold text-sm mb-2">
+                <p className="font-bold text-base mb-2" style={{ color: "#00A651" }}>
                   {ar ? `لقينا ${confirmed.length} اشتراكات مؤكدة` : `Found ${confirmed.length} clear subscriptions`}
                 </p>
-                <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 mb-2">
+                <h2 className="text-2xl font-extrabold tracking-tight mb-2" style={{ color: "#1A3A35" }}>
                   {ar ? `ساعدنا نتعرف على ${suspicious.length} إضافية` : `Help identify ${suspicious.length} more`}
-                </h1>
-                <div className="h-1 bg-indigo-100 rounded-full mb-6">
-                  <div className="h-1 bg-indigo-500 rounded-full" style={{ width: "60%" }} />
+                </h2>
+                <div className="h-1 rounded-full mb-6" style={{ background: "#C5DDD9" }}>
+                  <div className="h-1 rounded-full" style={{ width: "60%", background: "#1A3A35" }} />
                 </div>
-                <p className="text-sm text-slate-500 mb-8">
+                <p className="text-sm mb-8" style={{ color: "#4A6862" }}>
                   {ar
                     ? "لقينا بعض العمليات المتكررة مو متأكدين منها. ساعدنا نضيفها لمجموعك:"
                     : "We found some recurring charges we're not sure about. Help us include them in your total:"}
@@ -612,14 +593,14 @@ export default function HomePage() {
                   >
                     <div className="flex items-start justify-between mb-1">
                       <div>
-                        <span className="font-bold text-base text-slate-800">{sub.name}</span>
+                        <span className="font-bold text-base" style={{ color: "#1A3A35" }}>{sub.name}</span>
                       </div>
-                      <span className="font-bold text-base text-slate-900">
+                      <span className="font-bold text-base" style={{ color: "#1A3A35" }}>
                         {sub.amount.toFixed(0)} {ar ? "ريال/شهر" : "SAR/monthly"}
                       </span>
                     </div>
                     {sub.rawDescription && (
-                      <p className="text-xs text-slate-400 mb-3">{sub.rawDescription}</p>
+                      <p className="text-xs mb-3" style={{ color: "#8AADA8" }}>{sub.rawDescription}</p>
                     )}
                     <div className="flex gap-2.5">
                       {(["subscription", "not", "unknown"] as const).map((choice) => {
@@ -629,18 +610,17 @@ export default function HomePage() {
                           unknown: ar ? "ما أدري" : "Don't know",
                         };
                         const isActive =
-                          (choice === "subscription" && sub.userConfirmed && sub.confidence === "confirmed") ||
+                          (choice === "subscription" && (!sub.userConfirmed || (sub.userConfirmed && sub.confidence === "confirmed"))) ||
                           (choice === "not" && sub.userConfirmed && sub.status === "keep") ||
                           (choice === "unknown" && sub.userConfirmed && sub.confidence === "suspicious" && sub.status !== "keep");
                         return (
                           <button
                             key={choice}
                             onClick={() => handleIdentifyConfirm(sub.id, choice)}
-                            className={`text-xs font-bold px-4 py-2 rounded-full transition-all ${
-                              isActive
-                                ? "bg-indigo-500 text-white"
-                                : "bg-white border border-slate-200 text-slate-500 hover:border-indigo-300"
-                            }`}
+                            className="text-xs font-bold px-4 py-2 rounded-full transition-all"
+                            style={isActive
+                              ? { background: "#1A3A35", color: "white", border: "1.5px solid #1A3A35" }
+                              : { background: "white", color: "#4A6862", border: "1.5px solid #E5EFED" }}
                           >
                             {labels[choice]}
                           </button>
@@ -656,13 +636,7 @@ export default function HomePage() {
                   onClick={handleFinishIdentify}
                   className="btn-primary flex-1"
                 >
-                  {ar ? "شوف تقريري" : "Show my report"} <ArrowRight size={16} strokeWidth={1.5} />
-                </button>
-                <button
-                  onClick={handleSkipIdentify}
-                  className="btn-ghost"
-                >
-                  {ar ? `تخطى (${confirmed.length})` : `Skip (${confirmed.length})`}
+                  {ar ? "شوف تقريري" : "Show my report"}
                 </button>
               </div>
             </div>
@@ -678,22 +652,146 @@ export default function HomePage() {
         const hidden = subs.slice(FREE_VISIBLE);
         const hiddenYearly = hidden.reduce((s, sub) => s + sub.yearlyEquivalent, 0);
 
+        // ── Zero subscriptions found ──
+        if (subs.length === 0) {
+          return (
+            <div className="min-h-screen bg-[#EDF5F3] pt-24 pb-16 px-6">
+              <div className="max-w-[600px] mx-auto">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center mb-8">
+                  <div className="w-16 h-16 rounded-full mx-auto mb-5 flex items-center justify-center" style={{ background: "#E5EFED" }}>
+                    <Search size={28} strokeWidth={1.5} style={{ color: "#8AADA8" }} />
+                  </div>
+                  <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2" style={{ color: "#1A3A35" }}>
+                    {ar ? "ما لقينا اشتراكات" : "No subscriptions found"}
+                  </h1>
+                  <p className="text-sm leading-relaxed" style={{ color: "#4A6862" }}>
+                    {ar
+                      ? "حللنا الكشف ولكن ما طلعت اشتراكات متكررة. هذا ممكن يكون لأن:"
+                      : "We analyzed your statement but found no recurring subscriptions. This could be because:"}
+                  </p>
+                </motion.div>
+
+                {/* Possible reasons */}
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }} className="space-y-3 mb-8">
+                  {[
+                    {
+                      icon: <CalendarRange size={18} strokeWidth={1.5} />,
+                      titleAr: "الكشف قصير",
+                      titleEn: "Statement too short",
+                      descAr: "كشف شهر واحد ممكن ما يبين الاشتراكات. ارفع كشف ٢-٣ اشهر عشان نلقى الدفعات المتكررة.",
+                      descEn: "A single month may not reveal subscriptions. Upload 2-3 months so we can spot recurring charges.",
+                    },
+                    {
+                      icon: <FileText size={18} strokeWidth={1.5} />,
+                      titleAr: "البطاقة الثانية",
+                      titleEn: "Different card",
+                      descAr: "بعض الاشتراكات تنخصم من بطاقة ثانية. جرب ارفع كشوفات بطاقاتك الاخرى.",
+                      descEn: "Some subscriptions charge a different card. Try uploading statements from your other cards.",
+                    },
+                    {
+                      icon: <AlertCircle size={18} strokeWidth={1.5} />,
+                      titleAr: "صيغة الملف",
+                      titleEn: "File format issue",
+                      descAr: "بعض ملفات PDF تكون صور ما نقدر نقرأها. جرب نزل كشف CSV من تطبيق بنكك.",
+                      descEn: "Some PDF files are image-based and can't be read. Try downloading a CSV from your banking app.",
+                    },
+                  ].map((reason, i) => (
+                    <div key={i} className="bento-card p-4 flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: "#E5EFED", color: "#4A6862" }}>
+                        {reason.icon}
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm mb-0.5" style={{ color: "#1A3A35" }}>
+                          {ar ? reason.titleAr : reason.titleEn}
+                        </p>
+                        <p className="text-xs leading-relaxed" style={{ color: "#4A6862" }}>
+                          {ar ? reason.descAr : reason.descEn}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </motion.div>
+
+                {/* Actions */}
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="space-y-3">
+                  <button
+                    onClick={handleStartOver}
+                    className="btn-primary w-full text-base py-4 flex items-center justify-center gap-2"
+                  >
+                    <Upload size={18} strokeWidth={1.5} />
+                    {ar ? "ارفع كشوفات اكثر" : "Upload more statements"}
+                  </button>
+                  <button
+                    onClick={handleTestStatement}
+                    className="btn-ghost w-full flex items-center justify-center gap-2"
+                  >
+                    <FileText size={14} strokeWidth={1.5} />
+                    {ar ? "شوف تقرير تجريبي" : "See a sample report"}
+                  </button>
+                </motion.div>
+
+                {/* Analyzed transactions note */}
+                {report.analyzedTransactions > 0 && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                    className="text-xs text-center mt-6"
+                    style={{ color: "#8AADA8" }}
+                  >
+                    {ar
+                      ? `حللنا ${report.analyzedTransactions} عملية ولكن ما لقينا شي متكرر`
+                      : `We analyzed ${report.analyzedTransactions} transactions but found nothing recurring`}
+                  </motion.p>
+                )}
+              </div>
+            </div>
+          );
+        }
+
         return (
-          <div className="min-h-screen bg-[#F8FAFF] pt-24 pb-16 px-6">
+          <div className="min-h-screen bg-[#EDF5F3] pt-24 pb-16 px-6">
             <div className="max-w-[700px] mx-auto">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-1">
+                <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-1" style={{ color: "#1A3A35" }}>
                   {ar
                     ? `تصرف ${report.totalYearly.toFixed(0)} ريال/سنة`
                     : `You're spending ${report.totalYearly.toFixed(0)} SAR/year`}
                 </h1>
-                <p className="text-sm text-slate-400 mb-4">
+                <p className="text-sm mb-4" style={{ color: "#8AADA8" }}>
                   {ar ? `من ${subs.length} اشتراك` : `across ${subs.length} subscriptions`}
                 </p>
-                <div className="h-1 bg-indigo-100 rounded-full mb-8">
-                  <div className="h-1 bg-indigo-500 rounded-full w-full" />
+                <div className="h-1 rounded-full mb-8" style={{ background: "#C5DDD9" }}>
+                  <div className="h-1 rounded-full w-full" style={{ background: "#1A3A35" }} />
                 </div>
               </motion.div>
+
+              {/* Nudge: upload more statements when few subs found */}
+              {subs.length <= 3 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.15 }}
+                  className="flex items-center gap-3 rounded-2xl p-4 mb-6 cursor-pointer transition-all hover:shadow-md"
+                  style={{ background: "#FFF7ED", border: "1px solid #FDE8CD" }}
+                  onClick={handleStartOver}
+                >
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "#FDE8CD" }}>
+                    <Upload size={16} strokeWidth={1.5} style={{ color: "#92400E" }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm mb-0.5" style={{ color: "#92400E" }}>
+                      {ar ? "ارفع كشوفات اكثر عشان نلقى كل اشتراكاتك" : "Upload more statements to find all your subscriptions"}
+                    </p>
+                    <p className="text-xs" style={{ color: "#B45309" }}>
+                      {ar
+                        ? "كشف ٢-٣ اشهر او بطاقات مختلفة يعطيك صورة اوضح"
+                        : "2-3 months or different cards gives you a clearer picture"}
+                    </p>
+                  </div>
+                  <ArrowRight size={16} strokeWidth={1.5} style={{ color: "#92400E" }} className="flex-shrink-0" />
+                </motion.div>
+              )}
 
               {/* Subscription list */}
               <motion.div
@@ -703,45 +801,39 @@ export default function HomePage() {
                 className="bento-card overflow-hidden mb-6 p-0"
               >
                 {visible.map((sub, i) => {
-                  const info = getCancelInfo(sub.name);
                   return (
-                    <div key={sub.id} className="flex items-center px-5 py-4 border-b border-slate-100">
-                      <span className="text-sm text-slate-400 w-8 flex-shrink-0">{i + 1}.</span>
-                      <span className="font-bold text-sm flex-1 text-slate-800">{sub.name}</span>
-                      <span className="font-bold text-sm mr-4 ml-4 text-slate-700">
+                    <div key={sub.id} className="flex items-center px-5 py-4" style={{ borderBottom: "1px solid #E5EFED" }}>
+                      <span className="text-sm w-8 flex-shrink-0" style={{ color: "#8AADA8" }}>{i + 1}.</span>
+                      <span className="font-bold text-sm flex-1" style={{ color: "#1A3A35" }}>{sub.name}</span>
+                      <span className="font-bold text-sm mr-4 ml-4" style={{ color: "#1A3A35" }}>
                         {sub.yearlyEquivalent.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"}
                       </span>
-                      {info?.cancelUrl ? (
-                        <a
-                          href={info.cancelUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-indigo-500 font-bold text-sm no-underline hover:underline flex-shrink-0"
-                        >
-                          {ar ? "الغي" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
-                        </a>
-                      ) : (
-                        <span className="text-indigo-500 font-bold text-sm flex-shrink-0">
-                          {ar ? "الغي" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
-                        </span>
-                      )}
+                      <button
+                        onClick={() => setShowPaywall(true)}
+                        className="font-bold text-xs px-3.5 py-1.5 rounded-full flex-shrink-0 transition-colors"
+                        style={{ background: "white", color: "#00A651", border: "1.5px solid #00A651" }}
+                        onMouseEnter={e => { e.currentTarget.style.background = "#00A651"; e.currentTarget.style.color = "white"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.color = "#00A651"; }}
+                      >
+                        {ar ? "الغي" : "Cancel"}
+                      </button>
                     </div>
                   );
                 })}
 
                 {hidden.map((sub, i) => (
-                  <div key={sub.id} className="flex items-center px-5 py-4 border-b border-slate-100">
-                    <span className="text-sm text-slate-400 w-8 flex-shrink-0">{FREE_VISIBLE + i + 1}.</span>
-                    <span className="font-bold text-sm flex-1 blur-sm select-none text-slate-800">{sub.name}</span>
-                    <span className="font-bold text-sm mr-4 ml-4 text-slate-700">
+                  <div key={sub.id} className="flex items-center px-5 py-4" style={{ borderBottom: "1px solid #E5EFED" }}>
+                    <span className="text-sm w-8 flex-shrink-0" style={{ color: "#8AADA8" }}>{FREE_VISIBLE + i + 1}.</span>
+                    <span className="font-bold text-sm flex-1 blur-sm select-none" style={{ color: "#1A3A35" }}>{sub.name}</span>
+                    <span className="font-bold text-sm mr-4 ml-4" style={{ color: "#1A3A35" }}>
                       {sub.yearlyEquivalent.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"}
                     </span>
-                    <Lock size={14} strokeWidth={1.5} className="text-slate-300 flex-shrink-0" />
+                    <Lock size={14} strokeWidth={1.5} style={{ color: "#C5DDD9" }} className="flex-shrink-0" />
                   </div>
                 ))}
 
                 {hidden.length > 0 && (
-                  <div className="px-5 py-3 bg-slate-50 text-center text-sm text-slate-400">
+                  <div className="px-5 py-3 text-center text-sm" style={{ background: "#EDF5F3", color: "#8AADA8" }}>
                     + {hidden.length} {ar ? "إضافية" : "more"} ({hiddenYearly.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"})
                   </div>
                 )}
@@ -754,38 +846,37 @@ export default function HomePage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  <p className="text-center text-indigo-600 font-bold text-base mb-4">
+                  <p className="text-center font-bold text-base mb-4" style={{ color: "#1A3A35" }}>
                     {ar
-                      ? `ادفع ٤٩ ريال، ووفر ${hiddenYearly.toFixed(0)} ريال/سنة — يعني ${Math.round(hiddenYearly / 49)}x عائد`
-                      : `Pay 49 SAR, save up to ${hiddenYearly.toFixed(0)} SAR/yr — that's a ${Math.round(hiddenYearly / 49)}x return`}
+                      ? `ادفع ٤٩ ريال ووفر ${report.totalYearly.toFixed(0)} ريال/سنة`
+                      : `Pay 49 SAR and save ${report.totalYearly.toFixed(0)} SAR/yr`}
                   </p>
                   <button
                     onClick={() => setShowPaywall(true)}
                     className="btn-primary w-full text-base py-4 mb-3"
                   >
                     {ar
-                      ? `اكشف كل ${subs.length} اشتراك — ٤٩ ريال`
-                      : `Unlock all ${subs.length} subscriptions — 49 SAR`}
+                      ? "اكشف التقرير الكامل (٤٩ ريال)"
+                      : "Reveal the full report (49 SAR)"}
                   </button>
-                  <p className="text-xs text-center text-slate-400 mb-8">
-                    {ar
-                      ? "دفعة واحدة · بدون حساب · ضمان استرداد كامل"
-                      : "One-time payment · No account needed · 100% money-back guarantee"}
-                  </p>
                 </motion.div>
               )}
 
-              {/* Full audit report */}
-              <AuditReport
-                report={report}
-                locale={locale}
-                onStatusChange={handleStatusChange}
-                onStartOver={handleStartOver}
-                onUpgradeClick={() => setShowPaywall(true)}
-              />
+              {/* Full audit report — only after payment */}
+              {isPaid && (
+                <AuditReport
+                  report={report}
+                  locale={locale}
+                  onStatusChange={handleStatusChange}
+                  onStartOver={handleStartOver}
+                  onUpgradeClick={() => setShowPaywall(true)}
+                  isPaid={isPaid}
+                  spendingData={spendingData}
+                />
+              )}
 
-              {/* Spending breakdown */}
-              {spendingData && spendingData.categories.length > 0 && (
+              {/* Spending breakdown — only after payment */}
+              {isPaid && spendingData && spendingData.categories.length > 0 && (
                 <div className="mt-6">
                   <SpendingBreakdownComponent data={spendingData} locale={locale} />
                 </div>
@@ -814,20 +905,44 @@ export default function HomePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <span className="section-label-light inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full mb-5">
-                  <Shield size={12} strokeWidth={1.5} /> {ar ? "خصوصية ١٠٠٪ — كل شيء على جهازك" : "100% Private — Everything stays on your device"}
+                <span className="section-label inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full mb-5">
+                  <Shield size={12} strokeWidth={1.5} /> {ar ? "اشتراكاتك المنسية تكلفك اكثر مما تتوقع" : "Your forgotten subscriptions cost more than you think"}
                 </span>
-                <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-white mb-4 max-w-3xl mx-auto leading-[1.1]">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 max-w-3xl mx-auto leading-[1.1]" style={{ color: "#1A3A35" }}>
                   {ar
-                    ? "وقف النزيف. الغي أي اشتراك بضغطتين."
-                    : "Stop the drain. Cancel any subscription in two clicks."}
+                    ? "الغي اشتراكاتك اللي ما تستخدمها ووفر فلوسك"
+                    : "Cancel your unused subscriptions and save money"}
                 </h1>
-                <p className="text-lg text-indigo-200/70 max-w-[600px] mx-auto mb-12 leading-relaxed">
+                <p className="text-base sm:text-lg max-w-[600px] mx-auto mb-12 leading-relaxed" style={{ color: "#4A6862" }}>
                   {ar
-                    ? "ارفع كشف حسابك البنكي ونكشف لك كل الاشتراكات المخفية — مع روابط إلغاء مباشرة."
-                    : "Upload your bank statement and we'll find every hidden subscription — with direct cancel links."}
+                    ? "ارفع كشف بنكك — نكشف لك كل اشتراك منسي ونعطيك رابط الغاء مباشر. ناس وفروا اكثر من ٤,٠٠٠ ريال بالسنة."
+                    : "Upload your bank statement — we'll find every hidden subscription and give you a direct cancel link. Users save over 4,000 SAR/year."}
                 </p>
               </motion.div>
+
+              {/* Welcome back banner for paid users returning without cached report */}
+              {paidNoReport && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="max-w-[560px] mx-auto mb-6 rounded-2xl p-4 flex items-center gap-3"
+                  style={{ background: "#E8F7EE", border: "1px solid #B7E4C7" }}
+                >
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "#B7E4C7" }}>
+                    <CheckCircle2 size={16} strokeWidth={1.5} style={{ color: "#065F46" }} />
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm" style={{ color: "#065F46" }}>
+                      {ar ? "اهلا مرة ثانية — دفعتك محفوظة" : "Welcome back — your payment is saved"}
+                    </p>
+                    <p className="text-xs" style={{ color: "#047857" }}>
+                      {ar
+                        ? "ارفع كشفك مرة ثانية وتقريرك الكامل جاهز لك بدون دفع"
+                        : "Upload your statement again and your full report is ready — no extra charge"}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
 
               {/* Upload zone */}
               <UploadZone
@@ -841,7 +956,7 @@ export default function HomePage() {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-6 max-w-[560px] mx-auto bento-card bg-red-50 border-red-100 p-5 text-right"
+                  className={`mt-6 max-w-[560px] mx-auto bento-card bg-red-50 border-red-100 p-5 ${ar ? "text-right" : "text-left"}`}
                 >
                   <p className="font-bold text-red-700 mb-1">
                     {ar ? parseError.messageAr : parseError.message}
@@ -862,7 +977,7 @@ export default function HomePage() {
                         <button
                           key={bankId}
                           onClick={() => handleRetryWithBank(bankId)}
-                          className="text-xs font-bold px-3 py-1.5 rounded-full border border-slate-200 text-slate-500 hover:border-indigo-300 hover:text-indigo-600 transition-all bg-white"
+                          className="text-xs font-bold px-3 py-1.5 rounded-full border border-[#E5EFED] transition-all bg-white hover:border-[#00A651]" style={{ color: "#4A6862" }}
                         >
                           {bankId}
                         </button>
@@ -877,7 +992,7 @@ export default function HomePage() {
                         value={pasteText}
                         onChange={(e) => setPasteText(e.target.value)}
                         placeholder={ar ? "الصق نص كشف الحساب هنا..." : "Paste your statement text here..."}
-                        className="w-full h-24 p-3 rounded-xl border border-slate-200 text-sm text-slate-700 bg-white resize-none focus:outline-none focus:border-indigo-400"
+                        className="w-full h-24 p-3 rounded-xl border border-[#E5EFED] text-sm bg-white resize-none focus:outline-none focus:border-[#00A651]" style={{ color: "#1A3A35" }}
                       />
                       <button
                         onClick={handlePasteAnalyze}
@@ -894,17 +1009,51 @@ export default function HomePage() {
               {/* Bank logos */}
               <div className="mt-12 flex flex-wrap justify-center gap-4">
                 {BANKS.map((bank) => (
-                  <div key={bank.name} className="flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-3 py-1.5">
-                    <BrandLogo domain={bank.domain} alt={bank.name} className="w-5 h-5 rounded-sm object-contain" />
-                    <span className="text-xs text-white/70 font-medium">{bank.name}</span>
+                  <div key={bank.name} className="flex items-center gap-2 bg-white border border-[#E5EFED] rounded-full px-3 py-1.5">
+                    <MerchantLogo name={bank.name} domain={bank.domain} size={20} />
+                    <span className="text-xs font-medium" style={{ color: "#4A6862" }}>{bank.name}</span>
                   </div>
                 ))}
               </div>
             </div>
           </section>
 
+          {/* Cancel guides + subscription chips */}
+          <section className="py-16 px-6" style={{ background: "#EDF5F3" }}>
+            <div className="max-w-[800px] mx-auto text-center">
+              <h2 className="text-xl font-extrabold tracking-tight mb-2" style={{ color: "#1A3A35" }}>
+                {ar ? "ادلة الغاء لاكثر من ٢٠٠ خدمة" : "Cancel guides for 200+ services"}
+              </h2>
+              <p className="text-sm mb-6" style={{ color: "#8AADA8" }}>
+                {ar ? "شرح خطوة بخطوة لكل خدمة — من Netflix الى stc" : "Step-by-step instructions for every service — from Netflix to stc"}
+              </p>
+              <div className="flex flex-wrap justify-center gap-3 mb-8">
+                {SUB_CHIPS.map((chip) => (
+                  <div key={chip.name} className="inline-flex items-center gap-2 bg-white border border-[#E5EFED] rounded-full px-4 py-2 shadow-sm">
+                    <MerchantLogo name={chip.name} domain={chip.domain} size={20} />
+                    <span className="text-sm font-medium" style={{ color: "#4A6862" }}>{chip.name}</span>
+                  </div>
+                ))}
+              </div>
+              <a
+                href="/guides"
+                className="inline-flex items-center gap-2 font-bold text-sm py-3 px-7 rounded-full transition-all hover:-translate-y-0.5 no-underline"
+                style={{
+                  background: "#00A651",
+                  color: "white",
+                  boxShadow: "0 2px 8px rgba(0,166,81,0.25)",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = "#009147"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,166,81,0.35)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "#00A651"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,166,81,0.25)"; }}
+              >
+                <Search size={16} strokeWidth={1.5} />
+                {ar ? "ابحث في أدلة الإلغاء" : "Search cancel guides"}
+              </a>
+            </div>
+          </section>
+
           {/* Stats */}
-          <section className="bg-indigo-50/60 py-16 px-6 border-y border-indigo-100/50">
+          <section className="py-16 px-6 border-y" style={{ background: "#E5EFED", borderColor: "#C5DDD9" }}>
             <div className="max-w-[900px] mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
               {PROBLEM_STATS.map((stat, i) => (
                 <motion.div
@@ -913,10 +1062,10 @@ export default function HomePage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: i * 0.1 }}
-                  className="bg-white border border-indigo-100 rounded-[24px] shadow-sm text-center py-8 px-4"
+                  className="bento-card text-center py-8 px-4"
                 >
-                  <div className="text-3xl font-extrabold tracking-tight text-indigo-600 mb-2">{stat.num}</div>
-                  <p className="text-sm text-slate-500">{stat.text}</p>
+                  <div className="text-3xl font-extrabold tracking-tight mb-2" style={{ color: "#00A651" }}>{ar ? stat.num : stat.numEn}</div>
+                  <p className="text-sm" style={{ color: "#4A6862" }}>{ar ? stat.text : stat.textEn}</p>
                 </motion.div>
               ))}
             </div>
@@ -929,7 +1078,7 @@ export default function HomePage() {
                 <Zap size={12} strokeWidth={1.5} /> {ar ? "كيف يعمل" : "How it works"}
               </span>
               <h2 className="section-title">
-                {ar ? "اكتشف. قرر. وفّر." : "Discover. Decide. Save."}
+                {ar ? "سهل، سريع، وواضح" : "Simple, fast, and clear"}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-12">
                 {FEATURES.map((f, i) => {
@@ -941,13 +1090,13 @@ export default function HomePage() {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.5, delay: i * 0.08 }}
-                      className="bento-card text-right p-6"
+                      className={`bento-card p-6 ${ar ? "text-right" : "text-left"}`}
                     >
-                      <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center mb-4">
-                        <Icon size={20} strokeWidth={1.5} className="text-indigo-500" />
+                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center mb-4" style={{ background: "#E8F7EE" }}>
+                        <Icon size={20} strokeWidth={1.5} style={{ color: "#00A651" }} />
                       </div>
-                      <h3 className="font-bold text-base text-slate-800 mb-2">{f.title}</h3>
-                      <p className="text-sm text-slate-500 leading-relaxed">{f.desc}</p>
+                      <h3 className="font-bold text-base mb-2" style={{ color: "#1A3A35" }}>{ar ? f.title : f.titleEn}</h3>
+                      <p className="text-sm leading-relaxed" style={{ color: "#4A6862" }}>{ar ? f.desc : f.descEn}</p>
                     </motion.div>
                   );
                 })}
@@ -955,31 +1104,14 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Subscription chips */}
-          <section className="bg-[#F0F1FF] py-16 px-6">
-            <div className="max-w-[800px] mx-auto text-center">
-              <h2 className="text-xl font-extrabold tracking-tight text-slate-900 mb-6">
-                {ar ? "نكتشف أكثر من ١٢٠ خدمة" : "We detect 120+ services"}
-              </h2>
-              <div className="flex flex-wrap justify-center gap-3">
-                {SUB_CHIPS.map((chip) => (
-                  <div key={chip.name} className="inline-flex items-center gap-2 bg-white border border-slate-100 rounded-full px-4 py-2 shadow-sm">
-                    <BrandLogo domain={chip.domain} alt={chip.name} className="w-5 h-5 rounded-sm object-contain" />
-                    <span className="text-sm font-medium text-slate-600">{chip.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
           {/* Testimonials */}
-          <section className="bg-gradient-to-b from-indigo-50/40 to-white py-20 px-6">
+          <section className="bg-white py-20 px-6">
             <div className="max-w-[900px] mx-auto text-center">
               <span className="section-label">
-                {ar ? "تجارب المستخدمين" : "What users say"}
+                {ar ? "قالوا عنا" : "What users say"}
               </span>
               <h2 className="section-title mb-12">
-                {ar ? "وفّروا آلاف الريالات" : "They saved thousands"}
+                {ar ? "ناس جربوا يلا كنسل" : "People who tried Yalla Cancel"}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {TESTIMONIALS.map((t, i) => (
@@ -989,16 +1121,16 @@ export default function HomePage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: i * 0.1 }}
-                    className="bento-card p-6 text-right"
+                    className={`bento-card p-6 ${ar ? "text-right" : "text-left"}`}
                   >
-                    <p className="text-sm text-slate-600 leading-relaxed mb-4">&ldquo;{t.quote}&rdquo;</p>
+                    <p className="text-sm leading-relaxed mb-4" style={{ color: "#4A6862" }}>&ldquo;{ar ? t.quote : t.quoteEn}&rdquo;</p>
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-sm font-bold text-indigo-600">
-                        {t.initial}
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: "#E5EFED", color: "#1A3A35" }}>
+                        {ar ? t.initialAr : t.initial}
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-slate-800">{t.name}</p>
-                        <p className="text-xs text-slate-400">{t.role}</p>
+                        <p className="text-sm font-bold" style={{ color: "#1A3A35" }}>{ar ? t.name : t.nameEn}</p>
+                        <p className="text-xs" style={{ color: "#8AADA8" }}>{ar ? t.role : t.roleEn}</p>
                       </div>
                     </div>
                   </motion.div>
@@ -1008,11 +1140,11 @@ export default function HomePage() {
           </section>
 
           {/* FAQ */}
-          <section className="bg-[#F8FAFF] py-20 px-6">
+          <section className="py-20 px-6" style={{ background: "#EDF5F3" }}>
             <div className="max-w-[700px] mx-auto">
               <div className="text-center mb-12">
                 <span className="section-label">{ar ? "أسئلة شائعة" : "FAQ"}</span>
-                <h2 className="section-title">{ar ? "أسئلة وأجوبة" : "Questions & Answers"}</h2>
+                <h2 className="section-title">{ar ? "عندك سؤال؟" : "Got a question?"}</h2>
               </div>
               <div className="space-y-3">
                 {FAQ_ITEMS.map((faq, i) => (
@@ -1026,12 +1158,12 @@ export default function HomePage() {
                   >
                     <button
                       onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                      className="w-full flex items-center justify-between py-1 text-right"
+                      className={`w-full flex items-center justify-between py-1 ${ar ? "text-right" : "text-left"}`}
                     >
-                      <span className="font-bold text-sm text-slate-800">{faq.q}</span>
+                      <span className="font-bold text-sm" style={{ color: "#1A3A35" }}>{ar ? faq.q : faq.qEn}</span>
                       {openFaq === i
-                        ? <ChevronUp size={16} strokeWidth={1.5} className="text-slate-400 flex-shrink-0" />
-                        : <ChevronDown size={16} strokeWidth={1.5} className="text-slate-400 flex-shrink-0" />}
+                        ? <ChevronUp size={16} strokeWidth={1.5} style={{ color: "#8AADA8" }} className="flex-shrink-0" />
+                        : <ChevronDown size={16} strokeWidth={1.5} style={{ color: "#8AADA8" }} className="flex-shrink-0" />}
                     </button>
                     <AnimatePresence>
                       {openFaq === i && (
@@ -1042,8 +1174,8 @@ export default function HomePage() {
                           transition={{ duration: 0.2 }}
                           className="overflow-hidden"
                         >
-                          <p className="text-sm text-slate-500 leading-relaxed pt-3 border-t border-slate-100 mt-3">
-                            {faq.a}
+                          <p className="text-sm leading-relaxed pt-3 mt-3" style={{ color: "#4A6862", borderTop: "1px solid #E5EFED" }}>
+                            {ar ? faq.a : faq.aEn}
                           </p>
                         </motion.div>
                       )}
@@ -1054,39 +1186,138 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* CTA Banner */}
-          <section className="bg-gradient-to-br from-indigo-600 to-violet-700 py-14 px-6 text-center">
-            <div className="max-w-[600px] mx-auto">
-              <h2 className="text-2xl font-extrabold text-white mb-3">
-                {ar ? "تبي تلغي اشتراك معين؟" : "Want to cancel a specific subscription?"}
-              </h2>
-              <p className="text-base text-white/70 mb-6">
-                {ar ? "عندنا أدلة إلغاء مفصلة لأكثر من ٢٠٠ خدمة." : "We have detailed cancellation guides for 200+ services."}
-              </p>
-              <a
-                href="/guides"
-                className="inline-flex items-center gap-2 bg-white text-indigo-700 px-8 py-3.5 rounded-full font-bold text-sm no-underline transition-all hover:-translate-y-0.5 hover:shadow-lg"
-              >
-                <FileText size={16} strokeWidth={1.5} />
-                {ar ? "تصفح أدلة الإلغاء" : "Browse Cancel Guides"}
-              </a>
-            </div>
-          </section>
-
           {/* Footer */}
-          <footer className="bg-slate-900 py-10 px-6">
-            <div className="max-w-[1100px] mx-auto text-center">
-              <div className="nav-logo nav-logo-light justify-center mb-3">
-                yalla<span className="accent">cancel</span>
+          <footer className="pt-14 pb-10 px-6" style={{ background: "#112920" }}>
+            <div className="max-w-[1100px] mx-auto">
+              {/* Top row */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8 pb-10 mb-10" style={{ borderBottom: "1px solid rgba(197,221,217,0.15)" }}>
+                <div>
+                  <div className="nav-logo mb-2" style={{ color: "#C5DDD9" }}>yallacancel</div>
+                  <p className="text-sm" style={{ color: "#8AADA8" }}>
+                    {ar ? "اكتشف اشتراكاتك المنسية والغيها بضغطة" : "Find your forgotten subscriptions and cancel them instantly"}
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-x-10 gap-y-8">
+                  <div>
+                    <p className="text-xs font-bold mb-3 uppercase tracking-widest" style={{ color: "#4A6862" }}>
+                      {ar ? "الخدمة" : "Product"}
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      <a href="/" className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
+                        onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
+                        onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
+                      >
+                        {ar ? "كشف الاشتراكات" : "Subscription Scanner"}
+                      </a>
+                      <a href="/guides" className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
+                        onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
+                        onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
+                      >
+                        {ar ? "ادلة الالغاء" : "Cancel Guides"}
+                      </a>
+                      <a href="/transparency" className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
+                        onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
+                        onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
+                      >
+                        {ar ? "الشفافية" : "Transparency"}
+                      </a>
+                      <a href="/blog" className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
+                        onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
+                        onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
+                      >
+                        {ar ? "المقالات" : "Articles"}
+                      </a>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold mb-3 uppercase tracking-widest" style={{ color: "#4A6862" }}>
+                      {ar ? "ادلة شائعة" : "Popular Guides"}
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      {[
+                        { slug: "cancel-netflix", label: ar ? "الغاء Netflix" : "Cancel Netflix" },
+                        { slug: "cancel-spotify", label: ar ? "الغاء Spotify" : "Cancel Spotify" },
+                        { slug: "cancel-shahid", label: ar ? "الغاء شاهد" : "Cancel Shahid" },
+                        { slug: "cancel-adobe", label: ar ? "الغاء Adobe" : "Cancel Adobe" },
+                        { slug: "cancel-chatgpt", label: ar ? "الغاء ChatGPT" : "Cancel ChatGPT" },
+                        { slug: "cancel-amazon-prime", label: ar ? "الغاء Amazon Prime" : "Cancel Amazon Prime" },
+                        { slug: "cancel-disney-plus", label: ar ? "الغاء Disney+" : "Cancel Disney+" },
+                      ].map(({ slug, label }) => (
+                        <a key={slug} href={`/${slug}.html`} className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
+                          onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
+                          onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
+                        >
+                          {label}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold mb-3 uppercase tracking-widest" style={{ color: "#4A6862" }}>
+                      {ar ? "المزيد من الأدلة" : "More Guides"}
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      {[
+                        { slug: "cancel-stc", label: ar ? "الغاء stc" : "Cancel stc" },
+                        { slug: "cancel-youtube-premium", label: ar ? "الغاء YouTube Premium" : "Cancel YouTube Premium" },
+                        { slug: "cancel-icloud", label: ar ? "الغاء iCloud" : "Cancel iCloud" },
+                        { slug: "cancel-microsoft-365", label: ar ? "الغاء Microsoft 365" : "Cancel Microsoft 365" },
+                        { slug: "cancel-nordvpn", label: ar ? "الغاء NordVPN" : "Cancel NordVPN" },
+                        { slug: "cancel-linkedin-premium", label: ar ? "الغاء LinkedIn" : "Cancel LinkedIn" },
+                        { slug: "cancel-apple-tv-plus", label: ar ? "الغاء Apple TV+" : "Cancel Apple TV+" },
+                      ].map(({ slug, label }) => (
+                        <a key={slug} href={`/${slug}.html`} className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
+                          onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
+                          onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
+                        >
+                          {label}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold mb-3 uppercase tracking-widest" style={{ color: "#4A6862" }}>
+                      {ar ? "بنوك مدعومة" : "Supported Banks"}
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      {["الراجحي", "الاهلي", "بنك الرياض", "الانماء", "البلاد", "ساب"].map((bank) => (
+                        <span key={bank} className="text-sm" style={{ color: "#8AADA8" }}>{bank}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold mb-3 uppercase tracking-widest" style={{ color: "#4A6862" }}>
+                      {ar ? "المقالات" : "Articles"}
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      {[
+                        { slug: "kam-yisrif-sudi-ishtirakaat", label: ar ? "كم يصرف السعودي على الاشتراكات؟" : "Saudi Spending on Subscriptions" },
+                        { slug: "kif-talgi-ishtirakaat-mukhfiya", label: ar ? "كيف تكتشف الاشتراكات المخفية؟" : "How to Find Hidden Subscriptions" },
+                        { slug: "dark-patterns-tatbikat", label: ar ? "كيف التطبيقات تخليك تدفع" : "How Apps Trick You Into Paying" },
+                        { slug: "tawfir-floos-ishtirakaat", label: ar ? "٥ طرق لتوفير فلوس الاشتراكات" : "5 Ways to Save on Subscriptions" },
+                        { slug: "trial-trap-tajriba-majaniya", label: ar ? "فخ التجربة المجانية" : "The Free Trial Trap" },
+                      ].map(({ slug, label }) => (
+                        <a key={slug} href={`/blog/${slug}`} className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}
+                          onMouseEnter={e => (e.currentTarget.style.color = "#C5DDD9")}
+                          onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
+                        >
+                          {label}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-center gap-6 mb-4">
-                <a href="/guides" className="text-sm text-slate-400 hover:text-white transition-colors no-underline">
-                  {ar ? "أدلة الإلغاء" : "Cancel Guides"}
-                </a>
+
+              {/* Bottom row */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                <p className="text-sm" style={{ color: "#8AADA8" }}>
+                  {ar ? "صنع بحب في السعودية" : "Made with love in Saudi Arabia"}
+                </p>
+                <p className="text-xs" style={{ color: "#4A6862" }}>
+                  {ar ? "جميع الحقوق محفوظة © ٢٠٢٥ يلا كنسل" : "© 2025 Yalla Cancel. All rights reserved."}
+                </p>
               </div>
-              <p className="text-sm text-slate-500">
-                {ar ? "صُنع بحب في السعودية" : "Made with love in Saudi Arabia"}
-              </p>
             </div>
           </footer>
         </>

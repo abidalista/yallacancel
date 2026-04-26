@@ -16,12 +16,12 @@ const CATEGORY_COLORS: Record<string, string> = {
   "Shopping": "#8B5CF6",
   "Transport": "#3B82F6",
   "Telecom": "#06B6D4",
-  "Transfers": "#6366F1",
+  "Transfers": "#00A651",
   "Housing": "#EC4899",
-  "Subscriptions": "#F59E0B",
+  "Subscriptions": "#1A3A35",
   "Health": "#14B8A6",
   "Education": "#A855F7",
-  "Other": "#94A3B8",
+  "Other": "#8AADA8",
 };
 
 function formatMonth(dateStr: string): string {
@@ -48,17 +48,17 @@ export default function SpendingBreakdownComponent({ data, locale }: Props) {
       className="bento-card overflow-hidden"
     >
       {/* Header */}
-      <div className="px-6 pt-6 pb-4 border-b border-slate-100">
+      <div className="px-6 pt-6 pb-4" style={{ borderBottom: "1px solid #E5EFED" }}>
         <div className="flex items-center gap-2 mb-1">
-          <BarChart3 size={18} strokeWidth={1.5} className="text-indigo-500" />
-          <h3 className="text-base font-extrabold text-slate-800">
+          <BarChart3 size={18} strokeWidth={1.5} style={{ color: "#00A651" }} />
+          <h3 className="text-base font-extrabold" style={{ color: "#1A3A35" }}>
             {ar ? "تحليل الإنفاق" : "Spending Breakdown"}
           </h3>
           {dateLabel && (
-            <span className="text-xs text-slate-400 font-medium">{dateLabel}</span>
+            <span className="text-xs font-medium" style={{ color: "#8AADA8" }}>{dateLabel}</span>
           )}
         </div>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm" style={{ color: "#4A6862" }}>
           {ar
             ? `${data.totalSpend.toLocaleString()} ريال إجمالي (~${data.monthlyAvg.toLocaleString()} ريال/شهر) من ${data.transactionCount.toLocaleString()} عملية`
             : `${data.totalSpend.toLocaleString()} SAR total (~${data.monthlyAvg.toLocaleString()} SAR/mo) across ${data.transactionCount.toLocaleString()} transactions`}
@@ -67,11 +67,11 @@ export default function SpendingBreakdownComponent({ data, locale }: Props) {
 
       {/* Category table */}
       <div className="px-6 py-4">
-        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+        <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "#8AADA8" }}>
           {ar ? "وين تروح فلوسك" : "Where it goes"}
         </p>
 
-        <div className="grid grid-cols-12 gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider pb-2 border-b border-slate-100">
+        <div className="grid grid-cols-12 gap-2 text-[10px] font-bold uppercase tracking-wider pb-2" style={{ color: "#8AADA8", borderBottom: "1px solid #E5EFED" }}>
           <div className="col-span-4">{ar ? "الفئة" : "Category"}</div>
           <div className="col-span-3 text-left">{ar ? "المجموع" : "Total"}</div>
           <div className="col-span-2 text-center">%</div>
@@ -79,41 +79,42 @@ export default function SpendingBreakdownComponent({ data, locale }: Props) {
         </div>
 
         {data.categories.map((cat) => {
-          const color = CATEGORY_COLORS[cat.nameEn] || "#94A3B8";
+          const color = CATEGORY_COLORS[cat.nameEn] || "#8AADA8";
           return (
             <div
               key={cat.nameEn}
-              className="grid grid-cols-12 gap-2 items-center py-2.5 border-b border-slate-50 last:border-0"
+              className="grid grid-cols-12 gap-2 items-center py-2.5 last:border-0"
+              style={{ borderBottom: "1px solid #EDF5F3" }}
             >
               <div className="col-span-4 flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: color }} />
-                <span className="text-sm font-semibold text-slate-700 truncate">
+                <span className="text-sm font-semibold truncate" style={{ color: "#1A3A35" }}>
                   {ar ? cat.name : cat.nameEn}
                 </span>
               </div>
 
               <div className="col-span-3">
-                <span className="text-sm font-bold text-slate-800">
+                <span className="text-sm font-bold" style={{ color: "#1A3A35" }}>
                   {cat.total.toLocaleString()}
                 </span>
-                <span className="text-[10px] text-slate-400 mr-1 ml-1">{ar ? "ريال" : "SAR"}</span>
+                <span className="text-[10px] mr-1 ml-1" style={{ color: "#8AADA8" }}>{ar ? "ريال" : "SAR"}</span>
               </div>
 
               <div className="col-span-2 flex items-center gap-1.5">
-                <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "#E5EFED" }}>
                   <div
                     className="h-full rounded-full transition-all"
                     style={{ width: `${Math.min(cat.percent, 100)}%`, background: color }}
                   />
                 </div>
-                <span className="text-xs font-bold text-slate-500 w-8 text-left">{cat.percent}%</span>
+                <span className="text-xs font-bold w-8 text-left" style={{ color: "#4A6862" }}>{cat.percent}%</span>
               </div>
 
               <div className="col-span-3">
-                <span className="text-sm text-slate-600">
+                <span className="text-sm" style={{ color: "#4A6862" }}>
                   {cat.monthlyAvg.toLocaleString()}
                 </span>
-                <span className="text-[10px] text-slate-400 mr-1 ml-1">{ar ? "ريال/شهر" : "/mo"}</span>
+                <span className="text-[10px] mr-1 ml-1" style={{ color: "#8AADA8" }}>{ar ? "ريال/شهر" : "/mo"}</span>
               </div>
             </div>
           );
@@ -123,15 +124,16 @@ export default function SpendingBreakdownComponent({ data, locale }: Props) {
       {/* Key takeaways */}
       {data.takeaways.length > 0 && (
         <div className="px-6 pb-6 pt-2">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+          <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "#8AADA8" }}>
             {ar ? "ملاحظات مهمة" : "Key takeaways"}
           </p>
           <div className="space-y-2.5">
             {data.takeaways.map((t, i) => (
               <div key={i} className="flex items-start gap-2.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 flex-shrink-0" />
+                <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: "#00A651" }} />
                 <p
-                  className="text-sm text-slate-600 leading-relaxed"
+                  className="text-sm leading-relaxed"
+                  style={{ color: "#4A6862" }}
                   dangerouslySetInnerHTML={{ __html: ar ? t.ar : t.en }}
                 />
               </div>
