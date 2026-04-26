@@ -124,8 +124,8 @@ export default function PaywallModal({ locale, onClose, onPaymentSuccess }: Payw
                 <Mail size={14} strokeWidth={1.5} className="flex-shrink-0" />
                 <span>
                   {ar
-                    ? "حط ايميلك الصحيح عشان يوصلك الوصل والتقرير"
-                    : "Use your real email — your receipt and report will be sent there"}
+                    ? "حط ايميلك الصحيح عشان يوصلك التقرير"
+                    : "Use your real email — your report will be sent there"}
                 </span>
               </div>
               <WhopCheckoutEmbed
