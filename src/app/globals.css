@@ -78,7 +78,7 @@
     background-color: #EDF5F3;
     color: var(--color-text-primary);
     -webkit-font-smoothing: antialiased;
-    line-height: 1.6;
+    line-height: 1.8;
   }
 
   img { max-width: 100%; }
@@ -213,7 +213,7 @@
     font-size: clamp(1.8rem, 4vw, 3rem);
     font-weight: 800;
     margin-bottom: 16px;
-    line-height: 1.15;
+    line-height: 1.35;
     letter-spacing: -0.025em;
     color: #1A3A35;
   }
@@ -223,7 +223,7 @@
     color: var(--color-text-secondary);
     max-width: 600px;
     margin: 0 auto 48px;
-    line-height: 1.7;
+    line-height: 1.9;
   }
 
   /* ── Logo ── */

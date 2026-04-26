@@ -908,7 +908,7 @@ export default function HomePage() {
                 <span className="section-label inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full mb-5">
                   <Shield size={12} strokeWidth={1.5} /> {ar ? "اشتراكاتك المنسية تكلفك اكثر مما تتوقع" : "Your forgotten subscriptions cost more than you think"}
                 </span>
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 max-w-3xl mx-auto leading-[1.1]" style={{ color: "#1A3A35" }}>
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 max-w-3xl mx-auto leading-[1.3]" style={{ color: "#1A3A35" }}>
                   {ar
                     ? "الغي اشتراكاتك اللي ما تستخدمها ووفر فلوسك"
                     : "Cancel your unused subscriptions and save money"}
