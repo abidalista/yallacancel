@@ -3,9 +3,12 @@
 import { motion } from "framer-motion";
 import { ExternalLink, FileText, AlertTriangle } from "lucide-react";
 import { Subscription, SubscriptionStatus } from "@/lib/types";
-import posthog from "posthog-js";
 import { getCancelInfo, CancelDifficulty } from "@/lib/cancel-db";
-import MerchantLogo from "@/components/MerchantLogo";
+
+const LOGO = (domain: string) =>
+  `https://logo.clearbit.com/${domain}`;
+const FAV = (domain: string) =>
+  `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
 
 const FREQ_LABELS: Record<string, { ar: string; en: string }> = {
   weekly:    { ar: "أسبوعي",    en: "Weekly" },
@@ -15,8 +18,9 @@ const FREQ_LABELS: Record<string, { ar: string; en: string }> = {
 };
 
 const DIFFICULTY_CONFIG: Record<CancelDifficulty, { ar: string; en: string; cls: string }> = {
-  easy: { ar: "سهل", en: "Easy", cls: "bg-emerald-50 text-emerald-600 border-emerald-200" },
-  hard: { ar: "صعب", en: "Hard", cls: "bg-red-50 text-red-600 border-red-200" },
+  easy:   { ar: "سهل",   en: "Easy",   cls: "bg-emerald-50 text-emerald-600 border-emerald-200" },
+  medium: { ar: "متوسط", en: "Medium", cls: "bg-amber-50 text-amber-600 border-amber-200" },
+  hard:   { ar: "صعب",   en: "Hard",   cls: "bg-red-50 text-red-600 border-red-200" },
 };
 
 interface SubscriptionCardProps {
@@ -49,7 +53,7 @@ export default function SubscriptionCard({
   const ar = locale === "ar";
   const freq = FREQ_LABELS[sub.frequency];
   const cancelInfo = getCancelInfo(sub.name);
-  const difficulty = cancelInfo?.difficulty || "easy";
+  const difficulty = cancelInfo?.difficulty || "medium";
   const diffCfg = DIFFICULTY_CONFIG[difficulty];
   const domain = cancelInfo?.domain || "";
   const hasCancelLink = cancelInfo?.cancelUrl;
@@ -66,34 +70,53 @@ export default function SubscriptionCard({
       <div className="p-5">
         <div className="flex items-start gap-4">
           {/* Logo */}
-          <MerchantLogo name={sub.name} domain={domain} size={44} />
+          <div className="flex-shrink-0">
+            {domain ? (
+              <img
+                src={LOGO(domain)}
+                alt={sub.name}
+                className="w-11 h-11 rounded-xl bg-slate-50 p-1 object-contain"
+                onError={(e) => {
+                  const img = e.currentTarget;
+                  if (!img.dataset.fallback) {
+                    img.dataset.fallback = "1";
+                    img.src = FAV(domain);
+                  }
+                }}
+              />
+            ) : (
+              <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center text-sm font-bold text-indigo-500">
+                {sub.name[0]}
+              </div>
+            )}
+          </div>
 
           {/* Details */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
-              <span className={`font-bold text-base ${privacyMode ? "blur-sm" : ""}`} style={{ color: "#1A3A35" }}>
+              <span className={`font-bold text-base text-slate-800 ${privacyMode ? "blur-sm" : ""}`}>
                 {sub.name}
               </span>
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${diffCfg.cls}`}>
                 {ar ? diffCfg.ar : diffCfg.en}
               </span>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "#E5EFED", color: "#4A6862" }}>
+              <span className="text-[10px] font-semibold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">
                 {ar ? freq?.ar : freq?.en}
               </span>
             </div>
 
             {/* Amount — always left-aligned */}
             <div className="flex items-baseline gap-3 mb-1.5" dir="ltr" style={{ textAlign: "left" }}>
-              <span className="text-xl font-extrabold" style={{ color: "#1A3A35" }}>
-                {sub.amount.toLocaleString(ar ? "ar-SA" : "en-SA")} <span className="text-xs font-semibold" style={{ color: "#8AADA8" }}>{ar ? "ريال" : "SAR"}</span>
+              <span className="text-xl font-extrabold text-slate-900">
+                {sub.amount.toLocaleString(ar ? "ar-SA" : "en-SA")} <span className="text-xs font-semibold text-slate-400">{ar ? "ريال" : "SAR"}</span>
               </span>
-              <span className="text-xs" style={{ color: "#8AADA8" }}>
+              <span className="text-xs text-slate-400">
                 = {sub.monthlyEquivalent.toFixed(0)} {ar ? "ريال/شهر" : "SAR/mo"} = {sub.yearlyEquivalent.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"}
               </span>
             </div>
 
             {/* Meta — always left-aligned */}
-            <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs" dir="ltr" style={{ textAlign: "left", color: "#8AADA8" }}>
+            <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-400" dir="ltr" style={{ textAlign: "left" }}>
               <span>
                 {ar ? "آخر خصم:" : "Last:"}{" "}
                 <span className={privacyMode ? "blur-sm" : ""}>
@@ -122,13 +145,12 @@ export default function SubscriptionCard({
       </div>
 
       {/* Action bar */}
-      <div className="px-5 py-3 flex items-center gap-2.5" style={{ borderTop: "1px solid #E5EFED", background: "#EDF5F3" }}>
+      <div className="border-t border-slate-100 bg-slate-50/50 px-5 py-3 flex items-center gap-2.5">
         {hasCancelLink && (
           <a
             href={cancelInfo!.cancelUrl}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => posthog.capture("cancel_link_clicked", { locale, subscription_name: sub.name })}
             className="inline-flex items-center gap-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-4 py-2 rounded-full transition-all hover:-translate-y-0.5 no-underline"
           >
             <ExternalLink size={12} strokeWidth={1.5} />
@@ -139,11 +161,7 @@ export default function SubscriptionCard({
         {hasGuide && (
           <a
             href={`/${cancelInfo!.guideSlug}.html`}
-            onClick={() => posthog.capture("cancel_guide_opened", { locale, subscription_name: sub.name })}
-            className="inline-flex items-center gap-1.5 bg-white text-xs font-bold px-4 py-2 rounded-full transition-all no-underline hover:-translate-y-0.5"
-            style={{ border: "1px solid #E5EFED", color: "#4A6862" }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = "#00A651"; e.currentTarget.style.color = "#1A3A35"; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = "#E5EFED"; e.currentTarget.style.color = "#4A6862"; }}
+            className="inline-flex items-center gap-1.5 bg-white border border-slate-200 hover:border-indigo-300 text-slate-500 hover:text-indigo-600 text-xs font-bold px-4 py-2 rounded-full transition-all no-underline"
           >
             <FileText size={12} strokeWidth={1.5} />
             {ar ? "دليل الإلغاء" : "Cancel Guide"}
@@ -154,20 +172,22 @@ export default function SubscriptionCard({
 
         <div className="flex gap-1.5">
           <button
-            onClick={() => { posthog.capture("subscription_marked_keep", { locale, subscription_name: sub.name }); onStatusChange(sub.id, "keep"); }}
-            className="text-[10px] font-bold px-3 py-1.5 rounded-full border transition-all"
-            style={sub.status === "keep"
-              ? { background: "#10B981", color: "white", borderColor: "#10B981" }
-              : { background: "white", color: "#8AADA8", borderColor: "#E5EFED" }}
+            onClick={() => onStatusChange(sub.id, "keep")}
+            className={`text-[10px] font-bold px-3 py-1.5 rounded-full border transition-all ${
+              sub.status === "keep"
+                ? "bg-emerald-500 text-white border-emerald-500"
+                : "bg-white text-slate-400 border-slate-200 hover:border-emerald-300 hover:text-emerald-600"
+            }`}
           >
-            {ar ? "خليه" : "Keep"}
+            {ar ? "خلّيه" : "Keep"}
           </button>
           <button
-            onClick={() => { posthog.capture("subscription_marked_cancel", { locale, subscription_name: sub.name }); onStatusChange(sub.id, "cancel"); }}
-            className="text-[10px] font-bold px-3 py-1.5 rounded-full border transition-all"
-            style={sub.status === "cancel"
-              ? { background: "#EF4444", color: "white", borderColor: "#EF4444" }
-              : { background: "white", color: "#8AADA8", borderColor: "#E5EFED" }}
+            onClick={() => onStatusChange(sub.id, "cancel")}
+            className={`text-[10px] font-bold px-3 py-1.5 rounded-full border transition-all ${
+              sub.status === "cancel"
+                ? "bg-red-500 text-white border-red-500"
+                : "bg-white text-slate-400 border-slate-200 hover:border-red-300 hover:text-red-600"
+            }`}
           >
             {ar ? "الغيه" : "Cancel"}
           </button>
