@@ -21,8 +21,9 @@ import {
 import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, Subscription, SubscriptionStatus, Transaction, BankId } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
+import { logoUrl as LOGO, faviconUrl as FAV } from "@/lib/logo";
 
-type Step = "landing" | "analyzing" | "identify" | "results";
+type Step = "landing" | "analyzing" | "results";
 
 interface ParseError {
   type: "no_transactions" | "file_error" | "format_error";
@@ -37,11 +38,6 @@ interface ParseError {
   failedFiles: string[];
   warnings: string[];
 }
-
-const LOGO = (domain: string) =>
-  `https://logo.clearbit.com/${domain}`;
-const FAV = (domain: string) =>
-  `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
 
 function BrandLogo({ domain, alt, className }: { domain: string; alt: string; className?: string }) {
   return (
@@ -178,14 +174,13 @@ export default function HomePage() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [txCount, setTxCount] = useState(0);
-  const [analyzeTimer, setAnalyzeTimer] = useState(0);
   const [analyzeStatus, setAnalyzeStatus] = useState("");
   const [spendingData, setSpendingData] = useState<SpendingData | null>(null);
   const [manualBankId, setManualBankId] = useState<BankId | null>(null);
   const [pasteText, setPasteText] = useState("");
   const [retryFiles, setRetryFiles] = useState<File[]>([]);
   const heroRef = useRef<HTMLElement>(null);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
 
   const ar = locale === "ar";
 
@@ -256,15 +251,9 @@ export default function HomePage() {
   async function handleScan(files: File[], bankOverride?: BankId) {
     setParseError(null);
     setStep("analyzing");
-    setAnalyzeTimer(0);
     setTxCount(0);
     setAnalyzeStatus(ar ? "نقرأ الملفات..." : "Reading files...");
     window.scrollTo({ top: 0, behavior: "smooth" });
-
-    const start = Date.now();
-    timerRef.current = setInterval(() => {
-      setAnalyzeTimer(Math.floor((Date.now() - start) / 1000));
-    }, 1000);
 
     try {
       let allTx: Transaction[] = [];
@@ -290,7 +279,7 @@ export default function HomePage() {
       }
 
       if (allTx.length === 0) {
-        if (timerRef.current) clearInterval(timerRef.current);
+
         setParseError(buildParseError(failedFiles, allWarnings));
         setRetryFiles(files);
         setStep("landing");
@@ -302,17 +291,14 @@ export default function HomePage() {
 
       const result = analyzeTransactions(allTx);
       const spending = analyzeSpending(allTx);
-      if (timerRef.current) clearInterval(timerRef.current);
 
       setReport(result);
       setSpendingData(spending);
 
-      // Go straight to results — everything is a subscription by default
       setStep("results");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       console.error("Scan failed:", err);
-      if (timerRef.current) clearInterval(timerRef.current);
       setParseError({
         type: "file_error",
         message: "Something went wrong",
@@ -346,27 +332,17 @@ export default function HomePage() {
   }
 
   async function handleTestStatement() {
-    // ── HARDCODED FALLBACK: proves the UI renders results correctly ──
-    // If fetch fails (e.g. static export without server), use hardcoded data
     setParseError(null);
     setStep("analyzing");
-    setAnalyzeTimer(0);
     setTxCount(0);
     setAnalyzeStatus(ar ? "نقرأ الملفات..." : "Reading files...");
     window.scrollTo({ top: 0, behavior: "smooth" });
 
-    const start = Date.now();
-    const timer = setInterval(() => {
-      setAnalyzeTimer(Math.floor((Date.now() - start) / 1000));
-    }, 1000);
-
     try {
-      // Try fetching the real file first
       const res = await fetch("/test-statement.csv");
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const text = await res.text();
       if (!text || text.length < 50) throw new Error("Empty response");
-      clearInterval(timer);
 
       console.log("[test] Fetched test-statement.csv, length:", text.length);
       const bankId = detectBank(text);
@@ -388,20 +364,16 @@ export default function HomePage() {
 
       setReport(result);
       setSpendingData(spending);
-
-      const suspicious = result.subscriptions.filter((s) => s.confidence === "suspicious");
-      setStep(suspicious.length > 0 ? "identify" : "results");
+      setStep("results");
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     } catch (fetchErr) {
       console.warn("[test] Fetch/parse failed, using hardcoded data:", fetchErr);
     }
 
-    // ── Hardcoded fallback data ──
     setTxCount(72);
     setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
     await new Promise((r) => setTimeout(r, 1500));
-    clearInterval(timer);
 
     const now = "2026-02-27";
     const makeSub = (
@@ -470,31 +442,6 @@ export default function HomePage() {
 
     setReport(hardcodedReport);
     setSpendingData(hardcodedSpending);
-    // Go straight to results — everything is a subscription by default
-    setStep("results");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  function handleIdentifyConfirm(id: string, choice: "subscription" | "not" | "unknown") {
-    if (!report) return;
-    setReport({
-      ...report,
-      subscriptions: report.subscriptions.map((s) => {
-        if (s.id !== id) return s;
-        if (choice === "subscription") return { ...s, userConfirmed: true, confidence: "confirmed" as const };
-        if (choice === "not") return { ...s, userConfirmed: true, status: "keep" as const };
-        return { ...s, userConfirmed: true };
-      }),
-    });
-  }
-
-  function handleFinishIdentify() {
-    // Don't filter out any items — keep all subscriptions visible
-    setStep("results");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  function handleSkipIdentify() {
     setStep("results");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -518,7 +465,6 @@ export default function HomePage() {
     setPasteText("");
     setRetryFiles([]);
     setTxCount(0);
-    setAnalyzeTimer(0);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -603,99 +549,6 @@ export default function HomePage() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* ── IDENTIFY ── */}
-      {step === "identify" && report && (() => {
-        const confirmed = report.subscriptions.filter((s) => s.confidence === "confirmed");
-        const suspicious = report.subscriptions.filter((s) => s.confidence === "suspicious");
-        return (
-          <div className="min-h-screen bg-[#F8FAFF] pt-24 pb-16 px-6">
-            <div className="max-w-[700px] mx-auto">
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                <p className="text-indigo-500 font-bold text-sm mb-2">
-                  {ar ? `لقينا ${confirmed.length} اشتراكات مؤكدة` : `Found ${confirmed.length} clear subscriptions`}
-                </p>
-                <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 mb-2">
-                  {ar ? `ساعدنا نتعرف على ${suspicious.length} إضافية` : `Help identify ${suspicious.length} more`}
-                </h1>
-                <div className="h-1 bg-indigo-100 rounded-full mb-6">
-                  <div className="h-1 bg-indigo-500 rounded-full" style={{ width: "60%" }} />
-                </div>
-                <p className="text-sm text-slate-500 mb-8">
-                  {ar
-                    ? "لقينا بعض العمليات المتكررة مو متأكدين منها. ساعدنا نضيفها لمجموعك:"
-                    : "We found some recurring charges we're not sure about. Help us include them in your total:"}
-                </p>
-              </motion.div>
-
-              <div className="space-y-4 mb-8">
-                {suspicious.map((sub, i) => (
-                  <motion.div
-                    key={sub.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: i * 0.05 }}
-                    className="bento-card p-5"
-                  >
-                    <div className="flex items-start justify-between mb-1">
-                      <div>
-                        <span className="font-bold text-base text-slate-800">{sub.name}</span>
-                      </div>
-                      <span className="font-bold text-base text-slate-900">
-                        {sub.amount.toFixed(0)} {ar ? "ريال/شهر" : "SAR/monthly"}
-                      </span>
-                    </div>
-                    {sub.rawDescription && (
-                      <p className="text-xs text-slate-400 mb-3">{sub.rawDescription}</p>
-                    )}
-                    <div className="flex gap-2.5">
-                      {(["subscription", "not", "unknown"] as const).map((choice) => {
-                        const labels = {
-                          subscription: ar ? "اشتراك" : "Subscription",
-                          not: ar ? "مو اشتراك" : "Not a sub",
-                          unknown: ar ? "ما أدري" : "Don't know",
-                        };
-                        const isActive =
-                          (choice === "subscription" && sub.userConfirmed && sub.confidence === "confirmed") ||
-                          (choice === "not" && sub.userConfirmed && sub.status === "keep") ||
-                          (choice === "unknown" && sub.userConfirmed && sub.confidence === "suspicious" && sub.status !== "keep");
-                        return (
-                          <button
-                            key={choice}
-                            onClick={() => handleIdentifyConfirm(sub.id, choice)}
-                            className={`text-xs font-bold px-4 py-2 rounded-full transition-all ${
-                              isActive
-                                ? "bg-indigo-500 text-white"
-                                : "bg-white border border-slate-200 text-slate-500 hover:border-indigo-300"
-                            }`}
-                          >
-                            {labels[choice]}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={handleFinishIdentify}
-                  className="btn-primary flex-1"
-                >
-                  {ar ? "شوف تقريري" : "Show my report"} <ArrowRight size={16} strokeWidth={1.5} />
-                </button>
-                <button
-                  onClick={handleSkipIdentify}
-                  className="btn-ghost"
-                >
-                  {ar ? `تخطى (${confirmed.length})` : `Skip (${confirmed.length})`}
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
 
       {/* ── RESULTS ── */}
       {step === "results" && report && (() => {

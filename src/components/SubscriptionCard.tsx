@@ -4,11 +4,7 @@ import { motion } from "framer-motion";
 import { ExternalLink, FileText, AlertTriangle } from "lucide-react";
 import { Subscription, SubscriptionStatus } from "@/lib/types";
 import { getCancelInfo, CancelDifficulty } from "@/lib/cancel-db";
-
-const LOGO = (domain: string) =>
-  `https://logo.clearbit.com/${domain}`;
-const FAV = (domain: string) =>
-  `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+import { logoUrl as LOGO, faviconUrl as FAV } from "@/lib/logo";
 
 const FREQ_LABELS: Record<string, { ar: string; en: string }> = {
   weekly:    { ar: "أسبوعي",    en: "Weekly" },
@@ -105,8 +101,7 @@ export default function SubscriptionCard({
               </span>
             </div>
 
-            {/* Amount — always left-aligned */}
-            <div className="flex items-baseline gap-3 mb-1.5" dir="ltr" style={{ textAlign: "left" }}>
+            <div className="flex items-baseline gap-3 mb-1.5 ltr-always">
               <span className="text-xl font-extrabold text-slate-900">
                 {sub.amount.toLocaleString(ar ? "ar-SA" : "en-SA")} <span className="text-xs font-semibold text-slate-400">{ar ? "ريال" : "SAR"}</span>
               </span>
@@ -115,8 +110,7 @@ export default function SubscriptionCard({
               </span>
             </div>
 
-            {/* Meta — always left-aligned */}
-            <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-400" dir="ltr" style={{ textAlign: "left" }}>
+            <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-400 ltr-always">
               <span>
                 {ar ? "آخر خصم:" : "Last:"}{" "}
                 <span className={privacyMode ? "blur-sm" : ""}>
