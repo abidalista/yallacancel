@@ -8,6 +8,7 @@ import {
   RotateCcw, Loader2,
 } from "lucide-react";
 import Header from "@/components/Header";
+import FundingTicker from "@/components/FundingTicker";
 import UploadZone from "@/components/UploadZone";
 import AuditReport from "@/components/AuditReport";
 import PaywallModal from "@/components/PaywallModal";
@@ -476,6 +477,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFF]">
+      <FundingTicker locale={locale} />
       <Header
         locale={locale}
         onLocaleChange={setLocale}

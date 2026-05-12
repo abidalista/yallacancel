@@ -251,6 +251,15 @@
   100% { background-position: -200% 0; }
 }
 
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.ticker-track {
+  animation: ticker-scroll 30s linear infinite;
+}
+
 /* ── Mobile ── */
 @media (max-width: 768px) {
   .section-title { font-size: 1.5rem; }
