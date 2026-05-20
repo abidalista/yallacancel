@@ -436,7 +436,7 @@ export default function GuidesPage() {
         <a href="/" className="no-underline" style={{ direction: "ltr", unicodeBidi: "bidi-override" }}>
           <span className="nav-logo nav-logo-light text-lg justify-center">yalla<span className="accent">cancel</span></span>
         </a>
-        <p className="text-xs text-white/30 mt-3">&copy; ٢٠٢٦ Yalla Cancel</p>
+        <p className="text-xs text-white/30 mt-3">&copy; {new Date().getFullYear()} YallaCancel</p>
       </footer>
     </div>
   );

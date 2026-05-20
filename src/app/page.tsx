@@ -967,7 +967,7 @@ export default function HomePage() {
                 </a>
               </div>
               <p className="text-sm text-slate-500">
-                {ar ? "صُنع بحب في السعودية" : "Made with love in Saudi Arabia"}
+                © {new Date().getFullYear()} YallaCancel · {ar ? "صُنع بحب في السعودية" : "Made with love in Saudi Arabia"}
               </p>
             </div>
           </footer>
