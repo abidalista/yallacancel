@@ -7,6 +7,13 @@ export const metadata: Metadata = {
     "ارفع كشف حسابك البنكي واكتشف كل الاشتراكات المتكررة اللي تسحب فلوسك بدون ما تدري. يدعم جميع البنوك السعودية.",
   keywords:
     "اشتراكات, بنوك سعودية, الغاء اشتراكات, كشف حساب, الراجحي, الأهلي, يلا كانسل, yalla cancel, cancel subscription saudi",
+  alternates: {
+    canonical: "https://yallacancel.com",
+    languages: {
+      "ar-SA": "https://yallacancel.com",
+      "en": "https://yallacancel.com",
+    },
+  },
   openGraph: {
     title: "Yalla Cancel — اشتراكاتك تحت السيطرة",
     description: "لا تترك تطبيقاتك تسحب من رصيدك. تابع والغي اشتراكاتك من مكان واحد.",
@@ -47,6 +54,24 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              name: "Yalla Cancel",
+              alternateName: "يلا كانسل",
+              url: "https://yallacancel.com",
+              applicationCategory: "FinanceApplication",
+              operatingSystem: "Web",
+              offers: { "@type": "Offer", price: "0", priceCurrency: "SAR" },
+              description: "اكتشف اشتراكاتك المخفية والغيها بضغطة زر. يدعم جميع البنوك السعودية.",
+              inLanguage: ["ar", "en"],
+              areaServed: { "@type": "Country", name: "Saudi Arabia" },
+            }),
+          }}
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
