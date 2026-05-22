@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import FundingTicker from "@/components/FundingTicker";
+import AddToHomeScreen from "@/components/AddToHomeScreen";
 import UploadZone from "@/components/UploadZone";
 import AuditReport from "@/components/AuditReport";
 import PaywallModal from "@/components/PaywallModal";
@@ -483,6 +484,8 @@ export default function HomePage() {
         onLocaleChange={setLocale}
         onLogoClick={() => { setStep("landing"); setReport(null); scrollToTop(); }}
       />
+
+      <AddToHomeScreen locale={locale} />
 
       {showPaywall && (
         <PaywallModal locale={locale} onClose={() => setShowPaywall(false)} />
