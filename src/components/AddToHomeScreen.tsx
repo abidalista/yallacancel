@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Share, PlusSquare, Check } from "lucide-react";
+import { X, Share, PlusSquare, Check, Smartphone } from "lucide-react";
 
 interface AddToHomeScreenProps {
   locale: "ar" | "en";
@@ -30,15 +30,21 @@ const STORAGE_KEY = "yc-a2hs-dismissed";
 
 export default function AddToHomeScreen({ locale }: AddToHomeScreenProps) {
   const [show, setShow] = useState(false);
+  const [hidden, setHidden] = useState(true);
   const ar = locale === "ar";
   const ios = isIos();
 
   useEffect(() => {
     if (isStandalone()) return;
-    if (typeof localStorage !== "undefined" && localStorage.getItem(STORAGE_KEY)) return;
-    if (!isIos() && !isAndroid()) return;
-    const timer = setTimeout(() => setShow(true), 4000);
-    return () => clearTimeout(timer);
+    if (typeof localStorage !== "undefined" && localStorage.getItem(STORAGE_KEY)) {
+      setHidden(true);
+      return;
+    }
+    setHidden(false);
+    if (isIos() || isAndroid()) {
+      const timer = setTimeout(() => setShow(true), 4000);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   function dismiss(permanent: boolean) {
@@ -89,6 +95,7 @@ export default function AddToHomeScreen({ locale }: AddToHomeScreenProps) {
       ];
 
   return (
+    <>
     <AnimatePresence>
       {show && (
         <>
@@ -165,5 +172,19 @@ export default function AddToHomeScreen({ locale }: AddToHomeScreenProps) {
         </>
       )}
     </AnimatePresence>
+
+      {!hidden && !show && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1, duration: 0.3 }}
+          onClick={() => setShow(true)}
+          className="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:-translate-y-0.5 transition-all"
+          title={ar ? "أضف للشاشة الرئيسية" : "Add to home screen"}
+        >
+          <Smartphone size={20} strokeWidth={1.5} />
+        </motion.button>
+      )}
+    </>
   );
 }
