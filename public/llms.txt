@@ -1,0 +1,30 @@
+# YallaCancel (يلا كانسل)
+
+> A free subscription audit tool for Saudi Arabia. Upload your bank statement and instantly discover all hidden recurring charges.
+
+## What it does
+
+YallaCancel analyzes bank statements (CSV and PDF) from all major Saudi banks to find recurring subscriptions. It runs entirely in the browser — no data is uploaded to any server.
+
+## Supported banks
+
+Al Rajhi, Al Ahli (SNB), Riyad Bank, Al Bilad, Al Inma, SABB, Banque Saudi Fransi, Arab National Bank, STC Bank.
+
+## Key features
+
+- Detects 120+ subscription services (Netflix, Spotify, Shahid, Spotify, Adobe, etc.)
+- Arabic and English bilingual interface
+- Cancel guides for 230+ services with direct cancel links
+- Spending breakdown by category
+- Privacy-first: all processing happens client-side
+
+## Pages
+
+- Homepage: https://yallacancel.com
+- Cancel Guides: https://yallacancel.com/guides
+- Individual cancel guides: https://yallacancel.com/cancel-{service-name}.html
+
+## Contact
+
+- Website: https://yallacancel.com
+- Email: theamsh@gmail.com

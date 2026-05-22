@@ -54,6 +54,9 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <head>
+        <link rel="canonical" href="https://yallacancel.com" />
+        <link rel="alternate" hrefLang="ar-SA" href="https://yallacancel.com" />
+        <link rel="alternate" hrefLang="en" href="https://yallacancel.com" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

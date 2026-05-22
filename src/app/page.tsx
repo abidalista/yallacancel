@@ -936,6 +936,26 @@ export default function HomePage() {
             </div>
           </section>
 
+          {/* Sources — external citation links */}
+          <section className="bg-[#F8FAFF] py-12 px-6">
+            <div className="max-w-[700px] mx-auto text-center">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
+                {ar ? "مصادر ومراجع" : "Sources & References"}
+              </p>
+              <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-slate-400">
+                <a href="https://www.sama.gov.sa" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors no-underline">
+                  {ar ? "البنك المركزي السعودي (ساما)" : "Saudi Central Bank (SAMA)"}
+                </a>
+                <a href="https://www.mcit.gov.sa" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors no-underline">
+                  {ar ? "وزارة الاتصالات وتقنية المعلومات" : "MCIT Saudi Arabia"}
+                </a>
+                <a href="https://www.vision2030.gov.sa" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors no-underline">
+                  {ar ? "رؤية السعودية ٢٠٣٠" : "Saudi Vision 2030"}
+                </a>
+              </div>
+            </div>
+          </section>
+
           {/* CTA Banner */}
           <section className="bg-gradient-to-br from-indigo-600 to-violet-700 py-14 px-6 text-center">
             <div className="max-w-[600px] mx-auto">
