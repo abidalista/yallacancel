@@ -346,11 +346,8 @@ export default function HomePage() {
       const text = await res.text();
       if (!text || text.length < 50) throw new Error("Empty response");
 
-      console.log("[test] Fetched test-statement.csv, length:", text.length);
       const bankId = detectBank(text);
-      console.log("[test] Detected bank:", bankId);
       const parsed = parseCSVRobust(text, bankId);
-      console.log("[test] Parsed transactions:", parsed.transactions.length);
 
       if (parsed.transactions.length === 0) {
         throw new Error("Parser returned 0 transactions");
@@ -362,7 +359,6 @@ export default function HomePage() {
 
       const result = analyzeTransactions(parsed.transactions);
       const spending = analyzeSpending(parsed.transactions);
-      console.log("[test] Subscriptions found:", result.subscriptions.length);
 
       setReport(result);
       setSpendingData(spending);
@@ -370,7 +366,7 @@ export default function HomePage() {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     } catch (fetchErr) {
-      console.warn("[test] Fetch/parse failed, using hardcoded data:", fetchErr);
+      // Fetch/parse failed — fall through to hardcoded data
     }
 
     setTxCount(72);
