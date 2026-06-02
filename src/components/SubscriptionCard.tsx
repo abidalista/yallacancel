@@ -164,10 +164,10 @@ export default function SubscriptionCard({
 
         <div className="flex-1" />
 
-        <div className="flex gap-1.5">
+        <div className="flex gap-2">
           <button
             onClick={() => onStatusChange(sub.id, "keep")}
-            className={`text-[10px] font-bold px-3 py-1.5 rounded-full border transition-all ${
+            className={`text-xs font-bold px-4 py-2.5 rounded-full border transition-all ${
               sub.status === "keep"
                 ? "bg-emerald-500 text-white border-emerald-500"
                 : "bg-white text-slate-400 border-slate-200 hover:border-emerald-300 hover:text-emerald-600"
@@ -177,7 +177,7 @@ export default function SubscriptionCard({
           </button>
           <button
             onClick={() => onStatusChange(sub.id, "cancel")}
-            className={`text-[10px] font-bold px-3 py-1.5 rounded-full border transition-all ${
+            className={`text-xs font-bold px-4 py-2.5 rounded-full border transition-all ${
               sub.status === "cancel"
                 ? "bg-red-500 text-white border-red-500"
                 : "bg-white text-slate-400 border-slate-200 hover:border-red-300 hover:text-red-600"
