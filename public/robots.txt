@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Allow: /guides/
+Allow: /blog/
 
 Sitemap: https://yallacancel.com/sitemap.xml
