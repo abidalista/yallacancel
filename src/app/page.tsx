@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Shield, Zap, Link2, BarChart3, FileText, ArrowRight,
   Lock, ChevronDown, ChevronUp, Clock, CheckCircle2,
-  RotateCcw, Loader2,
+  RotateCcw, Loader2, Upload, Eye,
 } from "lucide-react";
 import Header from "@/components/Header";
 import FundingTicker from "@/components/FundingTicker";
@@ -76,36 +76,30 @@ const PROBLEM_STATS = [
   { num: "٥,٠٠٠ ريال", text: "متوسط التوفير المحتمل سنوياً" },
 ];
 
-const FEATURES = [
+const STEPS = [
   {
-    icon: Shield,
-    title: "خصوصية كاملة",
-    desc: "كل التحليل يتم على جهازك — ما نحتفظ بأي بيانات.",
+    num: "١",
+    icon: Upload,
+    titleAr: "ارفع كشف حسابك",
+    titleEn: "Upload your statement",
+    descAr: "نزّل كشف حسابك من تطبيق بنكك (CSV أو PDF). أو جرّب بمثال جاهز بدون ملف.",
+    descEn: "Download your statement from your banking app (CSV or PDF). Or try the demo — no file needed.",
   },
   {
-    icon: Lock,
-    title: "يفهم بنكك",
-    desc: "يقرأ كشوفات ٩ بنوك سعودية ويفكك الرموز الغريبة تلقائياً.",
+    num: "٢",
+    icon: Eye,
+    titleAr: "شوف كل اشتراكاتك",
+    titleEn: "See every subscription",
+    descAr: "نحلل عملياتك ونطلع لك كل اشتراك — المبلغ، التكرار، وأول وآخر خصم.",
+    descEn: "We analyze your transactions and surface every subscription — amount, frequency, and charge history.",
   },
   {
-    icon: Zap,
-    title: "نتيجة في ثوانٍ",
-    desc: "ارفع الكشف وخلال ثوانٍ تشوف كل اشتراكاتك مع روابط الإلغاء.",
-  },
-  {
-    icon: BarChart3,
-    title: "تقرير تفصيلي",
-    desc: "نوريك المبلغ الشهري والسنوي ونقترح لك وش تلغي ووش تخلي.",
-  },
-  {
+    num: "٣",
     icon: Link2,
-    title: "روابط إلغاء مباشرة",
-    desc: "لكل اشتراك رابط مباشر يوديك صفحة الإلغاء — بدون دوخة.",
-  },
-  {
-    icon: FileText,
-    title: "أدلة إلغاء خطوة بخطوة",
-    desc: "٢٠٠+ دليل إلغاء مفصّل لأشهر الخدمات في السعودية والعالم.",
+    titleAr: "الغي بضغطة زر",
+    titleEn: "Cancel in one click",
+    descAr: "لكل اشتراك رابط إلغاء مباشر. اضغط وألغي — بدون دوخة أو بحث.",
+    descEn: "Every subscription has a direct cancel link. Click and cancel — no searching or runaround.",
   },
 ];
 
@@ -803,36 +797,85 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Features */}
+          {/* How it works — 3 steps */}
           <section className="bg-white py-20 px-6">
-            <div className="max-w-[1000px] mx-auto text-center">
+            <div className="max-w-[800px] mx-auto text-center">
               <span className="section-label">
                 <Zap size={12} strokeWidth={1.5} /> {ar ? "كيف يعمل" : "How it works"}
               </span>
               <h2 className="section-title">
-                {ar ? "اكتشف. قرر. وفّر." : "Discover. Decide. Save."}
+                {ar ? "٣ خطوات بس" : "Just 3 steps"}
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-12">
-                {FEATURES.map((f, i) => {
-                  const Icon = f.icon;
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+                {STEPS.map((step, i) => {
+                  const Icon = step.icon;
                   return (
                     <motion.div
                       key={i}
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
-                      transition={{ duration: 0.5, delay: i * 0.08 }}
-                      className="bento-card text-right p-6"
+                      transition={{ duration: 0.5, delay: i * 0.12 }}
+                      className="bento-card text-center p-6 relative"
                     >
-                      <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center mb-4">
+                      <div className="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center text-lg font-extrabold mx-auto mb-4">
+                        {step.num}
+                      </div>
+                      <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center mx-auto mb-3">
                         <Icon size={20} strokeWidth={1.5} className="text-indigo-500" />
                       </div>
-                      <h3 className="font-bold text-base text-slate-800 mb-2">{f.title}</h3>
-                      <p className="text-sm text-slate-500 leading-relaxed">{f.desc}</p>
+                      <h3 className="font-bold text-base text-slate-800 mb-2">{ar ? step.titleAr : step.titleEn}</h3>
+                      <p className="text-sm text-slate-500 leading-relaxed">{ar ? step.descAr : step.descEn}</p>
                     </motion.div>
                   );
                 })}
               </div>
+            </div>
+          </section>
+
+          {/* Result preview — show value before upload */}
+          <section className="bg-[#F8FAFF] py-16 px-6">
+            <div className="max-w-[600px] mx-auto text-center">
+              <span className="section-label">
+                <BarChart3 size={12} strokeWidth={1.5} /> {ar ? "هذا اللي بتشوفه" : "Here's what you'll get"}
+              </span>
+              <h2 className="text-xl font-extrabold tracking-tight text-slate-900 mb-8">
+                {ar ? "تقرير كامل — مثل هذا بالضبط" : "A full audit — exactly like this"}
+              </h2>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className="bento-card p-5 text-right"
+              >
+                {[
+                  { name: "Netflix", amount: "59.99", freq: ar ? "شهري" : "Monthly", domain: "netflix.com" },
+                  { name: "Spotify", amount: "32.99", freq: ar ? "شهري" : "Monthly", domain: "spotify.com" },
+                  { name: "ChatGPT Plus", amount: "74.99", freq: ar ? "شهري" : "Monthly", domain: "openai.com" },
+                ].map((item, i) => (
+                  <div key={i} className={`flex items-center gap-3 py-3 ${i > 0 ? "border-t border-slate-100" : ""}`}>
+                    <BrandLogo domain={item.domain} alt={item.name} className="w-9 h-9 rounded-xl bg-slate-50 p-1 object-contain" />
+                    <div className="flex-1 min-w-0">
+                      <span className="font-bold text-sm text-slate-800">{item.name}</span>
+                      <span className="text-xs text-slate-400 mx-2">{item.freq}</span>
+                    </div>
+                    <div className="text-right ltr-always">
+                      <span className="font-extrabold text-sm text-slate-900">{item.amount}</span>
+                      <span className="text-xs text-slate-400 ml-1">{ar ? "ريال" : "SAR"}</span>
+                    </div>
+                  </div>
+                ))}
+                <div className="border-t border-dashed border-slate-200 mt-2 pt-3 flex items-center justify-between">
+                  <span className="text-xs text-slate-400">{ar ? "+١١ اشتراك آخر..." : "+11 more subscriptions..."}</span>
+                  <span className="text-xs font-bold text-indigo-500">{ar ? "١٥,٢١٩ ريال/سنة" : "15,219 SAR/year"}</span>
+                </div>
+              </motion.div>
+              <p className="text-xs text-slate-400 mt-4">
+                {ar
+                  ? "مع روابط إلغاء مباشرة + تحليل مصاريفك بالفئات"
+                  : "With direct cancel links + spending breakdown by category"}
+              </p>
             </div>
           </section>
 

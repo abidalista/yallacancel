@@ -156,7 +156,7 @@ export default function UploadZone({
         )}
       </AnimatePresence>
 
-      {/* Divider + test button */}
+      {/* Divider + demo button */}
       {selectedFiles.length === 0 && (
         <>
           <div className="flex items-center gap-3 mt-5 mb-4">
@@ -167,10 +167,16 @@ export default function UploadZone({
 
           <button
             onClick={onTestClick}
-            className="btn-ghost w-full"
+            className="w-full bg-white border-2 border-indigo-200 hover:border-indigo-400 text-indigo-600 hover:text-indigo-700 rounded-full px-6 py-3.5 font-bold text-sm transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
           >
-            {ar ? "جرّب بمثال جاهز" : "Try with sample data"}
+            <Sparkles size={16} strokeWidth={1.5} />
+            {ar ? "شوف كيف يشتغل — بدون ملف" : "See it in action — no file needed"}
           </button>
+          <p className="text-xs text-slate-400 text-center mt-2">
+            {ar
+              ? "نعرض لك تقرير كامل بـ ١٤ اشتراك — نفس اللي بتشوفه مع كشف حسابك"
+              : "We'll show a full audit with 14 subscriptions — exactly what you'd get with your own statement"}
+          </p>
         </>
       )}
     </motion.div>
