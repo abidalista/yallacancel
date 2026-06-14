@@ -118,26 +118,7 @@ const SUB_CHIPS = [
   { name: "stc", domain: "stc.com.sa" },
 ];
 
-const TESTIMONIALS = [
-  {
-    quote: "ما توقعت إن Calm وDropbox وشي اسمه Adobe Stock ما فتحته من سنتين ينخصمون كلهم. ألغيتهم كلهم في دقيقتين وأنا أشرب قهوتي.",
-    name: "محمد ع.",
-    role: "مهندس برمجيات — الرياض",
-    initial: "م",
-  },
-  {
-    quote: "كنت أشوف APPLE.COM/BILL كل شهر وما أعرف وش هي بالضبط. يلا كانسل فكّها وعرّفتني إنها iCloud+ و Apple Music وApple TV+ — دفعت فيهم ثلاثتهم بدون ما أقصد!",
-    name: "نورة الغامدي",
-    role: "معلمة — جدة",
-    initial: "ن",
-  },
-  {
-    quote: "كنت مشترك في Adobe وأنا ما أحتاجه — بس خفت من رسوم الإلغاء المبكر. الموقع حذّرني من التوقيت الصح وأنقذني من دفع رسوم إضافية. وفرت ١,٦٠٨ ريال.",
-    name: "عبدالرحمن ف.",
-    role: "مصمم مستقل — الدمام",
-    initial: "ع",
-  },
-];
+const TESTIMONIALS: { quote: string; name: string; role: string; initial: string }[] = [];
 
 const FAQ_ITEMS = [
   {
@@ -899,14 +880,15 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Testimonials */}
+          {/* Testimonials — add real ones here when available */}
+          {TESTIMONIALS.length > 0 && (
           <section className="bg-gradient-to-b from-indigo-50/40 to-white py-20 px-6">
             <div className="max-w-[900px] mx-auto text-center">
               <span className="section-label">
                 {ar ? "تجارب المستخدمين" : "What users say"}
               </span>
               <h2 className="section-title mb-12">
-                {ar ? "وفّروا ١٢,٠٠٠+ ريال" : "They saved 12,000+ SAR"}
+                {ar ? "وش يقولون" : "What they say"}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {TESTIMONIALS.map((t, i) => (
@@ -933,6 +915,7 @@ export default function HomePage() {
               </div>
             </div>
           </section>
+          )}
 
           {/* Comparison table */}
           <section className="bg-white py-20 px-6">
