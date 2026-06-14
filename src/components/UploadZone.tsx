@@ -150,7 +150,7 @@ export default function UploadZone({
               className="btn-primary w-full"
             >
               <Sparkles size={16} strokeWidth={1.5} />
-              {ar ? "ابحث عن الاشتراكات" : "Scan for subscriptions"}
+              {ar ? "حلل كشف حسابك" : "Analyze my statement"}
             </button>
           </motion.div>
         )}

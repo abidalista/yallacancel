@@ -18,6 +18,12 @@ export default function Header({ locale, onLocaleChange, onLogoClick }: HeaderPr
 
         <div className="flex items-center gap-3">
           <a
+            href="#pricing"
+            className="text-xs font-semibold text-white/60 hover:text-white transition-colors no-underline hidden sm:block"
+          >
+            {locale === "ar" ? "الأسعار" : "Pricing"}
+          </a>
+          <a
             href="/guides"
             className="text-xs font-semibold text-white/60 hover:text-white transition-colors no-underline hidden sm:block"
           >

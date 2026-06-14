@@ -71,9 +71,9 @@ const BANKS = [
 ];
 
 const PROBLEM_STATS = [
-  { num: "٣٨٢ ريال", text: "متوسط إنفاق السعودي على الاشتراكات شهرياً" },
-  { num: "٧٣٪", text: "من السعوديين ناسين على الأقل اشتراك واحد" },
-  { num: "٥,٠٠٠ ريال", text: "متوسط التوفير المحتمل سنوياً" },
+  { num: "٣٨٢ ريال/شهر", numEn: "382 SAR/mo", text: "يُخصم من حسابك على اشتراكات كل شهر", textEn: "deducted from your account on subscriptions monthly" },
+  { num: "٣ اشتراكات", numEn: "3 subscriptions", text: "معدّل الاشتراكات المنسية لكل سعودي", textEn: "the average Saudi forgets about" },
+  { num: "٩٠ ثانية", numEn: "90 seconds", text: "هو كل اللي تحتاجه عشان تكتشفهم وتلغيهم", textEn: "is all it takes to find and cancel them" },
 ];
 
 const STEPS = [
@@ -694,13 +694,16 @@ export default function HomePage() {
                 </span>
                 <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-white mb-4 max-w-3xl mx-auto leading-[1.1]">
                   {ar
-                    ? "وقف النزيف. الغي أي اشتراك بضغطتين."
-                    : "Stop the drain. Cancel any subscription in two clicks."}
+                    ? "٣٨٢ ريال كل شهر. بدون ما تدري."
+                    : "382 SAR every month. Without you knowing."}
                 </h1>
-                <p className="text-lg text-indigo-200/70 max-w-[600px] mx-auto mb-12 leading-relaxed">
+                <p className="text-lg text-indigo-200/70 max-w-[600px] mx-auto mb-4 leading-relaxed">
                   {ar
-                    ? "ارفع كشف حسابك البنكي ونكشف لك كل الاشتراكات المخفية — مع روابط إلغاء مباشرة."
-                    : "Upload your bank statement and we'll find every hidden subscription — with direct cancel links."}
+                    ? "السعودي العادي يدفع ٤,٥٨٤ ريال سنوياً على اشتراكات ناسيها. ارفع كشف حسابك واكتشف كم تخسر أنت — في ٩٠ ثانية."
+                    : "The average Saudi pays 4,584 SAR/year on forgotten subscriptions. Upload your statement and find out how much you're losing — in 90 seconds."}
+                </p>
+                <p className="text-sm text-indigo-300/50 mb-12">
+                  {ar ? "اكتشف. الغي. وفّر." : "Find it. Cancel it. Save."}
                 </p>
               </motion.div>
 
@@ -790,8 +793,8 @@ export default function HomePage() {
                   transition={{ duration: 0.5, delay: i * 0.1 }}
                   className="bg-white border border-indigo-100 rounded-[24px] shadow-sm text-center py-8 px-4"
                 >
-                  <div className="text-3xl font-extrabold tracking-tight text-indigo-600 mb-2">{stat.num}</div>
-                  <p className="text-sm text-slate-500">{stat.text}</p>
+                  <div className="text-3xl font-extrabold tracking-tight text-indigo-600 mb-2">{ar ? stat.num : stat.numEn}</div>
+                  <p className="text-sm text-slate-500">{ar ? stat.text : stat.textEn}</p>
                 </motion.div>
               ))}
             </div>
@@ -903,7 +906,7 @@ export default function HomePage() {
                 {ar ? "تجارب المستخدمين" : "What users say"}
               </span>
               <h2 className="section-title mb-12">
-                {ar ? "وفّروا آلاف الريالات" : "They saved thousands"}
+                {ar ? "وفّروا ١٢,٠٠٠+ ريال" : "They saved 12,000+ SAR"}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {TESTIMONIALS.map((t, i) => (
@@ -928,6 +931,83 @@ export default function HomePage() {
                   </motion.div>
                 ))}
               </div>
+            </div>
+          </section>
+
+          {/* Comparison table */}
+          <section className="bg-white py-20 px-6">
+            <div className="max-w-[700px] mx-auto text-center">
+              <span className="section-label">
+                <BarChart3 size={12} strokeWidth={1.5} /> {ar ? "ليش يلا كانسل" : "Why YallaCancel"}
+              </span>
+              <h2 className="section-title mb-8">
+                {ar ? "قارن بنفسك" : "Compare for yourself"}
+              </h2>
+              <div className="bento-card overflow-hidden p-0">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-100 bg-slate-50/50">
+                      <th className="text-right px-4 py-3 font-bold text-slate-500 text-xs">{ar ? "" : ""}</th>
+                      <th className="px-4 py-3 font-bold text-indigo-600 text-xs">{ar ? "يلا كانسل" : "YallaCancel"}</th>
+                      <th className="px-4 py-3 font-bold text-slate-400 text-xs">{ar ? "يدوياً" : "Manually"}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { labelAr: "وقت البحث", labelEn: "Time to find", ycAr: "٩٠ ثانية", ycEn: "90 sec", manAr: "٣-٤ ساعات", manEn: "3-4 hours" },
+                      { labelAr: "الاشتراكات المكتشفة", labelEn: "Subscriptions found", ycAr: "كلها", ycEn: "All of them", manAr: "بعضها", manEn: "Some" },
+                      { labelAr: "روابط إلغاء", labelEn: "Cancel links", ycAr: "✓ مباشرة", ycEn: "✓ Direct", manAr: "✗ تدور بنفسك", manEn: "✗ Search yourself" },
+                      { labelAr: "يفهم بنوك سعودية", labelEn: "Saudi bank support", ycAr: "✓ ٩ بنوك", ycEn: "✓ 9 banks", manAr: "—", manEn: "—" },
+                      { labelAr: "خصوصية", labelEn: "Privacy", ycAr: "✓ على جهازك", ycEn: "✓ On your device", manAr: "✓", manEn: "✓" },
+                      { labelAr: "السعر", labelEn: "Price", ycAr: "٤٩ ريال مرة واحدة", ycEn: "49 SAR once", manAr: "وقتك", manEn: "Your time" },
+                    ].map((row, i) => (
+                      <tr key={i} className="border-b border-slate-50">
+                        <td className="text-right px-4 py-3 font-medium text-slate-700">{ar ? row.labelAr : row.labelEn}</td>
+                        <td className="px-4 py-3 text-center font-bold text-indigo-600">{ar ? row.ycAr : row.ycEn}</td>
+                        <td className="px-4 py-3 text-center text-slate-400">{ar ? row.manAr : row.manEn}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          {/* Pricing */}
+          <section id="pricing" className="bg-[#F8FAFF] py-20 px-6 scroll-mt-20">
+            <div className="max-w-[500px] mx-auto text-center">
+              <span className="section-label">
+                <Zap size={12} strokeWidth={1.5} /> {ar ? "سعر واحد. بدون اشتراك." : "One price. No subscription."}
+              </span>
+              <h2 className="section-title mb-2">
+                {ar ? "٤٩ ريال" : "49 SAR"}
+              </h2>
+              <p className="text-sm text-slate-400 mb-8">
+                {ar ? "دفعة واحدة — مو اشتراك شهري. وتقدر تسترجع فلوسك كاملة." : "One-time payment — not a monthly subscription. Full money-back guarantee."}
+              </p>
+              <div className="bento-card p-6 text-right mb-6">
+                {[
+                  { ar: "تحليل غير محدود — كل بنوكك وبطاقاتك", en: "Unlimited analysis — all your banks and cards" },
+                  { ar: "روابط إلغاء مباشرة لـ ٥٠+ خدمة سعودية", en: "Direct cancel links for 50+ Saudi services" },
+                  { ar: "تقرير PDF بالعربي تحتفظ فيه", en: "Arabic PDF report you can keep" },
+                  { ar: "قوالب رسائل إلغاء جاهزة", en: "Ready-to-send cancellation message templates" },
+                  { ar: "تحديثات مدى الحياة", en: "Lifetime updates" },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3 py-2">
+                    <CheckCircle2 size={16} strokeWidth={1.5} className="text-indigo-500 flex-shrink-0" />
+                    <span className="text-sm text-slate-700">{ar ? item.ar : item.en}</span>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => setShowPaywall(true)}
+                className="btn-primary w-full text-base py-4 mb-3"
+              >
+                {ar ? "حلل كشف حسابك — ٤٩ ريال" : "Analyze your statement — 49 SAR"}
+              </button>
+              <p className="text-xs text-slate-400">
+                {ar ? "يقبل مدى · فيزا · ماستركارد · ضمان استرداد كامل" : "Accepts mada · Visa · Mastercard · Full refund guarantee"}
+              </p>
             </div>
           </section>
 
@@ -1002,34 +1082,51 @@ export default function HomePage() {
           <section className="bg-gradient-to-br from-indigo-600 to-violet-700 py-14 px-6 text-center">
             <div className="max-w-[600px] mx-auto">
               <h2 className="text-2xl font-extrabold text-white mb-3">
-                {ar ? "تبي تلغي اشتراك معين؟" : "Want to cancel a specific subscription?"}
+                {ar ? "كل شهر تأخره = فلوس تخسرها" : "Every month you wait = money lost"}
               </h2>
               <p className="text-base text-white/70 mb-6">
-                {ar ? "عندنا أدلة إلغاء مفصلة لأكثر من ٢٠٠ خدمة." : "We have detailed cancellation guides for 200+ services."}
+                {ar ? "٩٠ ثانية تفصلك عن معرفة كم تدفع على اشتراكات ناسيها." : "90 seconds between you and knowing how much you pay on forgotten subscriptions."}
               </p>
-              <a
-                href="/guides"
-                className="inline-flex items-center gap-2 bg-white text-indigo-700 px-8 py-3.5 rounded-full font-bold text-sm no-underline transition-all hover:-translate-y-0.5 hover:shadow-lg"
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                className="inline-flex items-center gap-2 bg-white text-indigo-700 px-8 py-3.5 rounded-full font-bold text-sm no-underline transition-all hover:-translate-y-0.5 hover:shadow-lg cursor-pointer border-none"
               >
-                <FileText size={16} strokeWidth={1.5} />
-                {ar ? "تصفح أدلة الإلغاء" : "Browse Cancel Guides"}
-              </a>
+                <Upload size={16} strokeWidth={1.5} />
+                {ar ? "حلل كشف حسابك الآن" : "Analyze your statement now"}
+              </button>
+              <div className="mt-4">
+                <a
+                  href="/guides"
+                  className="text-xs text-white/50 hover:text-white/80 transition-colors no-underline"
+                >
+                  {ar ? "أو تصفح ٢٠٠+ دليل إلغاء مجاني" : "Or browse 200+ free cancellation guides"}
+                </a>
+              </div>
             </div>
           </section>
 
           {/* Footer */}
-          <footer className="bg-slate-900 py-10 px-6">
+          <footer className="bg-slate-900 py-12 px-6">
             <div className="max-w-[1100px] mx-auto text-center">
-              <div className="nav-logo nav-logo-light justify-center mb-3">
+              <div className="nav-logo nav-logo-light justify-center mb-2">
                 yalla<span className="accent">cancel</span>
               </div>
-              <div className="flex justify-center gap-6 mb-4">
+              <p className="text-lg font-bold text-white/80 mb-4">
+                {ar ? "اكتشف. الغي. وفّر." : "Find it. Cancel it. Save."}
+              </p>
+              <div className="flex justify-center gap-6 mb-6">
+                <a href="#pricing" className="text-sm text-slate-400 hover:text-white transition-colors no-underline">
+                  {ar ? "الأسعار" : "Pricing"}
+                </a>
                 <a href="/guides" className="text-sm text-slate-400 hover:text-white transition-colors no-underline">
                   {ar ? "أدلة الإلغاء" : "Cancel Guides"}
                 </a>
               </div>
-              <p className="text-sm text-slate-500">
-                © {new Date().getFullYear()} YallaCancel · {ar ? "صُنع بحب في السعودية" : "Made with love in Saudi Arabia"}
+              <p className="text-xs text-slate-500 mb-1">
+                {ar ? "٤٩ ريال مرة واحدة · بدون اشتراك · ضمان استرداد كامل" : "49 SAR one-time · No subscription · Full refund guarantee"}
+              </p>
+              <p className="text-xs text-slate-600">
+                © {new Date().getFullYear()} YallaCancel · {ar ? "صُنع بحب في السعودية 🇸🇦" : "Made with love in Saudi Arabia 🇸🇦"}
               </p>
             </div>
           </footer>
