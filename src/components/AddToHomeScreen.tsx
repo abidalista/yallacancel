@@ -34,7 +34,7 @@ export default function AddToHomeScreen({ locale }: AddToHomeScreenProps) {
     <>
       <button
         onClick={() => setShow(true)}
-        className="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:-translate-y-0.5 transition-all"
+        className="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full bg-[#00A651] text-white flex items-center justify-center shadow-lg shadow-[#00A651]/30 hover:shadow-[#00A651]/50 hover:-translate-y-0.5 transition-all"
         title={ar ? "أضف للشاشة الرئيسية" : "Add to home screen"}
       >
         <Smartphone size={20} strokeWidth={1.5} />
@@ -78,7 +78,7 @@ export default function AddToHomeScreen({ locale }: AddToHomeScreenProps) {
               <div className="space-y-3 mb-6">
                 {steps.map((step) => (
                   <div key={step.num} className="flex items-center gap-4 bg-slate-50 rounded-2xl px-4 py-3.5">
-                    <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-[#E8F7EE] text-[#00A651] flex items-center justify-center text-sm font-bold flex-shrink-0">
                       {step.num}
                     </div>
                     <span className="text-sm font-semibold text-slate-700 flex-1">{step.text}</span>

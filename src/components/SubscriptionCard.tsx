@@ -81,7 +81,7 @@ export default function SubscriptionCard({
                 }}
               />
             ) : (
-              <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center text-sm font-bold text-indigo-500">
+              <div className="w-11 h-11 rounded-xl bg-[#E8F7EE] flex items-center justify-center text-sm font-bold text-[#00A651]">
                 {sub.name[0]}
               </div>
             )}
@@ -155,7 +155,7 @@ export default function SubscriptionCard({
         {hasGuide && (
           <a
             href={`/${cancelInfo!.guideSlug}.html`}
-            className="inline-flex items-center gap-1.5 bg-white border border-slate-200 hover:border-indigo-300 text-slate-500 hover:text-indigo-600 text-xs font-bold px-4 py-2 rounded-full transition-all no-underline"
+            className="inline-flex items-center gap-1.5 bg-white border border-slate-200 hover:border-[#00A651] text-slate-500 hover:text-[#00A651] text-xs font-bold px-4 py-2 rounded-full transition-all no-underline"
           >
             <FileText size={12} strokeWidth={1.5} />
             {ar ? "دليل الإلغاء" : "Cancel Guide"}

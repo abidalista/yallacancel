@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import FundingTicker from "@/components/FundingTicker";
-import HeroScatteredLogos, { HeroLogoStrip } from "@/components/HeroScatteredLogos";
 import AddToHomeScreen from "@/components/AddToHomeScreen";
 import UploadZone from "@/components/UploadZone";
 import AuditReport from "@/components/AuditReport";
@@ -449,7 +448,7 @@ export default function HomePage() {
   // ── Render ──
 
   return (
-    <div className="min-h-screen bg-[#F8FAFF]">
+    <div className="min-h-screen bg-[#EDF5F3]">
       <FundingTicker locale={locale} />
       <Header
         locale={locale}
@@ -470,7 +469,7 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="min-h-screen px-6 pt-24 pb-16 bg-[#F8FAFF]"
+            className="min-h-screen px-6 pt-24 pb-16 bg-[#EDF5F3]"
           >
             <div className="max-w-[700px] mx-auto">
               <motion.div
@@ -486,7 +485,7 @@ export default function HomePage() {
                   {ar ? "عملية" : "transactions"}
                 </div>
                 <div className="flex items-center justify-center gap-2 mb-3">
-                  <Loader2 size={14} strokeWidth={1.5} className="text-indigo-500 animate-spin" />
+                  <Loader2 size={14} strokeWidth={1.5} className="text-[#00A651] animate-spin" />
                   <span className="text-sm text-slate-500">{analyzeStatus}</span>
                 </div>
                 <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-full px-4 py-2 text-xs text-slate-400">
@@ -536,7 +535,7 @@ export default function HomePage() {
         const hiddenYearly = hidden.reduce((s, sub) => s + sub.yearlyEquivalent, 0);
 
         return (
-          <div className="min-h-screen bg-[#F8FAFF] pt-24 pb-16 px-6">
+          <div className="min-h-screen bg-[#EDF5F3] pt-24 pb-16 px-6">
             <div className="max-w-[700px] mx-auto">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-1">
@@ -547,8 +546,8 @@ export default function HomePage() {
                 <p className="text-sm text-slate-400 mb-4">
                   {ar ? `من ${subs.length} اشتراك` : `across ${subs.length} subscriptions`}
                 </p>
-                <div className="h-1 bg-indigo-100 rounded-full mb-8">
-                  <div className="h-1 bg-indigo-500 rounded-full w-full" />
+                <div className="h-1 bg-[#E5EFED] rounded-full mb-8">
+                  <div className="h-1 bg-[#1A3A35] rounded-full w-full" />
                 </div>
               </motion.div>
 
@@ -573,12 +572,12 @@ export default function HomePage() {
                           href={info.cancelUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-indigo-500 font-bold text-sm no-underline hover:underline flex-shrink-0"
+                          className="text-[#00A651] font-bold text-sm no-underline hover:underline flex-shrink-0"
                         >
                           {ar ? "الغي" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
                         </a>
                       ) : (
-                        <span className="text-indigo-500 font-bold text-sm flex-shrink-0">
+                        <span className="text-[#00A651] font-bold text-sm flex-shrink-0">
                           {ar ? "الغي" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
                         </span>
                       )}
@@ -611,7 +610,7 @@ export default function HomePage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  <p className="text-center text-indigo-600 font-bold text-base mb-4">
+                  <p className="text-center text-[#00A651] font-bold text-base mb-4">
                     {ar
                       ? `ادفع ٤٩ ريال، ووفر ${hiddenYearly.toFixed(0)} ريال/سنة · يعني ${Math.round(hiddenYearly / 49)}x عائد`
                       : `Pay 49 SAR, save up to ${hiddenYearly.toFixed(0)} SAR/yr · that's a ${Math.round(hiddenYearly / 49)}x return`}
@@ -664,33 +663,27 @@ export default function HomePage() {
       {step === "landing" && (
         <>
           {/* Hero */}
-          <section ref={heroRef} className="hero-gradient relative overflow-hidden pt-24 pb-20 px-6">
-            <HeroScatteredLogos />
-            <div className="max-w-[1100px] mx-auto text-center relative z-10">
+          <section ref={heroRef} className="hero-gradient pt-24 pb-20 px-6">
+            <div className="max-w-[1100px] mx-auto text-center">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <span className="section-label-light inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full mb-5">
-                  <Shield size={12} strokeWidth={1.5} /> {ar ? "خصوصية ١٠٠٪ · كل شيء على جهازك" : "100% Private · Everything stays on your device"}
+                <span className="section-label inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full mb-5">
+                  <Shield size={12} strokeWidth={1.5} /> {ar ? "متتبع اشتراكاتك الشخصي" : "Your personal subscription tracker"}
                 </span>
-                <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-white mb-4 max-w-3xl mx-auto leading-[1.1]">
+                <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-4 max-w-3xl mx-auto leading-[1.1]" style={{ color: "#1A3A35" }}>
                   {ar
-                    ? "٣٨٢ ريال كل شهر. بدون ما تدري."
-                    : "382 SAR every month. Without you knowing."}
+                    ? "اعرف وين تروح فلوسك كل شهر"
+                    : "See exactly where your money goes each month"}
                 </h1>
-                <p className="text-lg text-indigo-200/70 max-w-[600px] mx-auto mb-4 leading-relaxed">
+                <p className="text-lg max-w-[600px] mx-auto mb-12 leading-relaxed" style={{ color: "#4A6862" }}>
                   {ar
-                    ? "السعودي العادي يدفع ٤,٥٨٤ ريال سنوياً على اشتراكات ناسيها. ارفع كشف حسابك واكتشف كم تخسر أنت · في ٩٠ ثانية."
-                    : "The average Saudi pays 4,584 SAR/year on forgotten subscriptions. Upload your statement and find out how much you're losing · in 90 seconds."}
-                </p>
-                <p className="text-sm text-indigo-300/50 mb-6">
-                  {ar ? "اكتشف. الغي. وفّر." : "Find it. Cancel it. Save."}
+                    ? "ارفع كشف حسابك البنكي وفي ثواني نجيب لك كل اشتراكاتك الشهرية مع رابط الغاء مباشر لكل خدمة."
+                    : "Upload your bank statement and in seconds we'll list every subscription you're paying for with a direct cancel link for each one."}
                 </p>
               </motion.div>
-
-              <HeroLogoStrip />
 
               {/* Upload zone */}
               <UploadZone
@@ -725,7 +718,7 @@ export default function HomePage() {
                         <button
                           key={bankId}
                           onClick={() => handleRetryWithBank(bankId)}
-                          className="text-xs font-bold px-3 py-1.5 rounded-full border border-slate-200 text-slate-500 hover:border-indigo-300 hover:text-indigo-600 transition-all bg-white"
+                          className="text-xs font-bold px-3 py-1.5 rounded-full border border-slate-200 text-slate-500 hover:border-[#00A651] hover:text-[#00A651] transition-all bg-white"
                         >
                           {bankId}
                         </button>
@@ -740,7 +733,7 @@ export default function HomePage() {
                         value={pasteText}
                         onChange={(e) => setPasteText(e.target.value)}
                         placeholder={ar ? "الصق نص كشف الحساب هنا..." : "Paste your statement text here..."}
-                        className="w-full h-24 p-3 rounded-xl border border-slate-200 text-sm text-slate-700 bg-white resize-none focus:outline-none focus:border-indigo-400"
+                        className="w-full h-24 p-3 rounded-xl border border-slate-200 text-sm text-slate-700 bg-white resize-none focus:outline-none focus:border-[#00A651]"
                       />
                       <button
                         onClick={handlePasteAnalyze}
@@ -757,9 +750,9 @@ export default function HomePage() {
               {/* Bank logos */}
               <div className="mt-12 flex flex-wrap justify-center gap-4">
                 {BANKS.map((bank) => (
-                  <div key={bank.name} className="flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-3 py-1.5">
+                  <div key={bank.name} className="flex items-center gap-2 bg-white border border-[#E5EFED] rounded-full px-3 py-1.5">
                     <BrandLogo domain={bank.domain} alt={bank.name} className="w-5 h-5 rounded-sm object-contain" />
-                    <span className="text-xs text-white/70 font-medium">{bank.name}</span>
+                    <span className="text-xs font-medium" style={{ color: "#4A6862" }}>{bank.name}</span>
                   </div>
                 ))}
               </div>
@@ -767,7 +760,7 @@ export default function HomePage() {
           </section>
 
           {/* Stats */}
-          <section className="bg-indigo-50/60 py-16 px-6 border-y border-indigo-100/50">
+          <section className="bg-[#E8F7EE]/60 py-16 px-6 border-y border-[#E5EFED]/50">
             <div className="max-w-[900px] mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
               {PROBLEM_STATS.map((stat, i) => (
                 <motion.div
@@ -776,9 +769,9 @@ export default function HomePage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: i * 0.1 }}
-                  className="bg-white border border-indigo-100 rounded-[24px] shadow-sm text-center py-8 px-4"
+                  className="bg-white border border-[#E5EFED] rounded-[24px] shadow-sm text-center py-8 px-4"
                 >
-                  <div className="text-3xl font-extrabold tracking-tight text-indigo-600 mb-2">{ar ? stat.num : stat.numEn}</div>
+                  <div className="text-3xl font-extrabold tracking-tight text-[#00A651] mb-2">{ar ? stat.num : stat.numEn}</div>
                   <p className="text-sm text-slate-500">{ar ? stat.text : stat.textEn}</p>
                 </motion.div>
               ))}
@@ -806,11 +799,11 @@ export default function HomePage() {
                       transition={{ duration: 0.5, delay: i * 0.12 }}
                       className="bento-card text-center p-6 relative"
                     >
-                      <div className="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center text-lg font-extrabold mx-auto mb-4">
+                      <div className="w-10 h-10 rounded-full bg-[#E8F7EE]0 text-white flex items-center justify-center text-lg font-extrabold mx-auto mb-4">
                         {step.num}
                       </div>
-                      <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center mx-auto mb-3">
-                        <Icon size={20} strokeWidth={1.5} className="text-indigo-500" />
+                      <div className="w-10 h-10 rounded-2xl bg-[#E8F7EE] flex items-center justify-center mx-auto mb-3">
+                        <Icon size={20} strokeWidth={1.5} className="text-[#00A651]" />
                       </div>
                       <h3 className="font-bold text-base text-slate-800 mb-2">{ar ? step.titleAr : step.titleEn}</h3>
                       <p className="text-sm text-slate-500 leading-relaxed">{ar ? step.descAr : step.descEn}</p>
@@ -822,7 +815,7 @@ export default function HomePage() {
           </section>
 
           {/* Result preview · show value before upload */}
-          <section className="bg-[#F8FAFF] py-16 px-6">
+          <section className="bg-[#EDF5F3] py-16 px-6">
             <div className="max-w-[600px] mx-auto text-center">
               <span className="section-label">
                 <BarChart3 size={12} strokeWidth={1.5} /> {ar ? "هذا اللي بتشوفه" : "Here's what you'll get"}
@@ -856,7 +849,7 @@ export default function HomePage() {
                 ))}
                 <div className="border-t border-dashed border-slate-200 mt-2 pt-3 flex items-center justify-between">
                   <span className="text-xs text-slate-400">{ar ? "+١١ اشتراك آخر..." : "+11 more subscriptions..."}</span>
-                  <span className="text-xs font-bold text-indigo-500">{ar ? "١٥,٢١٩ ريال/سنة" : "15,219 SAR/year"}</span>
+                  <span className="text-xs font-bold text-[#00A651]">{ar ? "١٥,٢١٩ ريال/سنة" : "15,219 SAR/year"}</span>
                 </div>
               </motion.div>
               <p className="text-xs text-slate-400 mt-4">
@@ -868,7 +861,7 @@ export default function HomePage() {
           </section>
 
           {/* Subscription chips */}
-          <section className="bg-[#F0F1FF] py-16 px-6">
+          <section className="bg-[#F5FAF8] py-16 px-6">
             <div className="max-w-[800px] mx-auto text-center">
               <h2 className="text-xl font-extrabold tracking-tight text-slate-900 mb-6">
                 {ar ? "نكتشف أكثر من ١٢٠ خدمة" : "We detect 120+ services"}
@@ -886,7 +879,7 @@ export default function HomePage() {
 
           {/* Testimonials · add real ones here when available */}
           {TESTIMONIALS.length > 0 && (
-          <section className="bg-gradient-to-b from-indigo-50/40 to-white py-20 px-6">
+          <section className="bg-gradient-to-b from-[#EDF5F3] to-white py-20 px-6">
             <div className="max-w-[900px] mx-auto text-center">
               <span className="section-label">
                 {ar ? "تجارب المستخدمين" : "What users say"}
@@ -906,7 +899,7 @@ export default function HomePage() {
                   >
                     <p className="text-sm text-slate-600 leading-relaxed mb-4">&ldquo;{t.quote}&rdquo;</p>
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-sm font-bold text-indigo-600">
+                      <div className="w-9 h-9 rounded-full bg-[#E5EFED] flex items-center justify-center text-sm font-bold text-[#00A651]">
                         {t.initial}
                       </div>
                       <div>
@@ -935,7 +928,7 @@ export default function HomePage() {
                   <thead>
                     <tr className="border-b border-slate-100 bg-slate-50/50">
                       <th className="text-right px-4 py-3 font-bold text-slate-500 text-xs">{ar ? "" : ""}</th>
-                      <th className="px-4 py-3 font-bold text-indigo-600 text-xs">{ar ? "يلا كانسل" : "YallaCancel"}</th>
+                      <th className="px-4 py-3 font-bold text-[#00A651] text-xs">{ar ? "يلا كانسل" : "YallaCancel"}</th>
                       <th className="px-4 py-3 font-bold text-slate-400 text-xs">{ar ? "يدوياً" : "Manually"}</th>
                     </tr>
                   </thead>
@@ -950,7 +943,7 @@ export default function HomePage() {
                     ].map((row, i) => (
                       <tr key={i} className="border-b border-slate-50">
                         <td className="text-right px-4 py-3 font-medium text-slate-700">{ar ? row.labelAr : row.labelEn}</td>
-                        <td className="px-4 py-3 text-center font-bold text-indigo-600">{ar ? row.ycAr : row.ycEn}</td>
+                        <td className="px-4 py-3 text-center font-bold text-[#00A651]">{ar ? row.ycAr : row.ycEn}</td>
                         <td className="px-4 py-3 text-center text-slate-400">{ar ? row.manAr : row.manEn}</td>
                       </tr>
                     ))}
@@ -961,7 +954,7 @@ export default function HomePage() {
           </section>
 
           {/* Pricing */}
-          <section id="pricing" className="bg-[#F8FAFF] py-20 px-6 scroll-mt-20">
+          <section id="pricing" className="bg-[#EDF5F3] py-20 px-6 scroll-mt-20">
             <div className="max-w-[500px] mx-auto text-center">
               <span className="section-label">
                 <Zap size={12} strokeWidth={1.5} /> {ar ? "سعر واحد. بدون اشتراك." : "One price. No subscription."}
@@ -981,7 +974,7 @@ export default function HomePage() {
                   { ar: "تحديثات مدى الحياة", en: "Lifetime updates" },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3 py-2">
-                    <CheckCircle2 size={16} strokeWidth={1.5} className="text-indigo-500 flex-shrink-0" />
+                    <CheckCircle2 size={16} strokeWidth={1.5} className="text-[#00A651] flex-shrink-0" />
                     <span className="text-sm text-slate-700">{ar ? item.ar : item.en}</span>
                   </div>
                 ))}
@@ -999,7 +992,7 @@ export default function HomePage() {
           </section>
 
           {/* FAQ */}
-          <section className="bg-[#F8FAFF] py-20 px-6">
+          <section className="bg-[#EDF5F3] py-20 px-6">
             <div className="max-w-[700px] mx-auto">
               <div className="text-center mb-12">
                 <span className="section-label">{ar ? "أسئلة شائعة" : "FAQ"}</span>
@@ -1046,19 +1039,19 @@ export default function HomePage() {
           </section>
 
           {/* Sources · external citation links */}
-          <section className="bg-[#F8FAFF] py-12 px-6">
+          <section className="bg-[#EDF5F3] py-12 px-6">
             <div className="max-w-[700px] mx-auto text-center">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
                 {ar ? "مصادر ومراجع" : "Sources & References"}
               </p>
               <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-slate-400">
-                <a href="https://www.sama.gov.sa" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors no-underline">
+                <a href="https://www.sama.gov.sa" target="_blank" rel="noopener noreferrer" className="hover:text-[#00A651] transition-colors no-underline">
                   {ar ? "البنك المركزي السعودي (ساما)" : "Saudi Central Bank (SAMA)"}
                 </a>
-                <a href="https://www.mcit.gov.sa" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors no-underline">
+                <a href="https://www.mcit.gov.sa" target="_blank" rel="noopener noreferrer" className="hover:text-[#00A651] transition-colors no-underline">
                   {ar ? "وزارة الاتصالات وتقنية المعلومات" : "MCIT Saudi Arabia"}
                 </a>
-                <a href="https://www.vision2030.gov.sa" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors no-underline">
+                <a href="https://www.vision2030.gov.sa" target="_blank" rel="noopener noreferrer" className="hover:text-[#00A651] transition-colors no-underline">
                   {ar ? "رؤية السعودية ٢٠٣٠" : "Saudi Vision 2030"}
                 </a>
               </div>
@@ -1066,7 +1059,7 @@ export default function HomePage() {
           </section>
 
           {/* CTA Banner */}
-          <section className="bg-gradient-to-br from-indigo-600 to-violet-700 py-14 px-6 text-center">
+          <section className="bg-gradient-to-br from-[#1A3A35] to-[#0F2A26] py-14 px-6 text-center">
             <div className="max-w-[600px] mx-auto">
               <h2 className="text-2xl font-extrabold text-white mb-3">
                 {ar ? "كل شهر تأخره = فلوس تخسرها" : "Every month you wait = money lost"}
@@ -1076,7 +1069,7 @@ export default function HomePage() {
               </p>
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                className="inline-flex items-center gap-2 bg-white text-indigo-700 px-8 py-3.5 rounded-full font-bold text-sm no-underline transition-all hover:-translate-y-0.5 hover:shadow-lg cursor-pointer border-none"
+                className="inline-flex items-center gap-2 bg-white text-[#1A3A35] px-8 py-3.5 rounded-full font-bold text-sm no-underline transition-all hover:-translate-y-0.5 hover:shadow-lg cursor-pointer border-none"
               >
                 <Upload size={16} strokeWidth={1.5} />
                 {ar ? "حلل كشف حسابك الآن" : "Analyze your statement now"}
@@ -1093,26 +1086,26 @@ export default function HomePage() {
           </section>
 
           {/* Footer */}
-          <footer className="bg-slate-900 py-12 px-6">
+          <footer className="py-12 px-6" style={{ background: "#112920" }}>
             <div className="max-w-[1100px] mx-auto text-center">
-              <div className="nav-logo nav-logo-light justify-center mb-2">
-                yalla<span className="accent">cancel</span>
+              <div className="nav-logo justify-center mb-2" style={{ color: "#C5DDD9" }}>
+                yallacancel
               </div>
-              <p className="text-lg font-bold text-white/80 mb-4">
+              <p className="text-lg font-bold mb-4" style={{ color: "#C5DDD9" }}>
                 {ar ? "اكتشف. الغي. وفّر." : "Find it. Cancel it. Save."}
               </p>
               <div className="flex justify-center gap-6 mb-6">
-                <a href="#pricing" className="text-sm text-slate-400 hover:text-white transition-colors no-underline">
+                <a href="#pricing" className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}>
                   {ar ? "الأسعار" : "Pricing"}
                 </a>
-                <a href="/guides" className="text-sm text-slate-400 hover:text-white transition-colors no-underline">
+                <a href="/guides" className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}>
                   {ar ? "أدلة الإلغاء" : "Cancel Guides"}
                 </a>
               </div>
-              <p className="text-xs text-slate-500 mb-1">
+              <p className="text-xs mb-1" style={{ color: "#8AADA8" }}>
                 {ar ? "٤٩ ريال مرة واحدة · بدون اشتراك · ضمان استرداد كامل" : "49 SAR one-time · No subscription · Full refund guarantee"}
               </p>
-              <p className="text-xs text-slate-600">
+              <p className="text-xs" style={{ color: "#4A6862" }}>
                 © {new Date().getFullYear()} YallaCancel · {ar ? "صُنع بحب في السعودية 🇸🇦" : "Made with love in Saudi Arabia 🇸🇦"}
               </p>
             </div>

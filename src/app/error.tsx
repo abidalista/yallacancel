@@ -10,7 +10,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   return (
-    <div className="min-h-screen bg-[#F8FAFF] flex flex-col items-center justify-center px-6 text-center">
+    <div className="min-h-screen bg-[#EDF5F3] flex flex-col items-center justify-center px-6 text-center">
       <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-6">
         <span className="text-3xl">!</span>
       </div>
@@ -21,7 +21,7 @@ export default function GlobalError({
       <p className="text-xs text-slate-400 mb-6 max-w-xs">{error.message}</p>
       <button
         onClick={reset}
-        className="inline-flex items-center gap-2 bg-gradient-to-br from-indigo-500 to-violet-600 text-white px-6 py-3 rounded-full font-bold text-sm shadow-lg shadow-indigo-500/25 hover:-translate-y-0.5 transition-all"
+        className="inline-flex items-center gap-2 bg-[#1A3A35] text-white px-6 py-3 rounded-full font-bold text-sm shadow-lg hover:-translate-y-0.5 transition-all"
       >
         <RotateCcw size={16} strokeWidth={1.5} />
         حاول مرة ثانية · Try again

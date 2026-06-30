@@ -23,7 +23,7 @@ export default function FundingTicker({ locale }: FundingTickerProps) {
   const repeated = [...items, ...items];
 
   return (
-    <div className="bg-slate-950 text-white/60 text-[11px] font-semibold overflow-hidden whitespace-nowrap h-7 flex items-center">
+    <div className="bg-[#112920] text-[#C5DDD9]/80 text-[11px] font-semibold overflow-hidden whitespace-nowrap h-7 flex items-center">
       <div className="ticker-track flex gap-8">
         {repeated.map((item, i) => (
           <span key={i} className="flex items-center gap-2">

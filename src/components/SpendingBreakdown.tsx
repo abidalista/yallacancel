@@ -16,7 +16,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   "Shopping": "#8B5CF6",
   "Transport": "#3B82F6",
   "Telecom": "#06B6D4",
-  "Transfers": "#6366F1",
+  "Transfers": "#00A651",
   "Housing": "#EC4899",
   "Subscriptions": "#F59E0B",
   "Health": "#14B8A6",
@@ -50,7 +50,7 @@ export default function SpendingBreakdownComponent({ data, locale }: Props) {
       {/* Header */}
       <div className="px-6 pt-6 pb-4 border-b border-slate-100">
         <div className="flex items-center gap-2 mb-1">
-          <BarChart3 size={18} strokeWidth={1.5} className="text-indigo-500" />
+          <BarChart3 size={18} strokeWidth={1.5} className="text-[#00A651]" />
           <h3 className="text-base font-extrabold text-slate-800">
             {ar ? "تحليل الإنفاق" : "Spending Breakdown"}
           </h3>
@@ -129,7 +129,7 @@ export default function SpendingBreakdownComponent({ data, locale }: Props) {
           <div className="space-y-2.5">
             {data.takeaways.map((t, i) => (
               <div key={i} className="flex items-start gap-2.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 flex-shrink-0" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[#1A3A35] mt-1.5 flex-shrink-0" />
                 <p
                   className="text-sm text-slate-600 leading-relaxed"
                   dangerouslySetInnerHTML={{ __html: ar ? t.ar : t.en }}

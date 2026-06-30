@@ -44,8 +44,8 @@ export default function BankSelector({
             onClick={() => onSelect(bank.id)}
             className={`p-3 rounded-[20px] border-2 transition-all text-sm font-medium ${
               selectedBank === bank.id
-                ? "border-indigo-400 bg-indigo-50 shadow-sm"
-                : "border-slate-100 hover:border-indigo-200 hover:shadow-sm bg-white"
+                ? "border-[#00A651] bg-[#E8F7EE] shadow-sm"
+                : "border-[#E5EFED] hover:border-[#C5DDD9] hover:shadow-sm bg-white"
             }`}
           >
             <div

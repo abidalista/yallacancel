@@ -48,7 +48,7 @@ export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
           dir={ar ? "rtl" : "ltr"}
         >
           {/* Header */}
-          <div className="bg-gradient-to-br from-indigo-500 to-violet-600 px-6 py-6 text-white text-center relative">
+          <div className="bg-gradient-to-br from-[#1A3A35] to-[#0F2A26] px-6 py-6 text-white text-center relative">
             <button
               onClick={onClose}
               className="absolute top-4 left-4 text-white/70 hover:text-white p-1 rounded-full transition-colors"
@@ -69,8 +69,8 @@ export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
               const Icon = f.icon;
               return (
                 <div key={i} className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
-                    <Icon size={16} strokeWidth={1.5} className="text-indigo-500" />
+                  <div className="w-8 h-8 rounded-xl bg-[#E8F7EE] flex items-center justify-center flex-shrink-0">
+                    <Icon size={16} strokeWidth={1.5} className="text-[#00A651]" />
                   </div>
                   <span className="text-sm text-slate-700 leading-snug pt-1">
                     {f.text}
@@ -82,8 +82,8 @@ export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
 
           {/* Pricing */}
           <div className="px-6 pb-6 space-y-3">
-            <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-center">
-              <div className="text-3xl font-extrabold text-indigo-600 tracking-tight">
+            <div className="bg-[#E8F7EE] border border-[#E5EFED] rounded-2xl p-4 text-center">
+              <div className="text-3xl font-extrabold text-[#00A651] tracking-tight">
                 {ar ? "٤٩ ريال" : "49 SAR"}
               </div>
               <div className="text-sm text-slate-500">
