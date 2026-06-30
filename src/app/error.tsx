@@ -24,7 +24,7 @@ export default function GlobalError({
         className="inline-flex items-center gap-2 bg-gradient-to-br from-indigo-500 to-violet-600 text-white px-6 py-3 rounded-full font-bold text-sm shadow-lg shadow-indigo-500/25 hover:-translate-y-0.5 transition-all"
       >
         <RotateCcw size={16} strokeWidth={1.5} />
-        حاول مرة ثانية — Try again
+        حاول مرة ثانية · Try again
       </button>
     </div>
   );

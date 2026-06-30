@@ -4,7 +4,7 @@
 
 ## What it does
 
-YallaCancel analyzes bank statements (CSV and PDF) from all major Saudi banks to find recurring subscriptions. It runs entirely in the browser — no data is uploaded to any server.
+YallaCancel analyzes bank statements (CSV and PDF) from all major Saudi banks to find recurring subscriptions. It runs entirely in the browser. No data is uploaded to any server.
 
 ## Supported banks
 

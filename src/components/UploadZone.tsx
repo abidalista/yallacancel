@@ -48,11 +48,11 @@ export default function UploadZone({
       const ext = file.name.split(".").pop()?.toLowerCase();
 
       if (ext !== "csv" && ext !== "pdf") {
-        rejected.push(ar ? `${file.name} — لازم يكون CSV او PDF` : `${file.name} — must be CSV or PDF`);
+        rejected.push(ar ? `${file.name} · لازم يكون CSV او PDF` : `${file.name} · must be CSV or PDF`);
         continue;
       }
       if (file.size > MAX_FILE_SIZE) {
-        rejected.push(ar ? `${file.name} — اكبر من ١٠ ميقا` : `${file.name} — exceeds 10 MB limit`);
+        rejected.push(ar ? `${file.name} · اكبر من ١٠ ميقا` : `${file.name} · exceeds 10 MB limit`);
         continue;
       }
       newFiles.push({ file, name: file.name, size: file.size });
@@ -70,8 +70,8 @@ export default function UploadZone({
       if (prevTotal + newTotal > MAX_TOTAL_SIZE) {
         setFileError(
           ar
-            ? `الحجم الكلي يتجاوز ٢٥ ميقا — احذف ملف او ارفع ملفات اصغر`
-            : `Total size exceeds 25 MB — remove a file or upload smaller files`
+            ? `الحجم الكلي يتجاوز ٢٥ ميقا · احذف ملف او ارفع ملفات اصغر`
+            : `Total size exceeds 25 MB · remove a file or upload smaller files`
         );
         return prev;
       }
@@ -122,7 +122,7 @@ export default function UploadZone({
           <Upload size={22} strokeWidth={1.5} className="text-indigo-500" />
         </div>
         <p className="font-bold text-slate-800 text-base mb-1">
-          {ar ? "حط آخر ٢-٣ أشهر من كشف حسابك" : "Drop your last 2-3 months of statements"}
+          {ar ? "حط آخر ٢ إلى ٣ أشهر من كشف حسابك" : "Drop your last 2 to 3 months of statements"}
         </p>
         <p className="text-sm text-slate-400">
           {ar ? "CSV أو PDF من أي بنك · أكثر من ملف · حتى ٢٥ ميقا" : "CSV or PDF from any bank · multiple files · up to 25 MB"}
@@ -159,8 +159,8 @@ export default function UploadZone({
           >
             <p className="text-sm font-bold text-slate-700 mb-4">
               {ar
-                ? `${selectedFiles.length} ملف — ${formatSize(totalSize)} من ٢٥ ميقا`
-                : `${selectedFiles.length} file(s) — ${formatSize(totalSize)} of 25 MB`}
+                ? `${selectedFiles.length} ملف · ${formatSize(totalSize)} من ٢٥ ميقا`
+                : `${selectedFiles.length} file(s) · ${formatSize(totalSize)} of 25 MB`}
             </p>
 
             <div className="space-y-3 mb-5">
@@ -208,12 +208,12 @@ export default function UploadZone({
             className="w-full bg-white border-2 border-indigo-200 hover:border-indigo-400 text-indigo-600 hover:text-indigo-700 rounded-full px-6 py-3.5 font-bold text-sm transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
           >
             <Sparkles size={16} strokeWidth={1.5} />
-            {ar ? "شوف كيف يشتغل — بدون ملف" : "See it in action — no file needed"}
+            {ar ? "شوف كيف يشتغل · بدون ملف" : "See it in action · no file needed"}
           </button>
           <p className="text-xs text-slate-400 text-center mt-2">
             {ar
-              ? "نعرض لك تقرير كامل بـ ١٤ اشتراك — نفس اللي بتشوفه مع كشف حسابك"
-              : "We'll show a full audit with 14 subscriptions — exactly what you'd get with your own statement"}
+              ? "نعرض لك تقرير كامل بـ ١٤ اشتراك · نفس اللي بتشوفه مع كشف حسابك"
+              : "We'll show a full audit with 14 subscriptions · exactly what you'd get with your own statement"}
           </p>
         </>
       )}

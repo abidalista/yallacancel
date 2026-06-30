@@ -156,8 +156,8 @@ export function analyzeSpending(transactions: Transaction[]): SpendingBreakdown 
   if (categories.length > 0) {
     const top = categories[0];
     takeaways.push({
-      ar: `**${top.name}** هي أكبر فئة إنفاق — ${top.total.toLocaleString()} ريال (${top.percent}٪ من المجموع).`,
-      en: `**${top.nameEn}** is your biggest spending category — ${top.total.toLocaleString()} SAR (${top.percent}% of total).`,
+      ar: `**${top.name}** هي أكبر فئة إنفاق · ${top.total.toLocaleString()} ريال (${top.percent}٪ من المجموع).`,
+      en: `**${top.nameEn}** is your biggest spending category · ${top.total.toLocaleString()} SAR (${top.percent}% of total).`,
     });
   }
 
@@ -166,24 +166,24 @@ export function analyzeSpending(transactions: Transaction[]): SpendingBreakdown 
   if (foodDelivery && groceries && foodDelivery.total > groceries.total) {
     const ratio = Math.round(foodDelivery.total / groceries.total);
     takeaways.push({
-      ar: `**التوصيل أكثر من البقالة بـ ${ratio}x** — ${foodDelivery.total.toLocaleString()} ريال توصيل مقابل ${groceries.total.toLocaleString()} ريال بقالة.`,
-      en: `**Food delivery > groceries by ${ratio}x** — ${foodDelivery.total.toLocaleString()} SAR delivery vs ${groceries.total.toLocaleString()} SAR groceries.`,
+      ar: `**التوصيل أكثر من البقالة بـ ${ratio}x** · ${foodDelivery.total.toLocaleString()} ريال توصيل مقابل ${groceries.total.toLocaleString()} ريال بقالة.`,
+      en: `**Food delivery > groceries by ${ratio}x** · ${foodDelivery.total.toLocaleString()} SAR delivery vs ${groceries.total.toLocaleString()} SAR groceries.`,
     });
   }
 
   const subscriptions = categories.find((c) => c.nameEn === "Subscriptions");
   if (subscriptions) {
     takeaways.push({
-      ar: `**الاشتراكات** تكلفك ${subscriptions.monthlyAvg.toLocaleString()} ريال/شهر — وش منها تحتاجه فعلاً؟`,
-      en: `**Subscriptions** cost you ${subscriptions.monthlyAvg.toLocaleString()} SAR/mo — which ones do you actually use?`,
+      ar: `**الاشتراكات** تكلفك ${subscriptions.monthlyAvg.toLocaleString()} ريال/شهر · وش منها تحتاجه فعلاً؟`,
+      en: `**Subscriptions** cost you ${subscriptions.monthlyAvg.toLocaleString()} SAR/mo · which ones do you actually use?`,
     });
   }
 
   const transport = categories.find((c) => c.nameEn === "Transport");
   if (transport && transport.topMerchants.length > 0) {
     takeaways.push({
-      ar: `**المواصلات** — ${transport.total.toLocaleString()} ريال (${transport.topMerchants.join("، ")}).`,
-      en: `**Transport** — ${transport.total.toLocaleString()} SAR (${transport.topMerchants.join(", ")}).`,
+      ar: `**المواصلات** · ${transport.total.toLocaleString()} ريال (${transport.topMerchants.join("، ")}).`,
+      en: `**Transport** · ${transport.total.toLocaleString()} SAR (${transport.topMerchants.join(", ")}).`,
     });
   }
 

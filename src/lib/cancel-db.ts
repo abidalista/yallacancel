@@ -161,14 +161,14 @@ const CANCEL_DB: Record<string, CancelInfo> = {
     cancelUrl: "https://account.adobe.com/plans",
     difficulty: "hard",
     domain: "adobe.com",
-    darkPattern: "Adobe يفرض رسوم إلغاء مبكر — تأكد من توقيت الإلغاء",
+    darkPattern: "Adobe يفرض رسوم إلغاء مبكر · تأكد من توقيت الإلغاء",
     guideSlug: "cancel-adobe",
   },
   "Adobe": {
     cancelUrl: "https://account.adobe.com/plans",
     difficulty: "hard",
     domain: "adobe.com",
-    darkPattern: "Adobe يفرض رسوم إلغاء مبكر — تأكد من توقيت الإلغاء",
+    darkPattern: "Adobe يفرض رسوم إلغاء مبكر · تأكد من توقيت الإلغاء",
     guideSlug: "cancel-adobe",
   },
   "Microsoft 365": {

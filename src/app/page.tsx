@@ -84,23 +84,23 @@ const STEPS = [
     titleAr: "ارفع كشف حسابك",
     titleEn: "Upload your statement",
     descAr: "نزّل كشف حسابك من تطبيق بنكك (CSV أو PDF). أو جرّب بمثال جاهز بدون ملف.",
-    descEn: "Download your statement from your banking app (CSV or PDF). Or try the demo — no file needed.",
+    descEn: "Download your statement from your banking app (CSV or PDF). Or try the demo · no file needed.",
   },
   {
     num: "٢",
     icon: Eye,
     titleAr: "شوف كل اشتراكاتك",
     titleEn: "See every subscription",
-    descAr: "نحلل عملياتك ونطلع لك كل اشتراك — المبلغ، التكرار، وأول وآخر خصم.",
-    descEn: "We analyze your transactions and surface every subscription — amount, frequency, and charge history.",
+    descAr: "نحلل عملياتك ونطلع لك كل اشتراك · المبلغ، التكرار، وأول وآخر خصم.",
+    descEn: "We analyze your transactions and surface every subscription · amount, frequency, and charge history.",
   },
   {
     num: "٣",
     icon: Link2,
     titleAr: "الغي بضغطة زر",
     titleEn: "Cancel in one click",
-    descAr: "لكل اشتراك رابط إلغاء مباشر. اضغط وألغي — بدون دوخة أو بحث.",
-    descEn: "Every subscription has a direct cancel link. Click and cancel — no searching or runaround.",
+    descAr: "لكل اشتراك رابط إلغاء مباشر. اضغط وألغي · بدون دوخة أو بحث.",
+    descEn: "Every subscription has a direct cancel link. Click and cancel · no searching or runaround.",
   },
 ];
 
@@ -124,7 +124,7 @@ const TESTIMONIALS: { quote: string; name: string; role: string; initial: string
 const FAQ_ITEMS = [
   {
     q: "هل بياناتي آمنة؟",
-    a: "نعم. كل التحليل يتم داخل متصفحك — ملفك ما يتم رفعه لأي سيرفر. ما نحتفظ بأي بيانات.",
+    a: "نعم. كل التحليل يتم داخل متصفحك · ملفك ما يتم رفعه لأي سيرفر. ما نحتفظ بأي بيانات.",
   },
   {
     q: "أي بنوك تدعمون؟",
@@ -132,15 +132,15 @@ const FAQ_ITEMS = [
   },
   {
     q: "كيف أنزّل كشف حسابي؟",
-    a: "افتح تطبيق بنكك → الحسابات → كشف الحساب → اختر آخر ٣-٦ أشهر → نزّله كـ CSV أو PDF.",
+    a: "افتح تطبيق بنكك → الحسابات → كشف الحساب → اختر آخر ٣ إلى ٦ أشهر → نزّله كـ CSV أو PDF.",
   },
   {
     q: "هل الأداة مجانية؟",
-    a: "التحليل الأول مجاني. بعدها تقدر تترقى بـ ٤٩ ريال لمرة واحدة — بدون اشتراك شهري.",
+    a: "التحليل الأول مجاني. بعدها تقدر تترقى بـ ٤٩ ريال لمرة واحدة · بدون اشتراك شهري.",
   },
   {
     q: "هل يلا كانسل يلغي الاشتراكات عني؟",
-    a: "حالياً نوفر لك تقرير تفصيلي مع روابط إلغاء مباشرة. الإلغاء نفسه تسويه بنفسك عبر الرابط — عادة يأخذ أقل من دقيقة لكل اشتراك.",
+    a: "حالياً نوفر لك تقرير تفصيلي مع روابط إلغاء مباشرة. الإلغاء نفسه تسويه بنفسك عبر الرابط · عادة يأخذ أقل من دقيقة لكل اشتراك.",
   },
 ];
 
@@ -208,7 +208,7 @@ export default function HomePage() {
       suggestionsAr.push("تأكد إن الملف فيه: التاريخ، الوصف، المبلغ");
     }
 
-    suggestions.push("Or copy-paste your transactions text directly");
+    suggestions.push("Or copy and paste your transactions text directly");
     suggestionsAr.push("أو انسخ والصق نص العمليات مباشرة");
 
     return {
@@ -342,7 +342,7 @@ export default function HomePage() {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     } catch (fetchErr) {
-      // Fetch/parse failed — fall through to hardcoded data
+      // Fetch/parse failed · fall through to hardcoded data
     }
 
     setTxCount(72);
@@ -491,7 +491,7 @@ export default function HomePage() {
                 </div>
                 <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-full px-4 py-2 text-xs text-slate-400">
                   <Clock size={12} strokeWidth={1.5} />
-                  {ar ? "تقريباً خلصنا — لا تطلع من الصفحة" : "Almost there – stay on this page"}
+                  {ar ? "تقريباً خلصنا · لا تطلع من الصفحة" : "Almost there to stay on this page"}
                 </div>
               </motion.div>
 
@@ -613,21 +613,21 @@ export default function HomePage() {
                 >
                   <p className="text-center text-indigo-600 font-bold text-base mb-4">
                     {ar
-                      ? `ادفع ٤٩ ريال، ووفر ${hiddenYearly.toFixed(0)} ريال/سنة — يعني ${Math.round(hiddenYearly / 49)}x عائد`
-                      : `Pay 49 SAR, save up to ${hiddenYearly.toFixed(0)} SAR/yr — that's a ${Math.round(hiddenYearly / 49)}x return`}
+                      ? `ادفع ٤٩ ريال، ووفر ${hiddenYearly.toFixed(0)} ريال/سنة · يعني ${Math.round(hiddenYearly / 49)}x عائد`
+                      : `Pay 49 SAR, save up to ${hiddenYearly.toFixed(0)} SAR/yr · that's a ${Math.round(hiddenYearly / 49)}x return`}
                   </p>
                   <button
                     onClick={() => setShowPaywall(true)}
                     className="btn-primary w-full text-base py-4 mb-3"
                   >
                     {ar
-                      ? `اكشف كل ${subs.length} اشتراك — ٤٩ ريال`
-                      : `Unlock all ${subs.length} subscriptions — 49 SAR`}
+                      ? `اكشف كل ${subs.length} اشتراك · ٤٩ ريال`
+                      : `Unlock all ${subs.length} subscriptions · 49 SAR`}
                   </button>
                   <p className="text-xs text-center text-slate-400 mb-8">
                     {ar
                       ? "دفعة واحدة · بدون حساب · ضمان استرداد كامل"
-                      : "One-time payment · No account needed · 100% money-back guarantee"}
+                      : "One time payment · No account needed · 100% money back guarantee"}
                   </p>
                 </motion.div>
               )}
@@ -673,7 +673,7 @@ export default function HomePage() {
                 transition={{ duration: 0.5 }}
               >
                 <span className="section-label-light inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full mb-5">
-                  <Shield size={12} strokeWidth={1.5} /> {ar ? "خصوصية ١٠٠٪ — كل شيء على جهازك" : "100% Private — Everything stays on your device"}
+                  <Shield size={12} strokeWidth={1.5} /> {ar ? "خصوصية ١٠٠٪ · كل شيء على جهازك" : "100% Private · Everything stays on your device"}
                 </span>
                 <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-white mb-4 max-w-3xl mx-auto leading-[1.1]">
                   {ar
@@ -682,8 +682,8 @@ export default function HomePage() {
                 </h1>
                 <p className="text-lg text-indigo-200/70 max-w-[600px] mx-auto mb-4 leading-relaxed">
                   {ar
-                    ? "السعودي العادي يدفع ٤,٥٨٤ ريال سنوياً على اشتراكات ناسيها. ارفع كشف حسابك واكتشف كم تخسر أنت — في ٩٠ ثانية."
-                    : "The average Saudi pays 4,584 SAR/year on forgotten subscriptions. Upload your statement and find out how much you're losing — in 90 seconds."}
+                    ? "السعودي العادي يدفع ٤,٥٨٤ ريال سنوياً على اشتراكات ناسيها. ارفع كشف حسابك واكتشف كم تخسر أنت · في ٩٠ ثانية."
+                    : "The average Saudi pays 4,584 SAR/year on forgotten subscriptions. Upload your statement and find out how much you're losing · in 90 seconds."}
                 </p>
                 <p className="text-sm text-indigo-300/50 mb-6">
                   {ar ? "اكتشف. الغي. وفّر." : "Find it. Cancel it. Save."}
@@ -785,7 +785,7 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* How it works — 3 steps */}
+          {/* How it works · 3 steps */}
           <section className="bg-white py-20 px-6">
             <div className="max-w-[800px] mx-auto text-center">
               <span className="section-label">
@@ -821,14 +821,14 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Result preview — show value before upload */}
+          {/* Result preview · show value before upload */}
           <section className="bg-[#F8FAFF] py-16 px-6">
             <div className="max-w-[600px] mx-auto text-center">
               <span className="section-label">
                 <BarChart3 size={12} strokeWidth={1.5} /> {ar ? "هذا اللي بتشوفه" : "Here's what you'll get"}
               </span>
               <h2 className="text-xl font-extrabold tracking-tight text-slate-900 mb-8">
-                {ar ? "تقرير كامل — مثل هذا بالضبط" : "A full audit — exactly like this"}
+                {ar ? "تقرير كامل · مثل هذا بالضبط" : "A full audit · exactly like this"}
               </h2>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -884,7 +884,7 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Testimonials — add real ones here when available */}
+          {/* Testimonials · add real ones here when available */}
           {TESTIMONIALS.length > 0 && (
           <section className="bg-gradient-to-b from-indigo-50/40 to-white py-20 px-6">
             <div className="max-w-[900px] mx-auto text-center">
@@ -944,7 +944,7 @@ export default function HomePage() {
                       { labelAr: "وقت البحث", labelEn: "Time to find", ycAr: "٩٠ ثانية", ycEn: "90 sec", manAr: "٣-٤ ساعات", manEn: "3-4 hours" },
                       { labelAr: "الاشتراكات المكتشفة", labelEn: "Subscriptions found", ycAr: "كلها", ycEn: "All of them", manAr: "بعضها", manEn: "Some" },
                       { labelAr: "روابط إلغاء", labelEn: "Cancel links", ycAr: "✓ مباشرة", ycEn: "✓ Direct", manAr: "✗ تدور بنفسك", manEn: "✗ Search yourself" },
-                      { labelAr: "يفهم بنوك سعودية", labelEn: "Saudi bank support", ycAr: "✓ ٩ بنوك", ycEn: "✓ 9 banks", manAr: "—", manEn: "—" },
+                      { labelAr: "يفهم بنوك سعودية", labelEn: "Saudi bank support", ycAr: "✓ ٩ بنوك", ycEn: "✓ 9 banks", manAr: "·", manEn: "·" },
                       { labelAr: "خصوصية", labelEn: "Privacy", ycAr: "✓ على جهازك", ycEn: "✓ On your device", manAr: "✓", manEn: "✓" },
                       { labelAr: "السعر", labelEn: "Price", ycAr: "٤٩ ريال مرة واحدة", ycEn: "49 SAR once", manAr: "وقتك", manEn: "Your time" },
                     ].map((row, i) => (
@@ -970,11 +970,11 @@ export default function HomePage() {
                 {ar ? "٤٩ ريال" : "49 SAR"}
               </h2>
               <p className="text-sm text-slate-400 mb-8">
-                {ar ? "دفعة واحدة — مو اشتراك شهري. وتقدر تسترجع فلوسك كاملة." : "One-time payment — not a monthly subscription. Full money-back guarantee."}
+                {ar ? "دفعة واحدة · مو اشتراك شهري. وتقدر تسترجع فلوسك كاملة." : "One time payment · not a monthly subscription. Full money back guarantee."}
               </p>
               <div className="bento-card p-6 text-right mb-6">
                 {[
-                  { ar: "تحليل غير محدود — كل بنوكك وبطاقاتك", en: "Unlimited analysis — all your banks and cards" },
+                  { ar: "تحليل غير محدود · كل بنوكك وبطاقاتك", en: "Unlimited analysis · all your banks and cards" },
                   { ar: "روابط إلغاء مباشرة لـ ٥٠+ خدمة سعودية", en: "Direct cancel links for 50+ Saudi services" },
                   { ar: "تقرير PDF بالعربي تحتفظ فيه", en: "Arabic PDF report you can keep" },
                   { ar: "قوالب رسائل إلغاء جاهزة", en: "Ready-to-send cancellation message templates" },
@@ -990,7 +990,7 @@ export default function HomePage() {
                 onClick={() => setShowPaywall(true)}
                 className="btn-primary w-full text-base py-4 mb-3"
               >
-                {ar ? "حلل كشف حسابك — ٤٩ ريال" : "Analyze your statement — 49 SAR"}
+                {ar ? "حلل كشف حسابك · ٤٩ ريال" : "Analyze your statement · 49 SAR"}
               </button>
               <p className="text-xs text-slate-400">
                 {ar ? "يقبل مدى · فيزا · ماستركارد · ضمان استرداد كامل" : "Accepts mada · Visa · Mastercard · Full refund guarantee"}
@@ -1045,7 +1045,7 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Sources — external citation links */}
+          {/* Sources · external citation links */}
           <section className="bg-[#F8FAFF] py-12 px-6">
             <div className="max-w-[700px] mx-auto text-center">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">

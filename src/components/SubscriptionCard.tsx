@@ -28,7 +28,7 @@ interface SubscriptionCardProps {
 }
 
 function formatDate(dateStr: string, locale: "ar" | "en") {
-  if (!dateStr) return "—";
+  if (!dateStr) return "·";
   try {
     return new Date(dateStr).toLocaleDateString(
       locale === "ar" ? "ar-SA" : "en-SA",

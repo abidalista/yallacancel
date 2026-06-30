@@ -9,21 +9,21 @@ interface PaywallModalProps {
 }
 
 const FEATURES_AR = [
-  { icon: FolderOpen, text: "رفع كشوفات غير محدودة — كل بطاقاتك وبنوكك" },
-  { icon: FileDown, text: "تصدير تقرير PDF بالعربي — احتفظ بنسخة" },
+  { icon: FolderOpen, text: "رفع كشوفات غير محدودة · كل بطاقاتك وبنوكك" },
+  { icon: FileDown, text: "تصدير تقرير PDF بالعربي · احتفظ بنسخة" },
   { icon: Link2, text: "روابط إلغاء مباشرة لأكثر من ٥٠ خدمة سعودية" },
   { icon: BookOpen, text: "دليل خطوة بخطوة لإلغاء كل اشتراك" },
   { icon: MessageSquare, text: "قوالب رسائل إلغاء جاهزة بالعربي" },
-  { icon: Infinity, text: "تحديثات مدى الحياة — دفعة واحدة وخلاص" },
+  { icon: Infinity, text: "تحديثات مدى الحياة · دفعة واحدة وخلاص" },
 ];
 
 const FEATURES_EN = [
-  { icon: FolderOpen, text: "Unlimited CSV uploads — all your cards and banks" },
-  { icon: FileDown, text: "Export Arabic PDF report — keep a copy" },
+  { icon: FolderOpen, text: "Unlimited CSV uploads · all your cards and banks" },
+  { icon: FileDown, text: "Export Arabic PDF report · keep a copy" },
   { icon: Link2, text: "Direct cancel links for 50+ Saudi services" },
-  { icon: BookOpen, text: "Step-by-step cancellation guide for each service" },
+  { icon: BookOpen, text: "Step by step cancellation guide for each service" },
   { icon: MessageSquare, text: "Ready-to-send Arabic cancellation message templates" },
-  { icon: Infinity, text: "Lifetime updates — pay once, done" },
+  { icon: Infinity, text: "Lifetime updates · pay once, done" },
 ];
 
 export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
@@ -87,15 +87,15 @@ export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
                 {ar ? "٤٩ ريال" : "49 SAR"}
               </div>
               <div className="text-sm text-slate-500">
-                {ar ? "دفعة واحدة — بدون اشتراك شهري" : "One-time payment — no monthly fee"}
+                {ar ? "دفعة واحدة · بدون اشتراك شهري" : "One time payment · no monthly fee"}
               </div>
             </div>
 
             <button
               className="btn-primary w-full text-center"
-              onClick={() => alert(ar ? "قريباً — جاري ربط بوابة الدفع" : "Coming soon — payment gateway integration in progress")}
+              onClick={() => alert(ar ? "قريباً · جاري ربط بوابة الدفع" : "Coming soon · payment gateway integration in progress")}
             >
-              {ar ? "ادفع بمدى أو بطاقة — ٤٩ ريال" : "Pay with mada or card — 49 SAR"}
+              {ar ? "ادفع بمدى أو بطاقة · ٤٩ ريال" : "Pay with mada or card · 49 SAR"}
             </button>
 
             <p className="text-xs text-center text-slate-400">

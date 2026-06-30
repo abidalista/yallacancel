@@ -1,0 +1,32 @@
+---
+description: Ban em dashes, en dashes, and hyphens in all user-facing website copy
+globs: src/**/*.{tsx,ts},public/**/*.html,**/*.html
+alwaysApply: false
+---
+
+# No dashes or hyphens in website copy
+
+Never use em dashes (—), en dashes (–), or hyphens (-) in user-facing text: UI strings, headings, metadata, FAQs, cancel guides, blog posts, or marketing copy.
+
+## Use instead
+
+| Avoid | Use |
+|-------|-----|
+| Em dash (—) | Period, comma, colon, or middle dot (·) |
+| En dash (–) | "to" for ranges |
+| Hyphenated compounds (One-time, money-back, 2-3) | Spaces or rephrase ("One time", "money back", "2 to 3") |
+
+## Allowed (not copy)
+
+CSS class names, URLs, code identifiers, file names, and third party brand names that contain hyphens (e.g. Disney+ domains).
+
+## Examples
+
+- Bad: `100% Private — Everything stays on your device`
+- Good: `100% Private. Everything stays on your device`
+
+- Bad: `Drop your last 2-3 months of statements`
+- Good: `Drop your last 2 to 3 months of statements`
+
+- Bad: `One-time payment — no monthly fee`
+- Good: `One time payment. No monthly fee`

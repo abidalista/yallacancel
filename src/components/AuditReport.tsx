@@ -167,13 +167,13 @@ export default function AuditReport({
           </p>
           <p className="text-sm text-slate-400 mb-1">
             {ar
-              ? "جرب ارفع كشف حساب أطول (٢-٣ أشهر) عشان نلقى الاشتراكات المتكررة."
-              : "Try uploading a longer statement (2-3 months) so we can detect recurring charges."}
+              ? "جرب ارفع كشف حساب أطول (٢ إلى ٣ أشهر) عشان نلقى الاشتراكات المتكررة."
+              : "Try uploading a longer statement (2 to 3 months) so we can detect recurring charges."}
           </p>
           <p className="text-sm text-slate-400">
             {ar
-              ? "أو جرب ملف ثاني — بعض الكشوفات تحتاج صيغة CSV بدل PDF."
-              : "Or try a different file — some statements work better as CSV instead of PDF."}
+              ? "أو جرب ملف ثاني · بعض الكشوفات تحتاج صيغة CSV بدل PDF."
+              : "Or try a different file · some statements work better as CSV instead of PDF."}
           </p>
         </div>
       ) : (
@@ -199,7 +199,7 @@ export default function AuditReport({
       {/* ── Date Range ── */}
       {report.dateRange.from && report.dateRange.to && (
         <p className="text-xs text-center text-slate-400">
-          {ar ? "فترة التحليل:" : "Analysis period:"} {report.dateRange.from} — {report.dateRange.to}
+          {ar ? "فترة التحليل:" : "Analysis period:"} {report.dateRange.from} · {report.dateRange.to}
         </p>
       )}
     </motion.div>

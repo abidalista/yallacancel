@@ -156,7 +156,7 @@ export const translations = {
       "All analysis happens on your device. No data is ever sent to any server.",
     privacyPoint1: "Your data never leaves your device",
     privacyPoint2: "We don't store any banking information",
-    privacyPoint3: "Open source — verify for yourself",
+    privacyPoint3: "Open source · verify for yourself",
     privacyPoint4: "You can hide subscription names in the report",
 
     madeWith: "Made with love in Saudi Arabia 🇸🇦",

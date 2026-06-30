@@ -37,7 +37,7 @@ export default function SpendingBreakdownComponent({ data, locale }: Props) {
   if (data.categories.length === 0) return null;
 
   const dateLabel = data.dateRange.from && data.dateRange.to
-    ? `${formatMonth(data.dateRange.from)} – ${formatMonth(data.dateRange.to)}`
+    ? `${formatMonth(data.dateRange.from)} to ${formatMonth(data.dateRange.to)}`
     : "";
 
   return (

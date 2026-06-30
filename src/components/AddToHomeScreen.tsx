@@ -71,8 +71,8 @@ export default function AddToHomeScreen({ locale }: AddToHomeScreenProps) {
               </h3>
               <p className="text-sm text-slate-500 mb-6 leading-relaxed">
                 {ar
-                  ? "استخدمه كتطبيق — أسرع، شاشة كاملة، ووصول فوري من الشاشة الرئيسية."
-                  : "Get a faster, full-screen experience — instant access from your home screen."}
+                  ? "استخدمه كتطبيق · أسرع، شاشة كاملة، ووصول فوري من الشاشة الرئيسية."
+                  : "Get a faster, full screen experience · instant access from your home screen."}
               </p>
 
               <div className="space-y-3 mb-6">

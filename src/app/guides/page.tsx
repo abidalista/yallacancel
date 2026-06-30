@@ -305,7 +305,7 @@ export default function GuidesPage() {
             أدلة إلغاء الاشتراكات
           </h1>
           <p className="text-base text-white/55 leading-relaxed mb-8">
-            {ALL_GUIDES.length}+ دليل خطوة بخطوة — ابحث عن الخدمة اللي تبغى تلغيها
+            {ALL_GUIDES.length}+ دليل خطوة بخطوة · ابحث عن الخدمة اللي تبغى تلغيها
           </p>
           {/* Search bar */}
           <div className="relative max-w-[480px] mx-auto">
@@ -355,7 +355,7 @@ export default function GuidesPage() {
         {/* Results count */}
         <p className="text-sm text-[var(--color-text-muted)] mb-5">
           {filtered.length === 0
-            ? "ما لقينا نتائج — جرب كلمة ثانية"
+            ? "ما لقينا نتائج · جرب كلمة ثانية"
             : `${filtered.length} دليل إلغاء`}
         </p>
 
