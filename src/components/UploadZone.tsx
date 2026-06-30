@@ -4,6 +4,9 @@ import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, X, FileText, Sparkles } from "lucide-react";
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB per file
+const MAX_TOTAL_SIZE = 25 * 1024 * 1024; // 25 MB total per scan
+
 interface SelectedFile {
   file: File;
   name: string;
@@ -29,24 +32,53 @@ export default function UploadZone({
 }: UploadZoneProps) {
   const [dragging, setDragging] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
+  const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const ar = locale === "ar";
 
   function addFiles(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return;
+    setFileError(null);
+
     const newFiles: SelectedFile[] = [];
+    const rejected: string[] = [];
+
     for (let i = 0; i < fileList.length; i++) {
       const file = fileList[i];
       const ext = file.name.split(".").pop()?.toLowerCase();
-      if (ext === "csv" || ext === "pdf") {
-        newFiles.push({ file, name: file.name, size: file.size });
+
+      if (ext !== "csv" && ext !== "pdf") {
+        rejected.push(ar ? `${file.name} — لازم يكون CSV او PDF` : `${file.name} — must be CSV or PDF`);
+        continue;
       }
+      if (file.size > MAX_FILE_SIZE) {
+        rejected.push(ar ? `${file.name} — اكبر من ١٠ ميقا` : `${file.name} — exceeds 10 MB limit`);
+        continue;
+      }
+      newFiles.push({ file, name: file.name, size: file.size });
     }
-    if (newFiles.length === 0) {
-      alert(ar ? "الملفات لازم تكون CSV أو PDF" : "Files must be CSV or PDF");
+
+    if (newFiles.length === 0 && rejected.length > 0) {
+      setFileError(rejected.join("\n"));
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
-    setSelectedFiles((prev) => [...prev, ...newFiles]);
+
+    setSelectedFiles((prev) => {
+      const prevTotal = prev.reduce((sum, f) => sum + f.size, 0);
+      const newTotal = newFiles.reduce((sum, f) => sum + f.size, 0);
+      if (prevTotal + newTotal > MAX_TOTAL_SIZE) {
+        setFileError(
+          ar
+            ? `الحجم الكلي يتجاوز ٢٥ ميقا — احذف ملف او ارفع ملفات اصغر`
+            : `Total size exceeds 25 MB — remove a file or upload smaller files`
+        );
+        return prev;
+      }
+      const combined = [...prev, ...newFiles];
+      if (rejected.length > 0) setFileError(rejected.join("\n"));
+      return combined;
+    });
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -64,6 +96,8 @@ export default function UploadZone({
     if (selectedFiles.length === 0) return;
     onScan(selectedFiles.map((f) => f.file));
   }
+
+  const totalSize = selectedFiles.reduce((s, f) => s + f.size, 0);
 
   return (
     <motion.div
@@ -91,7 +125,7 @@ export default function UploadZone({
           {ar ? "حط آخر ٢-٣ أشهر من كشف حسابك" : "Drop your last 2-3 months of statements"}
         </p>
         <p className="text-sm text-slate-400">
-          {ar ? "CSV أو PDF من أي بنك · أقل من ٩٠ ثانية" : "CSV or PDF from any bank · Takes under 90 seconds"}
+          {ar ? "CSV أو PDF من أي بنك · أكثر من ملف · حتى ٢٥ ميقا" : "CSV or PDF from any bank · multiple files · up to 25 MB"}
         </p>
         <input
           ref={fileInputRef}
@@ -110,6 +144,10 @@ export default function UploadZone({
           : "Your files are analyzed and immediately discarded. Nothing is stored."}
       </p>
 
+      {fileError && (
+        <p className="text-xs text-red-500 text-center mt-2 whitespace-pre-line">{fileError}</p>
+      )}
+
       {/* File list + scan button */}
       <AnimatePresence>
         {selectedFiles.length > 0 && (
@@ -121,8 +159,8 @@ export default function UploadZone({
           >
             <p className="text-sm font-bold text-slate-700 mb-4">
               {ar
-                ? `${selectedFiles.length} ملف تم اختياره`
-                : `${selectedFiles.length} file(s) selected`}
+                ? `${selectedFiles.length} ملف — ${formatSize(totalSize)} من ٢٥ ميقا`
+                : `${selectedFiles.length} file(s) — ${formatSize(totalSize)} of 25 MB`}
             </p>
 
             <div className="space-y-3 mb-5">
