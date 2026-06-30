@@ -6,7 +6,7 @@
 export { parseCSV, parseCSVRobust, detectBank } from "./csv-parser.service";
 export type { CSVParseResult } from "./csv-parser.service";
 
-export { parsePDF, parsePDFRobust, analyzeFileWithAI } from "./pdf-parser.service";
+export { parsePDF, parsePDFRobust, analyzeFileWithAI, analyzeFilesWithAI } from "./pdf-parser.service";
 export type { PDFParseResult, AIAnalysisResult } from "./pdf-parser.service";
 
 export { analyzeTransactions } from "./subscription-analyzer.service";

@@ -13,7 +13,7 @@ const LLAMA_BASE = "https://api.cloud.llamaindex.ai";
 
 // Simple in-memory rate limiter (per IP, 5 requests per 10 minutes)
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT = 5;
+const RATE_LIMIT = 20;
 const RATE_WINDOW_MS = 10 * 60 * 1000;
 
 function isRateLimited(ip: string): boolean {

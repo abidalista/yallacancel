@@ -18,7 +18,7 @@ import {
   parsePDFRobust,
   analyzeTransactions,
   analyzeSpending,
-  analyzeFileWithAI,
+  analyzeFilesWithAI,
 } from "@/lib/services";
 import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, SubscriptionStatus, Transaction, BankId } from "@/lib/types";
@@ -334,27 +334,35 @@ export default function HomePage() {
       setAnalyzeStatus(ar ? "الذكاء الاصطناعي يحلل كشفك..." : "AI is analyzing your statement...");
 
       let aiSuccess = false;
-      for (const file of files) {
-        const aiResult = await analyzeFileWithAI(file);
-        if (aiResult.success) {
-          console.log("[handleScan] AI analysis succeeded");
-          const elapsed = Date.now() - start;
-          if (elapsed < MIN_LOADING_MS) {
-            setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
-            await new Promise(r => setTimeout(r, MIN_LOADING_MS - elapsed));
-          }
-          if (timerRef.current) clearInterval(timerRef.current);
-          posthog.capture("analysis_completed", { locale, subscription_count: aiResult.report.subscriptions.length, method: "ai" });
-          setReport(aiResult.report);
-          setSpendingData(null);
-          saveReportData(aiResult.report, null);
-          setStep("results");
-          window.scrollTo({ top: 0, behavior: "smooth" });
-          aiSuccess = true;
-          break;
-        } else {
-          console.warn("[handleScan] AI analysis failed:", aiResult.error);
+      const aiResult = await analyzeFilesWithAI(files, (current, total, fileName) => {
+        setAnalyzeStatus(
+          ar
+            ? `الذكاء الاصطناعي يحلل ${fileName} (${current} من ${total})...`
+            : `AI analyzing ${fileName} (${current} of ${total})...`
+        );
+      });
+      if (aiResult.success) {
+        console.log("[handleScan] AI analysis succeeded for", files.length, "file(s)");
+        const elapsed = Date.now() - start;
+        if (elapsed < MIN_LOADING_MS) {
+          setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
+          await new Promise(r => setTimeout(r, MIN_LOADING_MS - elapsed));
         }
+        if (timerRef.current) clearInterval(timerRef.current);
+        posthog.capture("analysis_completed", {
+          locale,
+          subscription_count: aiResult.report.subscriptions.length,
+          method: "ai",
+          file_count: files.length,
+        });
+        setReport(aiResult.report);
+        setSpendingData(null);
+        saveReportData(aiResult.report, null);
+        setStep("results");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        aiSuccess = true;
+      } else {
+        console.warn("[handleScan] AI analysis failed:", aiResult.error);
       }
 
       if (aiSuccess) return;

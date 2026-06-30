@@ -29,8 +29,6 @@ export interface ClaudeAnalysisError {
 
 export type AIAnalysisResult = ClaudeAnalysisResult | ClaudeAnalysisError;
 
-// ── Main: send file to Claude API for full analysis ──
-
 export async function analyzeFileWithAI(file: File): Promise<AIAnalysisResult> {
   console.log("[ai-parser] Analyzing:", file.name, "size:", file.size);
 
@@ -63,6 +61,89 @@ export async function analyzeFileWithAI(file: File): Promise<AIAnalysisResult> {
     console.error("[ai-parser] Failed:", err);
     return { success: false, error: err instanceof Error ? err.message : "Unknown error" };
   }
+}
+
+export async function analyzeFilesWithAI(
+  files: File[],
+  onProgress?: (current: number, total: number, fileName: string) => void
+): Promise<AIAnalysisResult> {
+  const reports: AuditReport[] = [];
+  const errors: string[] = [];
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    onProgress?.(i + 1, files.length, file.name);
+    const result = await analyzeFileWithAI(file);
+    if (result.success) {
+      reports.push(result.report);
+    } else {
+      errors.push(`${file.name}: ${result.error}`);
+      console.warn("[ai-parser] Skipping file:", file.name, result.error);
+    }
+  }
+
+  if (reports.length === 0) {
+    return {
+      success: false,
+      error: errors.join("; ") || "No files could be analyzed",
+    };
+  }
+
+  const report = reports.length === 1 ? reports[0] : mergeAuditReports(reports);
+  return { success: true, report, parseMethod: "claude_ai" };
+}
+
+function mergeAuditReports(reports: AuditReport[]): AuditReport {
+  const byName = new Map<string, Subscription>();
+
+  for (const report of reports) {
+    for (const sub of report.subscriptions) {
+      const key = sub.normalizedName;
+      const existing = byName.get(key);
+      if (!existing) {
+        byName.set(key, { ...sub, transactions: [...sub.transactions] });
+        continue;
+      }
+
+      existing.occurrences += sub.occurrences;
+      if (sub.firstCharge && (!existing.firstCharge || sub.firstCharge < existing.firstCharge)) {
+        existing.firstCharge = sub.firstCharge;
+      }
+      if (sub.lastCharge && (!existing.lastCharge || sub.lastCharge > existing.lastCharge)) {
+        existing.lastCharge = sub.lastCharge;
+        existing.amount = sub.amount;
+        existing.monthlyEquivalent = sub.monthlyEquivalent;
+        existing.yearlyEquivalent = sub.yearlyEquivalent;
+      }
+      existing.transactions = [...existing.transactions, ...sub.transactions].slice(0, 12);
+      if (!existing.aiDescription && sub.aiDescription) {
+        existing.aiDescription = sub.aiDescription;
+      }
+      if (!existing.rawDescription && sub.rawDescription) {
+        existing.rawDescription = sub.rawDescription;
+      }
+    }
+  }
+
+  const subscriptions = [...byName.values()]
+    .sort((a, b) => b.monthlyEquivalent - a.monthlyEquivalent)
+    .map((sub, i) => ({ ...sub, id: `sub_${i + 1}` }));
+
+  const totalMonthly = subscriptions.reduce((sum, s) => sum + s.monthlyEquivalent, 0);
+  const dateFrom =
+    reports.map((r) => r.dateRange.from).filter(Boolean).sort()[0] || "";
+  const dateTo =
+    reports.map((r) => r.dateRange.to).filter(Boolean).sort().reverse()[0] || "";
+
+  return {
+    subscriptions,
+    totalMonthly: Math.round(totalMonthly * 100) / 100,
+    totalYearly: Math.round(totalMonthly * 12 * 100) / 100,
+    potentialMonthlySavings: 0,
+    potentialYearlySavings: 0,
+    analyzedTransactions: reports.reduce((sum, r) => sum + r.analyzedTransactions, 0),
+    dateRange: { from: dateFrom, to: dateTo },
+  };
 }
 
 // ── Transform Claude's JSON into our AuditReport ──

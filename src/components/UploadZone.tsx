@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Upload, X, FileText, Sparkles, AlertTriangle } from "lucide-react";
 import posthog from "posthog-js";
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
-const MAX_FILES = 5;
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB per file
+const MAX_TOTAL_SIZE = 25 * 1024 * 1024; // 25 MB total per scan
 
 interface SelectedFile {
   file: File;
@@ -62,7 +62,7 @@ export default function UploadZone({
         continue;
       }
       if (file.size > MAX_FILE_SIZE) {
-        rejected.push(ar ? `${file.name} — اكبر من ٥ ميقا` : `${file.name} — exceeds 5 MB limit`);
+        rejected.push(ar ? `${file.name} — اكبر من ١٠ ميقا` : `${file.name} — exceeds 10 MB limit`);
         continue;
       }
       newFiles.push({ file, name: file.name, size: file.size });
@@ -75,11 +75,17 @@ export default function UploadZone({
     }
 
     setSelectedFiles((prev) => {
-      const combined = [...prev, ...newFiles];
-      if (combined.length > MAX_FILES) {
-        setFileError(ar ? `اقصى عدد ملفات هو ${MAX_FILES}` : `Maximum ${MAX_FILES} files allowed`);
+      const prevTotal = prev.reduce((sum, f) => sum + f.size, 0);
+      const newTotal = newFiles.reduce((sum, f) => sum + f.size, 0);
+      if (prevTotal + newTotal > MAX_TOTAL_SIZE) {
+        setFileError(
+          ar
+            ? `الحجم الكلي يتجاوز ٢٥ ميقا — احذف ملف او ارفع ملفات اصغر`
+            : `Total size exceeds 25 MB — remove a file or upload smaller files`
+        );
         return prev;
       }
+      const combined = [...prev, ...newFiles];
       if (rejected.length > 0) setFileError(rejected.join("\n"));
       return combined;
     });
@@ -174,7 +180,9 @@ export default function UploadZone({
             className="mt-4 bento-card px-6 pt-5 pb-5 overflow-hidden"
           >
             <p className="text-sm font-bold mb-4" style={{ color: "#1A3A35" }}>
-              {ar ? `${selectedFiles.length} ملف تم اختياره` : `${selectedFiles.length} file(s) selected`}
+              {ar
+                ? `${selectedFiles.length} ملف — ${formatSize(selectedFiles.reduce((s, f) => s + f.size, 0))} من ٢٥ ميقا`
+                : `${selectedFiles.length} file(s) — ${formatSize(selectedFiles.reduce((s, f) => s + f.size, 0))} of 25 MB`}
             </p>
             <div className="space-y-3 mb-5">
               {selectedFiles.map((f, i) => (
