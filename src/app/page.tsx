@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import FundingTicker from "@/components/FundingTicker";
+import HeroScatteredLogos, { HeroLogoStrip } from "@/components/HeroScatteredLogos";
 import AddToHomeScreen from "@/components/AddToHomeScreen";
 import UploadZone from "@/components/UploadZone";
 import AuditReport from "@/components/AuditReport";
@@ -663,8 +664,9 @@ export default function HomePage() {
       {step === "landing" && (
         <>
           {/* Hero */}
-          <section ref={heroRef} className="hero-gradient pt-24 pb-20 px-6">
-            <div className="max-w-[1100px] mx-auto text-center">
+          <section ref={heroRef} className="hero-gradient relative overflow-hidden pt-24 pb-20 px-6">
+            <HeroScatteredLogos />
+            <div className="max-w-[1100px] mx-auto text-center relative z-10">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -683,10 +685,12 @@ export default function HomePage() {
                     ? "السعودي العادي يدفع ٤,٥٨٤ ريال سنوياً على اشتراكات ناسيها. ارفع كشف حسابك واكتشف كم تخسر أنت — في ٩٠ ثانية."
                     : "The average Saudi pays 4,584 SAR/year on forgotten subscriptions. Upload your statement and find out how much you're losing — in 90 seconds."}
                 </p>
-                <p className="text-sm text-indigo-300/50 mb-12">
+                <p className="text-sm text-indigo-300/50 mb-6">
                   {ar ? "اكتشف. الغي. وفّر." : "Find it. Cancel it. Save."}
                 </p>
               </motion.div>
+
+              <HeroLogoStrip />
 
               {/* Upload zone */}
               <UploadZone
