@@ -236,8 +236,8 @@ export default function UploadZone({
 
       <p className="text-xs text-center mt-3" style={{ color: "#8AADA8" }}>
         {ar
-          ? "ملفاتك تتحلل وتنحذف فورا. ما نخزن اي شي."
-          : "Your files are analyzed and immediately discarded. Nothing is stored."}
+          ? "المعاينة المجانية داخل متصفحك. التقرير الكامل يستخدم AI آمن بعد الدفع."
+          : "Free preview runs in your browser. Full AI report uploads securely after payment."}
       </p>
     </motion.div>
   );

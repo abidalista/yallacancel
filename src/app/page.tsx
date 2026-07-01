@@ -19,14 +19,30 @@ import {
   parsePDFRobust,
   analyzeTransactions,
   analyzeSpending,
+  analyzeFilesWithAI,
 } from "@/lib/services";
 import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, Subscription, SubscriptionStatus, Transaction, BankId } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
 import BrandLogo from "@/components/BrandLogo";
 import { formatInt, formatSarYr, formatSar, PRICE_LABEL } from "@/lib/format";
+import {
+  storeScanSession,
+  getPendingScanFiles,
+  clearScanSession,
+  getTeaserReport,
+  getTeaserSpending,
+} from "@/lib/scan-session";
+import {
+  savePaymentReceipt,
+  isReportUnlocked,
+  saveReportData,
+  clearPaymentState,
+} from "@/lib/payment-store";
+import { verifyPaymentReceipt } from "@/lib/verify-payment";
 
 type Step = "landing" | "analyzing" | "results";
+type ReportTier = "teaser" | "full";
 
 interface ParseError {
   type: "no_transactions" | "file_error" | "format_error";
@@ -76,8 +92,8 @@ const STEPS = [
     icon: Eye,
     titleAr: "شوف كل اشتراكاتك",
     titleEn: "See every subscription",
-    descAr: "نحلل عملياتك ونطلع لك كل اشتراك · المبلغ، التكرار، وأول وآخر خصم.",
-    descEn: "We analyze your transactions and surface every subscription · amount, frequency, and charge history.",
+    descAr: "معاينة مجانية سريعة تطلع أقوى الاشتراكات المتكررة. التقرير الكامل بـ 49 SAR يشمل تحليل AI لكل ملفاتك.",
+    descEn: "Free quick preview surfaces your top recurring charges. Full report for 49 SAR includes AI analysis across all files.",
   },
   {
     num: "3",
@@ -109,11 +125,11 @@ const TESTIMONIALS: { quote: string; name: string; role: string; initial: string
 const FAQ_ITEMS = [
   {
     q: "هل بياناتي آمنة؟",
-    a: "نعم. كل التحليل يتم داخل متصفحك · ملفك ما يتم رفعه لأي سيرفر. ما نحتفظ بأي بيانات.",
+    a: "المعاينة المجانية تتم داخل متصفحك وما تترك جهازك. التقرير الكامل يستخدم تحليل AI آمن على السيرفر وما نخزن ملفاتك بعد التحليل.",
   },
   {
     q: "أي بنوك تدعمون؟",
-    a: "ندعم جميع البنوك السعودية: الراجحي، الأهلي، بنك الرياض، البلاد، الإنماء، ساب، الفرنسي، العربي الوطني، و stc bank.",
+    a: "ندعم البنوك السعودية (الراجحي، الأهلي، الرياض، وغيرها) بالإضافة إلى Revolut و Crypto.com. CSV أوضح من PDF.",
   },
   {
     q: "كيف أنزّل كشف حسابي؟",
@@ -121,7 +137,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "هل الأداة مجانية؟",
-    a: "التحليل الأول مجاني. بعدها تقدر تترقى بـ 49 SAR لمرة واحدة، بدون اشتراك شهري.",
+    a: "المعاينة السريعة مجانية وتطلع لك أقوى الاشتراكات المتكررة. التقرير الكامل بـ 49 SAR مرة واحدة يشمل تحليل AI لكل ملفاتك.",
   },
   {
     q: "هل يلا كانسل يلغي الاشتراكات عني؟",
@@ -142,6 +158,11 @@ export default function HomePage() {
   const [manualBankId, setManualBankId] = useState<BankId | null>(null);
   const [pasteText, setPasteText] = useState("");
   const [retryFiles, setRetryFiles] = useState<File[]>([]);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [reportTier, setReportTier] = useState<ReportTier>("teaser");
+  const [parsedFileCount, setParsedFileCount] = useState(0);
+  const [failedScanFiles, setFailedScanFiles] = useState<string[]>([]);
+  const [totalScanFiles, setTotalScanFiles] = useState(0);
   const heroRef = useRef<HTMLElement>(null);
 
 
@@ -151,6 +172,12 @@ export default function HomePage() {
     document.documentElement.setAttribute("dir", ar ? "rtl" : "ltr");
     document.documentElement.setAttribute("lang", locale);
   }, [locale, ar]);
+
+  useEffect(() => {
+    if (isReportUnlocked()) {
+      setIsUnlocked(true);
+    }
+  }, []);
 
   async function parseFile(file: File, bankOverride?: BankId): Promise<{ transactions: Transaction[]; warnings: string[] }> {
     const ext = file.name.split(".").pop()?.toLowerCase();
@@ -215,23 +242,35 @@ export default function HomePage() {
     setParseError(null);
     setStep("analyzing");
     setTxCount(0);
-    setAnalyzeStatus(ar ? "نقرأ الملفات..." : "Reading files...");
+    setParsedFileCount(0);
+    setFailedScanFiles([]);
+    setTotalScanFiles(files.length);
+    setReportTier("teaser");
+    setIsUnlocked(false);
+    setAnalyzeStatus(ar ? "نقرأ الملفات..." : "Reading your files...");
     window.scrollTo({ top: 0, behavior: "smooth" });
 
     try {
       let allTx: Transaction[] = [];
       const failedFiles: string[] = [];
       let allWarnings: string[] = [];
+      let successFileCount = 0;
 
       for (const file of files) {
         try {
-          setAnalyzeStatus(ar ? `نقرأ ${file.name}...` : `Reading ${file.name}...`);
+          setAnalyzeStatus(
+            ar
+              ? `نقرأ ${file.name} (${successFileCount + 1} من ${files.length})...`
+              : `Reading ${file.name} (${successFileCount + 1} of ${files.length})...`
+          );
           const { transactions, warnings } = await parseFile(file, bankOverride || undefined);
           allWarnings = allWarnings.concat(warnings);
           if (transactions.length === 0) {
             failedFiles.push(file.name);
           } else {
             allTx = allTx.concat(transactions);
+            successFileCount += 1;
+            setParsedFileCount(successFileCount);
             setTxCount(allTx.length);
           }
         } catch (err) {
@@ -242,24 +281,33 @@ export default function HomePage() {
       }
 
       if (allTx.length === 0) {
-
         setParseError(buildParseError(failedFiles, allWarnings));
         setRetryFiles(files);
         setStep("landing");
         return;
       }
 
-      setAnalyzeStatus(ar ? "نبحث عن الاشتراكات المخفية..." : "Looking for hidden subscriptions...");
-      await new Promise((r) => setTimeout(r, 1500));
+      setAnalyzeStatus(
+        ar ? "نبحث عن أقوى الاشتراكات المتكررة..." : "Finding your top recurring charges..."
+      );
+      await new Promise((r) => setTimeout(r, 800));
 
       const result = analyzeTransactions(allTx);
       const spending = analyzeSpending(allTx);
 
+      storeScanSession(files, result, spending, failedFiles);
+      setParsedFileCount(successFileCount);
+      setFailedScanFiles(failedFiles);
+      setTotalScanFiles(files.length);
       setReport(result);
       setSpendingData(spending);
-
+      setReportTier("teaser");
       setStep("results");
       window.scrollTo({ top: 0, behavior: "smooth" });
+
+      if (failedFiles.length > 0) {
+        console.warn("[scan] Some files had no transactions:", failedFiles);
+      }
     } catch (err) {
       console.error("Scan failed:", err);
       setParseError({
@@ -277,6 +325,76 @@ export default function HomePage() {
       });
       setStep("landing");
     }
+  }
+
+  async function handlePaymentSuccess(receiptId: string) {
+    setShowPaywall(false);
+    setAnalyzeStatus(
+      ar ? "الذكاء الاصطناعي يحلل كل ملفاتك..." : "AI is analyzing all your files..."
+    );
+    setStep("analyzing");
+    setTxCount(0);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    const valid = await verifyPaymentReceipt(receiptId);
+    if (!valid) {
+      setStep("results");
+      setParseError({
+        type: "file_error",
+        message: "Payment could not be verified",
+        messageAr: "ما قدرنا نتحقق من الدفع",
+        details: "Please try again or contact support.",
+        detailsAr: "جرب مرة ثانية أو تواصل معنا.",
+        suggestions: [],
+        suggestionsAr: [],
+        showBankSelector: false,
+        showPasteInput: false,
+        failedFiles: [],
+        warnings: [],
+      });
+      return;
+    }
+
+    savePaymentReceipt(receiptId);
+    setIsUnlocked(true);
+
+    const files = getPendingScanFiles();
+    if (files.length === 0) {
+      setReportTier("full");
+      setStep("results");
+      return;
+    }
+
+    try {
+      const aiResult = await analyzeFilesWithAI(files, (current, total, fileName) => {
+        setAnalyzeStatus(
+          ar
+            ? `تحليل AI: ${fileName} (${current} من ${total})`
+            : `AI analysis: ${fileName} (${current} of ${total})`
+        );
+      });
+
+      if (aiResult.success) {
+        setReport(aiResult.report);
+        setSpendingData(null);
+        setReportTier("full");
+        saveReportData(aiResult.report, null);
+      } else {
+        console.warn("[unlock] AI failed, showing local full report:", aiResult.error);
+        const teaser = getTeaserReport();
+        const spending = getTeaserSpending();
+        if (teaser) setReport(teaser);
+        if (spending) setSpendingData(spending);
+        setReportTier("full");
+        if (teaser) saveReportData(teaser, spending);
+      }
+    } catch (err) {
+      console.error("[unlock] AI error:", err);
+      setReportTier("full");
+    }
+
+    setStep("results");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   async function handlePasteAnalyze() {
@@ -424,6 +542,13 @@ export default function HomePage() {
     setPasteText("");
     setRetryFiles([]);
     setTxCount(0);
+    setParsedFileCount(0);
+    setFailedScanFiles([]);
+    setTotalScanFiles(0);
+    setReportTier("teaser");
+    setIsUnlocked(false);
+    clearScanSession();
+    clearPaymentState();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -444,7 +569,11 @@ export default function HomePage() {
       <AddToHomeScreen locale={locale} />
 
       {showPaywall && (
-        <PaywallModal locale={locale} onClose={() => setShowPaywall(false)} />
+        <PaywallModal
+          locale={locale}
+          onClose={() => setShowPaywall(false)}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
       )}
 
       {/* ── ANALYZING ── */}
@@ -515,8 +644,9 @@ export default function HomePage() {
       {step === "results" && report && (() => {
         const subs = report.subscriptions;
         const FREE_VISIBLE = 3;
-        const visible = subs.slice(0, FREE_VISIBLE);
-        const hidden = subs.slice(FREE_VISIBLE);
+        const showFull = isUnlocked || reportTier === "full";
+        const visible = showFull ? subs : subs.slice(0, FREE_VISIBLE);
+        const hidden = showFull ? [] : subs.slice(FREE_VISIBLE);
         const hiddenYearly = hidden.reduce((s, sub) => s + sub.yearlyEquivalent, 0);
 
         return (
@@ -524,19 +654,60 @@ export default function HomePage() {
             <div className="max-w-[700px] mx-auto">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-1">
-                  {ar
-                    ? `تصرف ${formatSarYr(report.totalYearly)}`
-                    : `You're spending ${formatSarYr(report.totalYearly)}`}
+                  {subs.length === 0
+                    ? ar
+                      ? "ما لقينا اشتراكات واضحة"
+                      : "No clear subscriptions found"
+                    : ar
+                      ? `تصرف ${formatSarYr(report.totalYearly)}`
+                      : `You're spending ${formatSarYr(report.totalYearly)}`}
                 </h1>
-                <p className="text-sm text-slate-400 mb-4">
-                  {ar ? `من ${subs.length} اشتراك` : `across ${subs.length} subscriptions`}
+                <p className="text-sm text-slate-400 mb-1">
+                  {showFull
+                    ? ar
+                      ? `تقرير AI كامل · ${subs.length} اشتراك`
+                      : `Full AI report · ${subs.length} subscriptions`
+                    : ar
+                      ? `معاينة سريعة · ${subs.length} اشتراك متكرر`
+                      : `Quick preview · ${subs.length} recurring subscriptions`}
                 </p>
+                {parsedFileCount > 0 && (
+                  <p className="text-xs text-slate-400 mb-4">
+                    {ar
+                      ? `${formatInt(report.analyzedTransactions)} عملية من ${parsedFileCount} ملف`
+                      : `${formatInt(report.analyzedTransactions)} transactions from ${parsedFileCount} files`}
+                  </p>
+                )}
+                {!parsedFileCount && <div className="mb-4" />}
+
+                {failedScanFiles.length > 0 && !showFull && (
+                  <div className="bento-card bg-amber-50 border-amber-100 p-4 mb-4 text-sm text-amber-900">
+                    {ar
+                      ? `${formatInt(failedScanFiles.length)} من ${formatInt(totalScanFiles)} ملف ما انقرأ في المعاينة السريعة (${failedScanFiles.join("، ")}). تحليل AI قد يقرأ PDF وملفات Revolut و Crypto.com.`
+                      : `${formatInt(failedScanFiles.length)} of ${formatInt(totalScanFiles)} files couldn't be read in the quick scan (${failedScanFiles.join(", ")}). Full AI may parse PDFs, Revolut, and Crypto.com exports.`}
+                  </div>
+                )}
+
                 <div className="h-1 bg-[#E5EFED] rounded-full mb-8">
                   <div className="h-1 bg-[#1A3A35] rounded-full w-full" />
                 </div>
               </motion.div>
 
+              {!showFull && subs.length === 0 && (
+                <div className="bento-card p-6 mb-6 text-center">
+                  <p className="text-slate-600 mb-3">
+                    {ar
+                      ? "المعاينة السريعة ما لقت اشتراكات واضحة. التحليل AI قد يلقى اشتراكات مخفية في PDF أو ملفات Revolut و Crypto.com."
+                      : "The quick scan found no clear subscriptions. Full AI analysis may find hidden charges in PDFs, Revolut, or Crypto.com exports."}
+                  </p>
+                  <button onClick={() => setShowPaywall(true)} className="btn-primary">
+                    {ar ? `تحليل AI كامل · ${AR_PRICE}` : `Full AI analysis · 49 SAR`}
+                  </button>
+                </div>
+              )}
+
               {/* Subscription list */}
+              {subs.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -552,7 +723,7 @@ export default function HomePage() {
                       <span className="font-bold text-sm mr-4 ml-4 text-slate-700">
                         <span className="ltr-always">{formatSarYr(sub.yearlyEquivalent)}</span>
                       </span>
-                      {info?.cancelUrl ? (
+                      {showFull && info?.cancelUrl ? (
                         <a
                           href={info.cancelUrl}
                           target="_blank"
@@ -561,11 +732,11 @@ export default function HomePage() {
                         >
                           {ar ? "الغي" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
                         </a>
-                      ) : (
+                      ) : showFull ? (
                         <span className="text-[#00A651] font-bold text-sm flex-shrink-0">
                           {ar ? "الغي" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
                         </span>
-                      )}
+                      ) : null}
                     </div>
                   );
                 })}
@@ -587,26 +758,31 @@ export default function HomePage() {
                   </div>
                 )}
               </motion.div>
+              )}
 
               {/* Paywall CTA */}
-              {hidden.length > 0 && (
+              {!showFull && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
                   <p className="text-center text-[#00A651] font-bold text-base mb-4">
-                    {ar
-                      ? `ادفع ${AR_PRICE}، ووفر ${formatSarYr(hiddenYearly)}`
-                      : `Pay 49 SAR, save up to ${formatInt(hiddenYearly)} SAR/yr · that's a ${Math.round(hiddenYearly / 49)}x return`}
+                    {hidden.length > 0
+                      ? ar
+                        ? `افتح التقرير الكامل ووفر حتى ${formatSarYr(hiddenYearly)}`
+                        : `Unlock the full AI report and save up to ${formatSarYr(hiddenYearly)}/yr`
+                      : ar
+                        ? "تحليل AI يقرأ كل ملفاتك (SNB، Revolut، Crypto.com)"
+                        : "AI reads every file properly (SNB, Revolut, Crypto.com)"}
                   </p>
                   <button
                     onClick={() => setShowPaywall(true)}
                     className="btn-primary w-full text-base py-4 mb-3"
                   >
                     {ar
-                      ? `اكشف كل ${subs.length} اشتراك، ${AR_PRICE}`
-                      : `Unlock all ${subs.length} subscriptions · 49 SAR`}
+                      ? `تقرير AI كامل · ${AR_PRICE}`
+                      : `Full AI report · 49 SAR`}
                   </button>
                   <p className="text-xs text-center text-slate-400 mb-8">
                     {ar
@@ -616,7 +792,8 @@ export default function HomePage() {
                 </motion.div>
               )}
 
-              {/* Full audit report */}
+              {/* Full audit report — paid only */}
+              {showFull && (
               <AuditReport
                 report={report}
                 locale={locale}
@@ -624,9 +801,10 @@ export default function HomePage() {
                 onStartOver={handleStartOver}
                 onUpgradeClick={() => setShowPaywall(true)}
               />
+              )}
 
-              {/* Spending breakdown */}
-              {spendingData && spendingData.categories.length > 0 && (
+              {/* Spending breakdown — paid only */}
+              {showFull && spendingData && spendingData.categories.length > 0 && (
                 <div className="mt-6">
                   <SpendingBreakdownComponent data={spendingData} locale={locale} />
                 </div>
@@ -787,7 +965,7 @@ export default function HomePage() {
                       transition={{ duration: 0.5, delay: i * 0.12 }}
                       className="bento-card text-center p-6 relative"
                     >
-                      <div className="w-10 h-10 rounded-full bg-[#E8F7EE]0 text-white flex items-center justify-center text-lg font-extrabold mx-auto mb-4">
+                      <div className="w-10 h-10 rounded-full bg-[#00A651] text-white flex items-center justify-center text-lg font-extrabold mx-auto mb-4">
                         {step.num}
                       </div>
                       <div className="w-10 h-10 rounded-2xl bg-[#E8F7EE] flex items-center justify-center mx-auto mb-3">

@@ -9,6 +9,12 @@ export type { CSVParseResult } from "./csv-parser.service";
 export { parsePDF, parsePDFRobust } from "./pdf-parser.service";
 export type { PDFParseResult } from "./pdf-parser.service";
 
+export {
+  analyzeFileWithAI,
+  analyzeFilesWithAI,
+} from "./ai-analyzer.service";
+export type { AIAnalysisResult } from "./ai-analyzer.service";
+
 export { analyzeTransactions } from "./subscription-analyzer.service";
 
 export { analyzeSpending } from "./spending-analyzer.service";
