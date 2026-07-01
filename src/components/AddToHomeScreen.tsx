@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Share, PlusSquare, Check, Smartphone } from "lucide-react";
 
@@ -13,10 +13,25 @@ function isIos() {
   return /iphone|ipad|ipod/i.test(navigator.userAgent);
 }
 
+function isPhone() {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent;
+  if (/ipad|tablet|playbook|silk/i.test(ua)) return false;
+  return /iphone|ipod|android.+mobile|webos|blackberry|iemobile|opera mini/i.test(ua)
+    || (/android/i.test(ua) && window.innerWidth < 768);
+}
+
 export default function AddToHomeScreen({ locale }: AddToHomeScreenProps) {
   const [show, setShow] = useState(false);
+  const [onPhone, setOnPhone] = useState(false);
   const ar = locale === "ar";
   const ios = isIos();
+
+  useEffect(() => {
+    setOnPhone(isPhone());
+  }, []);
+
+  if (!onPhone) return null;
 
   const steps = ios
     ? [

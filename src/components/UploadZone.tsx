@@ -4,6 +4,9 @@ import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, X, FileText, Sparkles } from "lucide-react";
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_TOTAL_SIZE = 25 * 1024 * 1024;
+
 interface SelectedFile {
   file: File;
   name: string;
@@ -22,7 +25,7 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function truncateName(name: string, max = 20): string {
+function truncateName(name: string, max = 28): string {
   const dot = name.lastIndexOf(".");
   if (dot === -1) return name.length > max ? name.slice(0, max) + "..." : name;
   const ext = name.slice(dot);
@@ -38,28 +41,57 @@ export default function UploadZone({
 }: UploadZoneProps) {
   const [dragging, setDragging] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
+  const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const ar = locale === "ar";
 
   function addFiles(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return;
+    setFileError(null);
+
     const newFiles: SelectedFile[] = [];
+    const rejected: string[] = [];
+
     for (let i = 0; i < fileList.length; i++) {
       const file = fileList[i];
       const ext = file.name.split(".").pop()?.toLowerCase();
-      if (ext === "csv" || ext === "pdf") {
-        newFiles.push({ file, name: file.name, size: file.size });
+
+      if (ext !== "csv" && ext !== "pdf") {
+        rejected.push(ar ? `${file.name}: لازم CSV او PDF` : `${file.name}: must be CSV or PDF`);
+        continue;
       }
+      if (file.size > MAX_FILE_SIZE) {
+        rejected.push(ar ? `${file.name}: اكبر من 10 ميقا` : `${file.name}: exceeds 10 MB`);
+        continue;
+      }
+      newFiles.push({ file, name: file.name, size: file.size });
     }
-    if (newFiles.length === 0) {
-      alert(ar ? "الملفات لازم تكون CSV او PDF" : "Files must be CSV or PDF");
+
+    if (newFiles.length === 0 && rejected.length > 0) {
+      setFileError(rejected.join("\n"));
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
-    setSelectedFiles((prev) => [...prev, ...newFiles]);
+
+    setSelectedFiles((prev) => {
+      const prevTotal = prev.reduce((sum, f) => sum + f.size, 0);
+      const newTotal = newFiles.reduce((sum, f) => sum + f.size, 0);
+      if (prevTotal + newTotal > MAX_TOTAL_SIZE) {
+        setFileError(
+          ar
+            ? "الحجم الكلي يتجاوز 25 ميقا. احذف ملف او ارفع ملفات اصغر"
+            : "Total size exceeds 25 MB. Remove a file or upload smaller files"
+        );
+        return prev;
+      }
+      if (rejected.length > 0) setFileError(rejected.join("\n"));
+      return [...prev, ...newFiles];
+    });
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   function removeFile(index: number) {
+    setFileError(null);
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   }
 
@@ -74,6 +106,8 @@ export default function UploadZone({
     onScan(selectedFiles.map((f) => f.file));
   }
 
+  const totalSize = selectedFiles.reduce((s, f) => s + f.size, 0);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -81,7 +115,6 @@ export default function UploadZone({
       transition={{ duration: 0.5 }}
       className="w-full max-w-[560px] mx-auto"
     >
-      {/* Upload dropzone — self-contained clickable area */}
       <div
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
@@ -101,10 +134,12 @@ export default function UploadZone({
           <Upload size={22} strokeWidth={1.5} style={{ color: "#00A651" }} />
         </div>
         <p className="font-bold text-base mb-1" style={{ color: "#1A3A35" }}>
-          {ar ? "حط اخر ٢-٣ اشهر من كشف حسابك" : "Drop your last 2–3 months of statements"}
+          {ar ? "ارفع كشوفاتك البنكية" : "Upload your bank statements"}
         </p>
-        <p className="text-sm" style={{ color: "#8AADA8" }}>
-          {ar ? "PDF او CSV من اي بنك" : "PDF or CSV from any bank"}
+        <p className="text-sm text-center" style={{ color: "#8AADA8" }}>
+          {ar
+            ? "PDF او CSV من اي بنك. اكثر من ملف مسموح. حتى 25 ميقا"
+            : "PDF or CSV from any bank. Multiple files OK. Up to 25 MB total"}
         </p>
         <input
           ref={fileInputRef}
@@ -116,7 +151,10 @@ export default function UploadZone({
         />
       </div>
 
-      {/* File list (when files selected) */}
+      {fileError && (
+        <p className="text-xs text-red-500 text-center mt-2 whitespace-pre-line">{fileError}</p>
+      )}
+
       <AnimatePresence>
         {selectedFiles.length > 0 && (
           <motion.div
@@ -126,18 +164,21 @@ export default function UploadZone({
             className="mt-4 bento-card px-6 pt-5 pb-5 overflow-hidden"
           >
             <p className="text-sm font-bold mb-4" style={{ color: "#1A3A35" }}>
-              {ar ? `${selectedFiles.length} ملف تم اختياره` : `${selectedFiles.length} file(s) selected`}
+              {ar
+                ? `${selectedFiles.length} ملف، ${formatSize(totalSize)} من 25 ميقا`
+                : `${selectedFiles.length} file(s), ${formatSize(totalSize)} of 25 MB`}
             </p>
-            <div className="space-y-3 mb-5">
+            <div className="space-y-3 mb-5 max-h-48 overflow-y-auto">
               {selectedFiles.map((f, i) => (
-                <div key={`${f.name}-${i}`} className="flex items-center justify-between">
-                  <span className="flex items-center gap-2 text-sm" style={{ color: "#4A6862" }}>
-                    <FileText size={14} strokeWidth={1.5} style={{ color: "#8AADA8" }} />
-                    {truncateName(f.name)} <span style={{ color: "#8AADA8" }}>({formatSize(f.size)})</span>
+                <div key={`${f.name}-${i}`} className="flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-2 text-sm min-w-0" style={{ color: "#4A6862" }}>
+                    <FileText size={14} strokeWidth={1.5} style={{ color: "#8AADA8" }} className="flex-shrink-0" />
+                    <span className="truncate">{truncateName(f.name)}</span>
+                    <span style={{ color: "#8AADA8" }} className="flex-shrink-0">({formatSize(f.size)})</span>
                   </span>
                   <button
-                    onClick={() => removeFile(i)}
-                    className="p-1 rounded-full transition-colors"
+                    onClick={(e) => { e.stopPropagation(); removeFile(i); }}
+                    className="p-1 rounded-full transition-colors flex-shrink-0"
                     style={{ color: "#8AADA8", cursor: "pointer" }}
                     onMouseEnter={e => (e.currentTarget.style.color = "#1A3A35")}
                     onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
@@ -149,13 +190,21 @@ export default function UploadZone({
             </div>
             <button onClick={handleScan} className="btn-primary w-full">
               <Sparkles size={16} strokeWidth={1.5} />
-              {ar ? "ابحث عن الاشتراكات" : "Scan for subscriptions"}
+              {ar
+                ? `حلل ${selectedFiles.length} ملف`
+                : `Analyze ${selectedFiles.length} file${selectedFiles.length > 1 ? "s" : ""}`}
+            </button>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+              className="btn-ghost w-full mt-2 text-sm"
+            >
+              {ar ? "اضف ملفات اخرى" : "Add more files"}
             </button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* OR + Try sample — completely outside the dropzone */}
       {selectedFiles.length === 0 && (
         <div className="mt-5 text-center">
           <span className="text-xs font-medium" style={{ color: "#8AADA8" }}>{ar ? "او" : "or"}</span>
@@ -176,7 +225,6 @@ export default function UploadZone({
         </div>
       )}
 
-      {/* Privacy notice */}
       <p className="text-xs text-center mt-3" style={{ color: "#8AADA8" }}>
         {ar
           ? "ملفاتك تتحلل وتنحذف فورا. ما نخزن اي شي."
