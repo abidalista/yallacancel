@@ -1,6 +1,6 @@
 /**
  * Subscription Analyzer Service
- * Isolated service for detecting recurring subscriptions from transactions.
+ * Detects recurring subscriptions from bank transactions with tiered confidence.
  */
 
 import {
@@ -31,9 +31,10 @@ const KNOWN_SUBSCRIPTIONS: Record<string, string> = {
   shahid: "شاهد VIP",
   "shahid.mbc": "شاهد VIP",
   "shahid vip": "شاهد VIP",
-  stc: "STC",
   "stc play": "STC Play",
   "stc tv": "STC TV",
+  "stc bill": "STC",
+  "stc mobile": "STC",
   jarir: "جرير",
   noon: "نون",
   anghami: "أنغامي",
@@ -74,6 +75,7 @@ const KNOWN_SUBSCRIPTIONS: Record<string, string> = {
   jahez: "جاهز",
   hungerstation: "هنقرستيشن",
   "hunger station": "هنقرستيشن",
+  "hungerstation plus": "هنقرستيشن",
   toyou: "توصيل تويو",
   mrsool: "مرسول",
   nana: "نعناع",
@@ -83,7 +85,7 @@ const KNOWN_SUBSCRIPTIONS: Record<string, string> = {
   telfaz: "تلفاز",
   vudu: "Vudu",
   hbo: "HBO",
-  max: "Max (HBO)",
+  "max.com": "Max (HBO)",
   "disney+": "Disney+",
   "disney plus": "Disney+",
   disney: "Disney+",
@@ -118,13 +120,17 @@ const KNOWN_SUBSCRIPTIONS: Record<string, string> = {
   audible: "Audible",
   kindle: "Kindle Unlimited",
   "prime video": "Prime Video",
+  claude: "Claude Pro",
+  perplexity: "Perplexity Pro",
+  midjourney: "Midjourney",
+  cursor: "Cursor Pro",
+  gemini: "Google Gemini",
 };
 
-// Services that are definitely subscription-based
 const DEFINITE_SUBSCRIPTIONS = new Set([
-  "Netflix", "Spotify", "Apple Subscriptions", "Apple iTunes",
+  "Netflix", "Spotify", "Apple Subscriptions", "Apple iTunes", "Apple",
   "Google One", "YouTube Premium", "Amazon Prime",
-  "شاهد VIP", "STC Play", "STC TV",
+  "شاهد VIP", "STC Play", "STC TV", "STC",
   "أنغامي", "Deezer", "Adobe Creative Cloud", "Adobe",
   "Microsoft 365", "ChatGPT Plus", "OpenAI",
   "Discord Nitro", "PlayStation Plus", "Xbox Game Pass",
@@ -138,90 +144,132 @@ const DEFINITE_SUBSCRIPTIONS = new Set([
   "GitHub Copilot", "OSN+", "beIN Sports",
   "Snapchat+", "Telegram Premium", "TIDAL", "Audible",
   "Kindle Unlimited", "Prime Video", "Max (HBO)", "HBO",
-  "Twitch", "Todoist", "Evernote",
+  "Twitch", "Todoist", "Evernote", "هنقرستيشن",
+  "Claude Pro", "Perplexity Pro", "Midjourney", "Cursor Pro", "Google Gemini",
 ]);
 
-/** Bank credits, payroll, transfers, refunds — never subscriptions */
-const NON_SUBSCRIPTION_PATTERNS: RegExp[] = [
-  /\ballowance\b/i,
-  /\bemployer\b/i,
-  /\bsalary\b/i,
+/** Payroll, P2P transfers, cashback — never subscriptions (phrase-level only) */
+const HARD_NON_SUBSCRIPTION_PATTERNS: RegExp[] = [
+  /\ballowance\s+from\s+employer\b/i,
+  /\bemployer\s+allowance\b/i,
+  /\bother\s+allowance\b/i,
+  /\bsalary\s+deposit\b/i,
+  /\bsalary\s+transfer\b/i,
   /\bpayroll\b/i,
-  /\bwage[s]?\b/i,
-  /\bbonus\b/i,
-  /\bgratuity\b/i,
-  /\bend of service\b/i,
-  /\bراتب\b/,
-  /\bرواتب\b/,
-  /\bبدل\b/,
-  /\bمخصصات\b/,
-  /\bصرف رواتب\b/,
-  /\bتحويل\b/,
-  /\bحوال[ةه]\b/,
-  /\bحوالات\b/,
-  /\btransfer\b/i,
-  /\btrf\b/i,
-  /\bwire\b/i,
-  /\biban\b/i,
-  /\bp2p\b/i,
-  /\burpay\b/i,
-  /\bstc\s*pay\b/i,
-  /\bbayan\b/i,
-  /\bwestern\s*union\b/i,
+  /\bwage[s]?\s+payment\b/i,
+  /\bend\s+of\s+service\b/i,
+  /\bصرف\s+رواتب\b/,
+  /\bراتب\s+شهري\b/,
+  /\bتحويل\s+راتب\b/,
+  /\blocal\s+transfer\b/i,
+  /\binternational\s+transfer\b/i,
+  /\bwire\s+transfer\b/i,
+  /\bfunds\s+transfer\b/i,
+  /\baccount\s+transfer\b/i,
+  /\btransfer\s+to\b/i,
+  /\btransfer\s+from\b/i,
+  /\bp2p\s+transfer\b/i,
+  /\bown\s+account\s+transfer\b/i,
+  /\bbetween\s+accounts\b/i,
+  /\baccount\s+to\s+account\b/i,
+  /\bتحويل\s+محلي\b/,
+  /\bتحويل\s+دولي\b/,
+  /\bحوال[ةه]\s+محلية\b/,
+  /\bحوال[ةه]\s+دولية\b/,
+  /\bحوال[ةه]\s+صادرة\b/,
+  /\bحوال[ةه]\s+واردة\b/,
+  /\bمن\s+حساب\s+إلى\b/,
+  /\bمن\s+حساب\s+الى\b/,
+  /\bإلى\s+حساب\b/,
+  /\bالى\s+حساب\b/,
+  /\bstc\s*pay\s+transfer\b/i,
+  /\burpay\s+transfer\b/i,
+  /\bwestern\s+union\b/i,
   /\bremittance\b/i,
-  /\bsarie\b/i,
-  /\binstant\s*payment\b/i,
-  /\bips\b/i,
-  /\bown\s*account\b/i,
-  /\bbetween\s*accounts\b/i,
-  /\baccount\s*to\s*account\b/i,
-  /\binternal\b/i,
-  /\bincoming\b/i,
-  /\boutgoing\b/i,
-  /\bمن\s*حساب\b/,
-  /\bإلى\s*حساب\b/,
-  /\bالى\s*حساب\b/,
+  /\bsarie\s+transfer\b/i,
+  /\binstant\s+payment\s+transfer\b/i,
   /\bcash\s*back\b/i,
   /\bcashback\b/i,
-  /\bcb\s*reward\b/i,
-  /\breward\s*cash\b/i,
-  /\brefund\b/i,
-  /\breversal\b/i,
-  /\bchargeback\b/i,
-  /\brebate\b/i,
-  /\breward\b/i,
-  /\bاسترداد\b/,
-  /\bمكافأ[ةه]\b/,
-  /\bعائدات\b/,
-  /\batm\b/i,
-  /\bwithdrawal\b/i,
-  /\bسحب\b/,
-  /\bdeposit\b/i,
-  /\bإيداع\b/,
-  /\bloan\b/i,
-  /\bقرض\b/i,
-  /\brepayment\b/i,
-  /\bسداد\b/,
-  /\bpos\s*refund\b/i,
-  /\bcredit\s*adj/i,
-  /\badjustment\b/i,
-  /\bتسوية\b/,
-  /\bفائدة\b/,
-  /\binterest\b/i,
-  /\bfee\b/i,
-  /\bرسوم\b/,
-  /\bعمولة\b/,
-  /\bcommission\b/i,
-  /\bvat\b/i,
-  /\bضريبة\b/,
-  /\bzakat\b/i,
-  /\bزكاة\b/,
+  /\bcb\s+reward\b/i,
+  /\breward\s+cash\b/i,
+  /\bmada\s+cashback\b/i,
+  /\bاسترداد\s+نقدي\b/,
+  /\bمكافأ[ةه]\s+نقدية\b/,
+  /\batm\s+withdrawal\b/i,
+  /\bcash\s+withdrawal\b/i,
+  /\bسحب\s+نقدي\b/,
+  /\bسحب\s+atm\b/i,
+  /\bloan\s+repayment\b/i,
+  /\bقرض\b/,
+  /\brepayment\s+of\s+loan\b/i,
 ];
+
+/** Everyday retail — recurring but not subscriptions */
+const RETAIL_NON_SUBSCRIPTION_PATTERNS: RegExp[] = [
+  /\baramco\b/i,
+  /\bمحطة\s+وقود\b/,
+  /\bبنده\b/,
+  /\bcarrefour\b/i,
+  /\bpanda\b/i,
+  /\blulu\b/i,
+  /\bتميم\b/,
+  /\bdanube\b/i,
+  /\bمطعم\b/,
+  /\brestaurant\b/i,
+  /\bgrocery\b/i,
+  /\bماركت\b/,
+  /\bhypermarket\b/i,
+  /\bgas\s+station\b/i,
+  /\bfuel\b/i,
+  /\bوقود\b/,
+  /\bstarbucks\b/i,
+  /\bمقهى\b/,
+  /\bcafe\b/i,
+  /\bpharmacy\b/i,
+  /\bصيدلية\b/,
+];
+
+/** Standalone fee/VAT lines with no merchant */
+const FEE_ONLY_PATTERNS: RegExp[] = [
+  /^(vat|ضريبة|fee|رسوم|commission|عمولة)\b/i,
+  /\bforeign\s+transaction\s+fee\b/i,
+  /\bmonthly\s+account\s+fee\b/i,
+  /\bannual\s+card\s+fee\b/i,
+];
+
+const BANK_NOISE_PREFIX =
+  /^(pos|mada|visa|mastercard|mc|purchase|payment|online|ecommerce|e-commerce|sadad|سداد|شراء|دفع|عملية|transaction|debit|credit|card)\b[\s\-:]*/i;
+
+const SHORT_KEYWORD_BOUNDARY = new Set(["max", "du", "hbo", "osn", "stc"]);
+
+function matchKnownSubscription(description: string): string | null {
+  const lower = description.toLowerCase();
+  for (const [keyword, name] of Object.entries(KNOWN_SUBSCRIPTIONS)) {
+    if (SHORT_KEYWORD_BOUNDARY.has(keyword)) {
+      const re = new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+      if (re.test(lower)) return name;
+    } else if (lower.includes(keyword)) {
+      return name;
+    }
+  }
+  return null;
+}
+
+function matchesAny(text: string, patterns: RegExp[]): boolean {
+  return patterns.some((pattern) => pattern.test(text));
+}
 
 function isNonSubscriptionDescription(description: string): boolean {
   const text = description.trim();
   if (!text) return true;
-  return NON_SUBSCRIPTION_PATTERNS.some((pattern) => pattern.test(text));
+
+  if (matchKnownSubscription(text)) return false;
+
+  if (matchesAny(text, HARD_NON_SUBSCRIPTION_PATTERNS)) return true;
+  if (matchesAny(text, RETAIL_NON_SUBSCRIPTION_PATTERNS)) return true;
+  if (matchesAny(text, FEE_ONLY_PATTERNS)) return true;
+
+  return false;
 }
 
 function filterSubscriptionCandidates(transactions: Transaction[]): Transaction[] {
@@ -230,27 +278,35 @@ function filterSubscriptionCandidates(transactions: Transaction[]): Transaction[
   );
 }
 
+function stripBankNoise(desc: string): string {
+  let text = desc.trim();
+  for (let i = 0; i < 4; i++) {
+    const next = text.replace(BANK_NOISE_PREFIX, "").trim();
+    if (next === text) break;
+    text = next;
+  }
+  return text;
+}
+
 function normalizeDescription(desc: string): string {
-  return desc
+  return stripBankNoise(desc)
     .toLowerCase()
     .replace(/[^\w\s\u0600-\u06FF]/g, " ")
     .replace(/\s+/g, " ")
     .replace(
-      /\b(payment|purchase|pos|online|recurring|subscription|اشتراك|دفع|شراء)\b/g,
+      /\b(payment|purchase|pos|online|recurring|subscription|اشتراك|دفع|شراء|sadad|سداد)\b/g,
       ""
     )
+    .replace(/\b[A-Z]{2}\s*$/i, "")
     .replace(/\d{4,}/g, "")
     .trim();
 }
 
-function matchKnownSubscription(description: string): string | null {
-  const lower = description.toLowerCase();
-  for (const [keyword, name] of Object.entries(KNOWN_SUBSCRIPTIONS)) {
-    if (lower.includes(keyword)) {
-      return name;
-    }
-  }
-  return null;
+function buildMerchantKey(description: string): string {
+  const known = matchKnownSubscription(description);
+  if (known) return known;
+  const normalized = normalizeDescription(description);
+  return normalized.length >= 2 ? normalized : "";
 }
 
 function groupTransactionsByMerchant(
@@ -259,11 +315,8 @@ function groupTransactionsByMerchant(
   const groups = new Map<string, Transaction[]>();
 
   for (const tx of transactions) {
-    const normalized = normalizeDescription(tx.description);
-    const known = matchKnownSubscription(tx.description);
-    const key = known || normalized;
-
-    if (!key || key.length < 2) continue;
+    const key = buildMerchantKey(tx.description);
+    if (!key) continue;
 
     const existing = groups.get(key);
     if (existing) {
@@ -290,26 +343,39 @@ function detectFrequency(
 
   const intervals: number[] = [];
   for (let i = 1; i < dates.length; i++) {
-    const days = (dates[i] - dates[i - 1]) / (1000 * 60 * 60 * 24);
-    intervals.push(days);
+    intervals.push((dates[i] - dates[i - 1]) / (1000 * 60 * 60 * 24));
   }
 
+  const sorted = [...intervals].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)];
   const avgInterval =
     intervals.reduce((sum, d) => sum + d, 0) / intervals.length;
 
-  if (avgInterval <= 10) return "weekly";
-  if (avgInterval <= 45) return "monthly";
-  if (avgInterval <= 120) return "quarterly";
-  if (avgInterval <= 400) return "yearly";
+  const interval = median > 0 ? median : avgInterval;
+
+  if (interval <= 10) return "weekly";
+  if (interval <= 50) return "monthly";
+  if (interval <= 120) return "quarterly";
+  if (interval <= 400) return "yearly";
 
   return null;
 }
 
-function hasConsistentAmount(transactions: Transaction[]): boolean {
+function hasConsistentAmount(
+  transactions: Transaction[],
+  tolerance = 0.18
+): boolean {
   if (transactions.length < 2) return false;
   const amounts = transactions.map((t) => t.amount);
   const avg = amounts.reduce((s, a) => s + a, 0) / amounts.length;
-  return amounts.every((a) => Math.abs(a - avg) / avg < 0.15);
+  if (avg <= 0) return false;
+  return amounts.every((a) => Math.abs(a - avg) / avg < tolerance);
+}
+
+function inferFrequencyOrDefault(
+  txs: Transaction[]
+): SubscriptionFrequency {
+  return detectFrequency(txs) ?? "monthly";
 }
 
 function calculateMonthlyEquivalent(
@@ -328,92 +394,102 @@ function calculateMonthlyEquivalent(
   }
 }
 
+function pushSubscription(
+  subscriptions: Subscription[],
+  idCounter: { value: number },
+  params: {
+    key: string;
+    txs: Transaction[];
+    name: string;
+    frequency: SubscriptionFrequency;
+    confidence: Subscription["confidence"];
+  }
+): void {
+  const { key, txs, name, frequency, confidence } = params;
+  const avgAmount = txs.reduce((sum, t) => sum + t.amount, 0) / txs.length;
+  const monthlyEquivalent = calculateMonthlyEquivalent(avgAmount, frequency);
+  const sortedDates = txs
+    .map((t) => t.date)
+    .sort()
+    .filter((d) => d);
+
+  subscriptions.push({
+    id: `sub_${++idCounter.value}`,
+    name,
+    normalizedName: key,
+    amount: Math.round(avgAmount * 100) / 100,
+    frequency,
+    monthlyEquivalent: Math.round(monthlyEquivalent * 100) / 100,
+    yearlyEquivalent: Math.round(monthlyEquivalent * 12 * 100) / 100,
+    occurrences: txs.length,
+    lastCharge: sortedDates[sortedDates.length - 1] || "",
+    firstCharge: sortedDates[0] || "",
+    status: "investigate",
+    confidence,
+    rawDescription: txs[0].description,
+    transactions: txs,
+  });
+}
+
 export function analyzeTransactions(
   transactions: Transaction[]
 ): AuditReport {
   const candidates = filterSubscriptionCandidates(transactions);
   const groups = groupTransactionsByMerchant(candidates);
   const subscriptions: Subscription[] = [];
-
-  let idCounter = 0;
+  const idCounter = { value: 0 };
 
   for (const [key, txs] of groups) {
     const knownName = matchKnownSubscription(txs[0].description);
     const isKnownSub = knownName && DEFINITE_SUBSCRIPTIONS.has(knownName);
 
     if (txs.length >= 2) {
-      const consistent = hasConsistentAmount(txs);
+      const consistent = hasConsistentAmount(
+        txs,
+        isKnownSub ? 0.22 : 0.18
+      );
       const frequency = detectFrequency(txs);
 
-      if (!consistent || !frequency) {
-        if (isKnownSub) {
-          const avgAmount = txs.reduce((sum, t) => sum + t.amount, 0) / txs.length;
-          const sortedDates = txs.map((t) => t.date).sort().filter((d) => d);
-
-          subscriptions.push({
-            id: `sub_${++idCounter}`,
-            name: knownName!,
-            normalizedName: key,
-            amount: Math.round(avgAmount * 100) / 100,
-            frequency: "monthly",
-            monthlyEquivalent: Math.round(avgAmount * 100) / 100,
-            yearlyEquivalent: Math.round(avgAmount * 12 * 100) / 100,
-            occurrences: txs.length,
-            lastCharge: sortedDates[sortedDates.length - 1] || "",
-            firstCharge: sortedDates[0] || "",
-            status: "investigate",
-            confidence: "confirmed",
-            rawDescription: txs[0].description,
-            transactions: txs,
-          });
-        }
+      if (isKnownSub) {
+        pushSubscription(subscriptions, idCounter, {
+          key,
+          txs,
+          name: knownName!,
+          frequency: frequency ?? "monthly",
+          confidence: "confirmed",
+        });
         continue;
       }
 
-      const avgAmount =
-        txs.reduce((sum, t) => sum + t.amount, 0) / txs.length;
-      const monthlyEquivalent = calculateMonthlyEquivalent(avgAmount, frequency);
+      if (!consistent) continue;
 
-      const sortedDates = txs
-        .map((t) => t.date)
-        .sort()
-        .filter((d) => d);
+      if (frequency) {
+        pushSubscription(subscriptions, idCounter, {
+          key,
+          txs,
+          name: knownName || txs[0].description,
+          frequency,
+          confidence: "suspicious",
+        });
+        continue;
+      }
 
-      subscriptions.push({
-        id: `sub_${++idCounter}`,
+      // Same merchant + same amount 2+ times but fuzzy dates — still flag
+      pushSubscription(subscriptions, idCounter, {
+        key,
+        txs,
         name: knownName || txs[0].description,
-        normalizedName: key,
-        amount: Math.round(avgAmount * 100) / 100,
-        frequency,
-        monthlyEquivalent: Math.round(monthlyEquivalent * 100) / 100,
-        yearlyEquivalent: Math.round(monthlyEquivalent * 12 * 100) / 100,
-        occurrences: txs.length,
-        lastCharge: sortedDates[sortedDates.length - 1] || "",
-        firstCharge: sortedDates[0] || "",
-        status: "investigate",
-        confidence: isKnownSub ? "confirmed" : "suspicious",
-        rawDescription: txs[0].description,
-        transactions: txs,
+        frequency: inferFrequencyOrDefault(txs),
+        confidence: "suspicious",
       });
     } else if (isKnownSub && txs.length === 1) {
       const tx = txs[0];
-      const amount = tx.amount;
-
-      subscriptions.push({
-        id: `sub_${++idCounter}`,
+      pushSubscription(subscriptions, idCounter, {
+        key,
+        txs,
         name: knownName!,
-        normalizedName: key,
-        amount: Math.round(amount * 100) / 100,
         frequency: "monthly",
-        monthlyEquivalent: Math.round(amount * 100) / 100,
-        yearlyEquivalent: Math.round(amount * 12 * 100) / 100,
-        occurrences: 1,
-        lastCharge: tx.date || "",
-        firstCharge: tx.date || "",
-        status: "investigate",
         confidence: "confirmed",
-        rawDescription: tx.description,
-        transactions: txs,
       });
     }
   }
