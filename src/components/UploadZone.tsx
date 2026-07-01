@@ -25,6 +25,25 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function formatSizeLimit(bytes: number): string {
+  if (bytes >= 1024 * 1024) return `${bytes / (1024 * 1024)} MB`;
+  return formatSize(bytes);
+}
+
+function fileCountLabel(count: number, ar: boolean): string {
+  if (ar) {
+    if (count === 1) return "ملف واحد";
+    if (count === 2) return "ملفين";
+    if (count >= 3 && count <= 10) return `${count} ملفات`;
+    return `${count} ملف`;
+  }
+  return count === 1 ? "1 file" : `${count} files`;
+}
+
+function sizeBudgetLabel(usedBytes: number, maxBytes: number): string {
+  return `${formatSize(usedBytes)} / ${formatSizeLimit(maxBytes)}`;
+}
+
 function truncateName(name: string, max = 28): string {
   const dot = name.lastIndexOf(".");
   if (dot === -1) return name.length > max ? name.slice(0, max) + "..." : name;
@@ -61,7 +80,7 @@ export default function UploadZone({
         continue;
       }
       if (file.size > MAX_FILE_SIZE) {
-        rejected.push(ar ? `${file.name}: اكبر من 10 ميقا` : `${file.name}: exceeds 10 MB`);
+        rejected.push(ar ? `${file.name}: اكبر من 10 MB` : `${file.name}: exceeds 10 MB`);
         continue;
       }
       newFiles.push({ file, name: file.name, size: file.size });
@@ -79,7 +98,7 @@ export default function UploadZone({
       if (prevTotal + newTotal > MAX_TOTAL_SIZE) {
         setFileError(
           ar
-            ? "الحجم الكلي يتجاوز 25 ميقا. احذف ملف او ارفع ملفات اصغر"
+            ? "الحجم الكلي يتجاوز 25 MB. احذف ملف او ارفع ملفات اصغر"
             : "Total size exceeds 25 MB. Remove a file or upload smaller files"
         );
         return prev;
@@ -138,7 +157,7 @@ export default function UploadZone({
         </p>
         <p className="text-sm text-center" style={{ color: "#8AADA8" }}>
           {ar
-            ? "PDF او CSV من اي بنك. اكثر من ملف مسموح. حتى 25 ميقا"
+            ? "PDF او CSV من اي بنك. تقدر ترفع اكثر من ملف. الحد الاقصى 25 MB"
             : "PDF or CSV from any bank. Multiple files OK. Up to 25 MB total"}
         </p>
         <input
@@ -164,9 +183,9 @@ export default function UploadZone({
             className="mt-4 bento-card px-6 pt-5 pb-5 overflow-hidden"
           >
             <p className="text-sm font-bold mb-4" style={{ color: "#1A3A35" }}>
-              {ar
-                ? `${selectedFiles.length} ملف، ${formatSize(totalSize)} من 25 ميقا`
-                : `${selectedFiles.length} file(s), ${formatSize(totalSize)} of 25 MB`}
+              {fileCountLabel(selectedFiles.length, ar)}
+              {" "}
+              <span className="ltr-always">({sizeBudgetLabel(totalSize, MAX_TOTAL_SIZE)})</span>
             </p>
             <div className="space-y-3 mb-5 max-h-48 overflow-y-auto">
               {selectedFiles.map((f, i) => (
@@ -174,7 +193,7 @@ export default function UploadZone({
                   <span className="flex items-center gap-2 text-sm min-w-0" style={{ color: "#4A6862" }}>
                     <FileText size={14} strokeWidth={1.5} style={{ color: "#8AADA8" }} className="flex-shrink-0" />
                     <span className="truncate">{truncateName(f.name)}</span>
-                    <span style={{ color: "#8AADA8" }} className="flex-shrink-0">({formatSize(f.size)})</span>
+                    <span style={{ color: "#8AADA8" }} className="flex-shrink-0 ltr-always">({formatSize(f.size)})</span>
                   </span>
                   <button
                     onClick={(e) => { e.stopPropagation(); removeFile(i); }}
@@ -191,8 +210,8 @@ export default function UploadZone({
             <button onClick={handleScan} className="btn-primary w-full">
               <Sparkles size={16} strokeWidth={1.5} />
               {ar
-                ? `حلل ${selectedFiles.length} ملف`
-                : `Analyze ${selectedFiles.length} file${selectedFiles.length > 1 ? "s" : ""}`}
+                ? `حلل ${fileCountLabel(selectedFiles.length, true)}`
+                : `Analyze ${fileCountLabel(selectedFiles.length, false)}`}
             </button>
             <button
               type="button"
