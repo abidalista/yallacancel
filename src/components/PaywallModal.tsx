@@ -11,7 +11,7 @@ interface PaywallModalProps {
 const FEATURES_AR = [
   { icon: FolderOpen, text: "رفع كشوفات غير محدودة · كل بطاقاتك وبنوكك" },
   { icon: FileDown, text: "تصدير تقرير PDF بالعربي · احتفظ بنسخة" },
-  { icon: Link2, text: "روابط إلغاء مباشرة لأكثر من ٥٠ خدمة سعودية" },
+  { icon: Link2, text: "روابط إلغاء مباشرة لأكثر من 50 خدمة سعودية" },
   { icon: BookOpen, text: "دليل خطوة بخطوة لإلغاء كل اشتراك" },
   { icon: MessageSquare, text: "قوالب رسائل إلغاء جاهزة بالعربي" },
   { icon: Infinity, text: "تحديثات مدى الحياة · دفعة واحدة وخلاص" },

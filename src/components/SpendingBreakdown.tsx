@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { BarChart3 } from "lucide-react";
 import { SpendingBreakdown as SpendingData } from "@/lib/services";
+import { formatInt } from "@/lib/format";
 
 interface Props {
   data: SpendingData;
@@ -60,8 +61,8 @@ export default function SpendingBreakdownComponent({ data, locale }: Props) {
         </div>
         <p className="text-sm text-slate-500">
           {ar
-            ? `${data.totalSpend.toLocaleString()} ريال إجمالي (~${data.monthlyAvg.toLocaleString()} ريال/شهر) من ${data.transactionCount.toLocaleString()} عملية`
-            : `${data.totalSpend.toLocaleString()} SAR total (~${data.monthlyAvg.toLocaleString()} SAR/mo) across ${data.transactionCount.toLocaleString()} transactions`}
+            ? `${formatInt(data.totalSpend)} ريال إجمالي (~${formatInt(data.monthlyAvg)} ريال/شهر) من ${formatInt(data.transactionCount)} عملية`
+            : `${formatInt(data.totalSpend)} SAR total (~${formatInt(data.monthlyAvg)} SAR/mo) across ${formatInt(data.transactionCount)} transactions`}
         </p>
       </div>
 
@@ -94,7 +95,7 @@ export default function SpendingBreakdownComponent({ data, locale }: Props) {
 
               <div className="col-span-3">
                 <span className="text-sm font-bold text-slate-800">
-                  {cat.total.toLocaleString()}
+                  {formatInt(cat.total)}
                 </span>
                 <span className="text-[10px] text-slate-400 mr-1 ml-1">{ar ? "ريال" : "SAR"}</span>
               </div>
@@ -111,7 +112,7 @@ export default function SpendingBreakdownComponent({ data, locale }: Props) {
 
               <div className="col-span-3">
                 <span className="text-sm text-slate-600">
-                  {cat.monthlyAvg.toLocaleString()}
+                  {formatInt(cat.monthlyAvg)}
                 </span>
                 <span className="text-[10px] text-slate-400 mr-1 ml-1">{ar ? "ريال/شهر" : "/mo"}</span>
               </div>

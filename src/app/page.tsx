@@ -24,6 +24,7 @@ import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, Subscription, SubscriptionStatus, Transaction, BankId } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
 import BrandLogo from "@/components/BrandLogo";
+import { formatInt } from "@/lib/format";
 
 type Step = "landing" | "analyzing" | "results";
 
@@ -56,14 +57,14 @@ const BANKS = [
 ];
 
 const PROBLEM_STATS = [
-  { num: "٣٨٢ ريال/شهر", numEn: "382 SAR/mo", text: "يُخصم من حسابك على اشتراكات كل شهر", textEn: "deducted from your account on subscriptions monthly" },
-  { num: "٣ اشتراكات", numEn: "3 subscriptions", text: "معدّل الاشتراكات المنسية لكل سعودي", textEn: "the average Saudi forgets about" },
-  { num: "٩٠ ثانية", numEn: "90 seconds", text: "هو كل اللي تحتاجه عشان تكتشفهم وتلغيهم", textEn: "is all it takes to find and cancel them" },
+  { num: "382 ريال/شهر", numEn: "382 SAR/mo", text: "يُخصم من حسابك على اشتراكات كل شهر", textEn: "deducted from your account on subscriptions monthly" },
+  { num: "3 اشتراكات", numEn: "3 subscriptions", text: "معدّل الاشتراكات المنسية لكل سعودي", textEn: "the average Saudi forgets about" },
+  { num: "90 ثانية", numEn: "90 seconds", text: "هو كل اللي تحتاجه عشان تكتشفهم وتلغيهم", textEn: "is all it takes to find and cancel them" },
 ];
 
 const STEPS = [
   {
-    num: "١",
+    num: "1",
     icon: Upload,
     titleAr: "ارفع كشف حسابك",
     titleEn: "Upload your statement",
@@ -71,7 +72,7 @@ const STEPS = [
     descEn: "Download your statement from your banking app (CSV or PDF). Or try the demo · no file needed.",
   },
   {
-    num: "٢",
+    num: "2",
     icon: Eye,
     titleAr: "شوف كل اشتراكاتك",
     titleEn: "See every subscription",
@@ -79,7 +80,7 @@ const STEPS = [
     descEn: "We analyze your transactions and surface every subscription · amount, frequency, and charge history.",
   },
   {
-    num: "٣",
+    num: "3",
     icon: Link2,
     titleAr: "الغي بضغطة زر",
     titleEn: "Cancel in one click",
@@ -116,11 +117,11 @@ const FAQ_ITEMS = [
   },
   {
     q: "كيف أنزّل كشف حسابي؟",
-    a: "افتح تطبيق بنكك → الحسابات → كشف الحساب → اختر آخر ٣ إلى ٦ أشهر → نزّله كـ CSV أو PDF.",
+    a: "افتح تطبيق بنكك → الحسابات → كشف الحساب → اختر آخر 3 إلى 6 أشهر → نزّله كـ CSV أو PDF.",
   },
   {
     q: "هل الأداة مجانية؟",
-    a: "التحليل الأول مجاني. بعدها تقدر تترقى بـ ٤٩ ريال لمرة واحدة · بدون اشتراك شهري.",
+    a: "التحليل الأول مجاني. بعدها تقدر تترقى بـ 49 ريال لمرة واحدة، بدون اشتراك شهري.",
   },
   {
     q: "هل يلا كانسل يلغي الاشتراكات عني؟",
@@ -392,9 +393,9 @@ export default function HomePage() {
         { name: "تسوق", nameEn: "Shopping", total: 486.58, percent: 8, monthlyAvg: 121.65, count: 7, topMerchants: ["AMAZON.SA", "JARIR BOOKSTORE"] },
       ],
       takeaways: [
-        { ar: "اشتراكاتك تمثل <b>٣٢٪</b> من إجمالي مصاريفك.", en: "Subscriptions make up <b>32%</b> of your total spending." },
-        { ar: "أعلى اشتراك هو <b>Adobe Creative Cloud</b> بـ ١٣٤ ريال/شهر.", en: "Your most expensive subscription is <b>Adobe Creative Cloud</b> at 134 SAR/mo." },
-        { ar: "تصرف على البقالة حوالي <b>٤٧١ ريال/شهر</b>.", en: "You spend about <b>471 SAR/mo</b> on groceries." },
+        { ar: "اشتراكاتك تمثل <b>32%</b> من إجمالي مصاريفك.", en: "Subscriptions make up <b>32%</b> of your total spending." },
+        { ar: "أعلى اشتراك هو <b>Adobe Creative Cloud</b> بـ 134 ريال/شهر.", en: "Your most expensive subscription is <b>Adobe Creative Cloud</b> at 134 SAR/mo." },
+        { ar: "تصرف على البقالة حوالي <b>471 ريال/شهر</b>.", en: "You spend about <b>471 SAR/mo</b> on groceries." },
       ],
     };
 
@@ -462,8 +463,8 @@ export default function HomePage() {
                 transition={{ duration: 0.5 }}
                 className="text-center mb-8"
               >
-                <div className="text-5xl sm:text-6xl font-extrabold tracking-tight text-slate-900 mb-2">
-                  {txCount.toLocaleString()}
+                <div className="text-5xl sm:text-6xl font-extrabold tracking-tight text-slate-900 mb-2 ltr-always">
+                  {formatInt(txCount)}
                 </div>
                 <div className="text-sm text-slate-400 mb-4">
                   {ar ? "عملية" : "transactions"}
@@ -524,8 +525,8 @@ export default function HomePage() {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-1">
                   {ar
-                    ? `تصرف ${report.totalYearly.toFixed(0)} ريال/سنة`
-                    : `You're spending ${report.totalYearly.toFixed(0)} SAR/year`}
+                    ? `تصرف ${formatInt(report.totalYearly)} ريال/سنة`
+                    : `You're spending ${formatInt(report.totalYearly)} SAR/year`}
                 </h1>
                 <p className="text-sm text-slate-400 mb-4">
                   {ar ? `من ${subs.length} اشتراك` : `across ${subs.length} subscriptions`}
@@ -549,7 +550,7 @@ export default function HomePage() {
                       <span className="text-sm text-slate-400 w-8 flex-shrink-0">{i + 1}.</span>
                       <span className="font-bold text-sm flex-1 text-slate-800">{sub.name}</span>
                       <span className="font-bold text-sm mr-4 ml-4 text-slate-700">
-                        {sub.yearlyEquivalent.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"}
+                        {formatInt(sub.yearlyEquivalent)} {ar ? "ريال/سنة" : "SAR/yr"}
                       </span>
                       {info?.cancelUrl ? (
                         <a
@@ -574,7 +575,7 @@ export default function HomePage() {
                     <span className="text-sm text-slate-400 w-8 flex-shrink-0">{FREE_VISIBLE + i + 1}.</span>
                     <span className="font-bold text-sm flex-1 blur-sm select-none text-slate-800">{sub.name}</span>
                     <span className="font-bold text-sm mr-4 ml-4 text-slate-700">
-                      {sub.yearlyEquivalent.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"}
+                      {formatInt(sub.yearlyEquivalent)} {ar ? "ريال/سنة" : "SAR/yr"}
                     </span>
                     <Lock size={14} strokeWidth={1.5} className="text-slate-300 flex-shrink-0" />
                   </div>
@@ -582,7 +583,7 @@ export default function HomePage() {
 
                 {hidden.length > 0 && (
                   <div className="px-5 py-3 bg-slate-50 text-center text-sm text-slate-400">
-                    + {hidden.length} {ar ? "إضافية" : "more"} ({hiddenYearly.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"})
+                    + {hidden.length} {ar ? "إضافية" : "more"} ({formatInt(hiddenYearly)} {ar ? "ريال/سنة" : "SAR/yr"})
                   </div>
                 )}
               </motion.div>
@@ -596,8 +597,8 @@ export default function HomePage() {
                 >
                   <p className="text-center text-[#00A651] font-bold text-base mb-4">
                     {ar
-                      ? `ادفع ${AR_PRICE}، ووفر ${hiddenYearly.toFixed(0)} ريال/سنة`
-                      : `Pay 49 SAR, save up to ${hiddenYearly.toFixed(0)} SAR/yr · that's a ${Math.round(hiddenYearly / 49)}x return`}
+                      ? `ادفع ${AR_PRICE}، ووفر ${formatInt(hiddenYearly)} ريال/سنة`
+                      : `Pay 49 SAR, save up to ${formatInt(hiddenYearly)} SAR/yr · that's a ${Math.round(hiddenYearly / 49)}x return`}
                   </p>
                   <button
                     onClick={() => setShowPaywall(true)}
@@ -772,7 +773,7 @@ export default function HomePage() {
                 <Zap size={12} strokeWidth={1.5} /> {ar ? "كيف يعمل" : "How it works"}
               </span>
               <h2 className="section-title">
-                {ar ? "٣ خطوات بس" : "Just 3 steps"}
+                {ar ? "3 خطوات بس" : "Just 3 steps"}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
                 {STEPS.map((step, i) => {
@@ -835,8 +836,8 @@ export default function HomePage() {
                   </div>
                 ))}
                 <div className="border-t border-dashed border-slate-200 mt-2 pt-3 flex items-center justify-between">
-                  <span className="text-xs text-slate-400">{ar ? "+١١ اشتراك آخر..." : "+11 more subscriptions..."}</span>
-                  <span className="text-xs font-bold text-[#00A651]">{ar ? "١٥,٢١٩ ريال/سنة" : "15,219 SAR/year"}</span>
+                  <span className="text-xs text-slate-400">{ar ? "+11 اشتراك آخر..." : "+11 more subscriptions..."}</span>
+                  <span className="text-xs font-bold text-[#00A651]">{ar ? "15,219 ريال/سنة" : "15,219 SAR/year"}</span>
                 </div>
               </motion.div>
               <p className="text-xs text-slate-400 mt-4">
@@ -851,7 +852,7 @@ export default function HomePage() {
           <section className="bg-[#F5FAF8] py-16 px-6">
             <div className="max-w-[800px] mx-auto text-center">
               <h2 className="text-xl font-extrabold tracking-tight text-slate-900 mb-6">
-                {ar ? "نكتشف أكثر من ١٢٠ خدمة" : "We detect 120+ services"}
+                {ar ? "نكتشف أكثر من 120 خدمة" : "We detect 120+ services"}
               </h2>
               <div className="flex flex-wrap justify-center gap-3">
                 {SUB_CHIPS.map((chip) => (
@@ -921,10 +922,10 @@ export default function HomePage() {
                   </thead>
                   <tbody>
                     {[
-                      { labelAr: "وقت البحث", labelEn: "Time to find", ycAr: "٩٠ ثانية", ycEn: "90 sec", manAr: "٣-٤ ساعات", manEn: "3-4 hours" },
+                      { labelAr: "وقت البحث", labelEn: "Time to find", ycAr: "90 ثانية", ycEn: "90 sec", manAr: "3-4 ساعات", manEn: "3-4 hours" },
                       { labelAr: "الاشتراكات المكتشفة", labelEn: "Subscriptions found", ycAr: "كلها", ycEn: "All of them", manAr: "بعضها", manEn: "Some" },
                       { labelAr: "روابط إلغاء", labelEn: "Cancel links", ycAr: "✓ مباشرة", ycEn: "✓ Direct", manAr: "✗ تدور بنفسك", manEn: "✗ Search yourself" },
-                      { labelAr: "يفهم بنوك سعودية", labelEn: "Saudi bank support", ycAr: "✓ ٩ بنوك", ycEn: "✓ 9 banks", manAr: "·", manEn: "·" },
+                      { labelAr: "يفهم بنوك سعودية", labelEn: "Saudi bank support", ycAr: "✓ 9 بنوك", ycEn: "✓ 9 banks", manAr: "·", manEn: "·" },
                       { labelAr: "خصوصية", labelEn: "Privacy", ycAr: "✓ على جهازك", ycEn: "✓ On your device", manAr: "✓", manEn: "✓" },
                       { labelAr: "السعر", labelEn: "Price", ycAr: `${AR_PRICE} مرة واحدة`, ycEn: "49 SAR once", manAr: "وقتك", manEn: "Your time" },
                     ].map((row, i) => (
@@ -955,7 +956,7 @@ export default function HomePage() {
               <div className="bento-card p-6 text-right mb-6">
                 {[
                   { ar: "تحليل غير محدود · كل بنوكك وبطاقاتك", en: "Unlimited analysis · all your banks and cards" },
-                  { ar: "روابط إلغاء مباشرة لـ ٥٠+ خدمة سعودية", en: "Direct cancel links for 50+ Saudi services" },
+                  { ar: "روابط إلغاء مباشرة لـ 50+ خدمة سعودية", en: "Direct cancel links for 50+ Saudi services" },
                   { ar: "تقرير PDF بالعربي تحتفظ فيه", en: "Arabic PDF report you can keep" },
                   { ar: "قوالب رسائل إلغاء جاهزة", en: "Ready-to-send cancellation message templates" },
                   { ar: "تحديثات مدى الحياة", en: "Lifetime updates" },
@@ -1039,7 +1040,7 @@ export default function HomePage() {
                   {ar ? "وزارة الاتصالات وتقنية المعلومات" : "MCIT Saudi Arabia"}
                 </a>
                 <a href="https://www.vision2030.gov.sa" target="_blank" rel="noopener noreferrer" className="hover:text-[#00A651] transition-colors no-underline">
-                  {ar ? "رؤية السعودية ٢٠٣٠" : "Saudi Vision 2030"}
+                  {ar ? "رؤية السعودية 2030" : "Saudi Vision 2030"}
                 </a>
               </div>
             </div>
@@ -1052,7 +1053,7 @@ export default function HomePage() {
                 {ar ? "كل شهر تأخره = فلوس تخسرها" : "Every month you wait = money lost"}
               </h2>
               <p className="text-base text-white/70 mb-6">
-                {ar ? "٩٠ ثانية تفصلك عن معرفة كم تدفع على اشتراكات ناسيها." : "90 seconds between you and knowing how much you pay on forgotten subscriptions."}
+                {ar ? "90 ثانية تفصلك عن معرفة كم تدفع على اشتراكات ناسيها." : "90 seconds between you and knowing how much you pay on forgotten subscriptions."}
               </p>
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
@@ -1066,7 +1067,7 @@ export default function HomePage() {
                   href="/guides"
                   className="text-xs text-white/50 hover:text-white/80 transition-colors no-underline"
                 >
-                  {ar ? "أو تصفح ٢٠٠+ دليل إلغاء مجاني" : "Or browse 200+ free cancellation guides"}
+                  {ar ? "أو تصفح 200+ دليل إلغاء مجاني" : "Or browse 200+ free cancellation guides"}
                 </a>
               </div>
             </div>

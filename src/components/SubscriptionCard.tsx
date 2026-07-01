@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ExternalLink, FileText, AlertTriangle } from "lucide-react";
+import { formatInt, formatMoney } from "@/lib/format";
 import { Subscription, SubscriptionStatus } from "@/lib/types";
 import { getCancelInfo, CancelDifficulty } from "@/lib/cancel-db";
 import BrandLogo from "@/components/BrandLogo";
@@ -98,10 +99,10 @@ export default function SubscriptionCard({
 
             <div className="flex items-baseline gap-3 mb-1.5 ltr-always">
               <span className="text-xl font-extrabold text-slate-900">
-                {sub.amount.toLocaleString(ar ? "ar-SA" : "en-SA")} <span className="text-xs font-semibold text-slate-400">{ar ? "ريال" : "SAR"}</span>
+                {formatMoney(sub.amount)} <span className="text-xs font-semibold text-slate-400">{ar ? "ريال" : "SAR"}</span>
               </span>
               <span className="text-xs text-slate-400">
-                = {sub.monthlyEquivalent.toFixed(0)} {ar ? "ريال/شهر" : "SAR/mo"} = {sub.yearlyEquivalent.toFixed(0)} {ar ? "ريال/سنة" : "SAR/yr"}
+                = {formatInt(sub.monthlyEquivalent)} {ar ? "ريال/شهر" : "SAR/mo"} = {formatInt(sub.yearlyEquivalent)} {ar ? "ريال/سنة" : "SAR/yr"}
               </span>
             </div>
 
