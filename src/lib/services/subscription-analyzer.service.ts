@@ -141,6 +141,95 @@ const DEFINITE_SUBSCRIPTIONS = new Set([
   "Twitch", "Todoist", "Evernote",
 ]);
 
+/** Bank credits, payroll, transfers, refunds — never subscriptions */
+const NON_SUBSCRIPTION_PATTERNS: RegExp[] = [
+  /\ballowance\b/i,
+  /\bemployer\b/i,
+  /\bsalary\b/i,
+  /\bpayroll\b/i,
+  /\bwage[s]?\b/i,
+  /\bbonus\b/i,
+  /\bgratuity\b/i,
+  /\bend of service\b/i,
+  /\bراتب\b/,
+  /\bرواتب\b/,
+  /\bبدل\b/,
+  /\bمخصصات\b/,
+  /\bصرف رواتب\b/,
+  /\bتحويل\b/,
+  /\bحوال[ةه]\b/,
+  /\bحوالات\b/,
+  /\btransfer\b/i,
+  /\btrf\b/i,
+  /\bwire\b/i,
+  /\biban\b/i,
+  /\bp2p\b/i,
+  /\burpay\b/i,
+  /\bstc\s*pay\b/i,
+  /\bbayan\b/i,
+  /\bwestern\s*union\b/i,
+  /\bremittance\b/i,
+  /\bsarie\b/i,
+  /\binstant\s*payment\b/i,
+  /\bips\b/i,
+  /\bown\s*account\b/i,
+  /\bbetween\s*accounts\b/i,
+  /\baccount\s*to\s*account\b/i,
+  /\binternal\b/i,
+  /\bincoming\b/i,
+  /\boutgoing\b/i,
+  /\bمن\s*حساب\b/,
+  /\bإلى\s*حساب\b/,
+  /\bالى\s*حساب\b/,
+  /\bcash\s*back\b/i,
+  /\bcashback\b/i,
+  /\bcb\s*reward\b/i,
+  /\breward\s*cash\b/i,
+  /\brefund\b/i,
+  /\breversal\b/i,
+  /\bchargeback\b/i,
+  /\brebate\b/i,
+  /\breward\b/i,
+  /\bاسترداد\b/,
+  /\bمكافأ[ةه]\b/,
+  /\bعائدات\b/,
+  /\batm\b/i,
+  /\bwithdrawal\b/i,
+  /\bسحب\b/,
+  /\bdeposit\b/i,
+  /\bإيداع\b/,
+  /\bloan\b/i,
+  /\bقرض\b/i,
+  /\brepayment\b/i,
+  /\bسداد\b/,
+  /\bpos\s*refund\b/i,
+  /\bcredit\s*adj/i,
+  /\badjustment\b/i,
+  /\bتسوية\b/,
+  /\bفائدة\b/,
+  /\binterest\b/i,
+  /\bfee\b/i,
+  /\bرسوم\b/,
+  /\bعمولة\b/,
+  /\bcommission\b/i,
+  /\bvat\b/i,
+  /\bضريبة\b/,
+  /\bzakat\b/i,
+  /\bزكاة\b/,
+];
+
+function isNonSubscriptionDescription(description: string): boolean {
+  const text = description.trim();
+  if (!text) return true;
+  return NON_SUBSCRIPTION_PATTERNS.some((pattern) => pattern.test(text));
+}
+
+function filterSubscriptionCandidates(transactions: Transaction[]): Transaction[] {
+  return transactions.filter(
+    (tx) => tx.amount > 0 && !isNonSubscriptionDescription(tx.description)
+  );
+}
+
 function normalizeDescription(desc: string): string {
   return desc
     .toLowerCase()
@@ -242,7 +331,8 @@ function calculateMonthlyEquivalent(
 export function analyzeTransactions(
   transactions: Transaction[]
 ): AuditReport {
-  const groups = groupTransactionsByMerchant(transactions);
+  const candidates = filterSubscriptionCandidates(transactions);
+  const groups = groupTransactionsByMerchant(candidates);
   const subscriptions: Subscription[] = [];
 
   let idCounter = 0;
@@ -256,26 +346,27 @@ export function analyzeTransactions(
       const frequency = detectFrequency(txs);
 
       if (!consistent || !frequency) {
-        // Still include as suspicious if multiple occurrences
-        const avgAmount = txs.reduce((sum, t) => sum + t.amount, 0) / txs.length;
-        const sortedDates = txs.map((t) => t.date).sort().filter((d) => d);
+        if (isKnownSub) {
+          const avgAmount = txs.reduce((sum, t) => sum + t.amount, 0) / txs.length;
+          const sortedDates = txs.map((t) => t.date).sort().filter((d) => d);
 
-        subscriptions.push({
-          id: `sub_${++idCounter}`,
-          name: knownName || txs[0].description,
-          normalizedName: key,
-          amount: Math.round(avgAmount * 100) / 100,
-          frequency: "monthly",
-          monthlyEquivalent: Math.round(avgAmount * 100) / 100,
-          yearlyEquivalent: Math.round(avgAmount * 12 * 100) / 100,
-          occurrences: txs.length,
-          lastCharge: sortedDates[sortedDates.length - 1] || "",
-          firstCharge: sortedDates[0] || "",
-          status: "investigate",
-          confidence: isKnownSub ? "confirmed" : "suspicious",
-          rawDescription: txs[0].description,
-          transactions: txs,
-        });
+          subscriptions.push({
+            id: `sub_${++idCounter}`,
+            name: knownName!,
+            normalizedName: key,
+            amount: Math.round(avgAmount * 100) / 100,
+            frequency: "monthly",
+            monthlyEquivalent: Math.round(avgAmount * 100) / 100,
+            yearlyEquivalent: Math.round(avgAmount * 12 * 100) / 100,
+            occurrences: txs.length,
+            lastCharge: sortedDates[sortedDates.length - 1] || "",
+            firstCharge: sortedDates[0] || "",
+            status: "investigate",
+            confidence: "confirmed",
+            rawDescription: txs[0].description,
+            transactions: txs,
+          });
+        }
         continue;
       }
 
