@@ -1,0 +1,43 @@
+---
+description: Western digits with English units (SAR, MB, KB) in all user-facing copy
+globs: src/**/*.{tsx,ts},public/**/*.html,**/*.html
+alwaysApply: true
+---
+
+# English numbers and English units
+
+When a value uses Western digits (`0-9`), its unit must stay in **English** — even in Arabic UI. Surrounding sentence text can be Arabic.
+
+## Always use
+
+| Type | Format | Arabic UI example |
+|------|--------|-------------------|
+| Money | `49 SAR`, `134 SAR/mo`, `15,219 SAR/yr` | `ادفع 49 SAR` |
+| File size | `1.8 MB`, `245.3 KB`, `25 MB` | `الحد الاقصى 25 MB` |
+| Percent | `32%` | `32% من المجموع` |
+| Count + English noun | `6 files`, `90 sec` | OK when the noun is English |
+
+## Never use
+
+- Arabic-Indic digits (`٠-٩`) in UI copy
+- Arabic currency next to Western digits (`49 ريال`, `١٣٤ ريال/شهر`)
+- Transliterated units (`ميقا`, `كيلو`)
+- `ar-SA` number formatting for display (`toLocaleString("ar-SA")`)
+- Arabic thousands separators with Western digits (`١٥٬٢١٩`)
+
+## Implementation
+
+- Use helpers from `src/lib/format.ts`: `formatInt`, `formatSar`, `formatBytes`, `formatByteLimit`, `PRICE_LABEL`
+- Wrap `number + unit` in `ltr-always` or `dir="ltr"` inside RTL layouts when needed
+- Parsers may normalize Arabic digits from bank files; display must still use Western digits
+
+## Examples
+
+- Bad: `الحد الاقصى ٢٥ ميقا`
+- Good: `الحد الاقصى 25 MB`
+
+- Bad: `ادفع ٤٩ ريال`
+- Good: `ادفع 49 SAR`
+
+- Bad: `1.8 MB من 25 ميقا`
+- Good: `6 ملفات (1.8 MB / 25 MB)`

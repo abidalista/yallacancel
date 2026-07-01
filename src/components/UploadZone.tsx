@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, X, FileText, Sparkles } from "lucide-react";
+import { formatBytes, formatByteBudget } from "@/lib/format";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_TOTAL_SIZE = 25 * 1024 * 1024;
@@ -19,17 +20,6 @@ interface UploadZoneProps {
   onTestClick: () => void;
 }
 
-function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function formatSizeLimit(bytes: number): string {
-  if (bytes >= 1024 * 1024) return `${bytes / (1024 * 1024)} MB`;
-  return formatSize(bytes);
-}
-
 function fileCountLabel(count: number, ar: boolean): string {
   if (ar) {
     if (count === 1) return "ملف واحد";
@@ -41,7 +31,7 @@ function fileCountLabel(count: number, ar: boolean): string {
 }
 
 function sizeBudgetLabel(usedBytes: number, maxBytes: number): string {
-  return `${formatSize(usedBytes)} / ${formatSizeLimit(maxBytes)}`;
+  return formatByteBudget(usedBytes, maxBytes);
 }
 
 function truncateName(name: string, max = 28): string {
@@ -193,7 +183,7 @@ export default function UploadZone({
                   <span className="flex items-center gap-2 text-sm min-w-0" style={{ color: "#4A6862" }}>
                     <FileText size={14} strokeWidth={1.5} style={{ color: "#8AADA8" }} className="flex-shrink-0" />
                     <span className="truncate">{truncateName(f.name)}</span>
-                    <span style={{ color: "#8AADA8" }} className="flex-shrink-0 ltr-always">({formatSize(f.size)})</span>
+                    <span style={{ color: "#8AADA8" }} className="flex-shrink-0 ltr-always">({formatBytes(f.size)})</span>
                   </span>
                   <button
                     onClick={(e) => { e.stopPropagation(); removeFile(i); }}

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { CreditCard, TrendingDown, CalendarDays, Eye, EyeOff, Info, Search } from "lucide-react";
 import { AuditReport as Report, SubscriptionStatus } from "@/lib/types";
-import { formatInt } from "@/lib/format";
+import { formatInt, formatSar, formatSarMo, formatSarPerYear, PRICE_LABEL } from "@/lib/format";
 import SubscriptionCard from "./SubscriptionCard";
 
 interface AuditReportProps {
@@ -55,7 +55,7 @@ export default function AuditReport({
         <div className="bento-card p-5 text-center">
           <TrendingDown size={20} strokeWidth={1.5} className="mx-auto mb-2 text-[#00A651]" />
           <div className="text-3xl font-extrabold tracking-tight text-slate-900 ltr-always">
-            {formatInt(report.totalMonthly)} <span className="text-sm font-semibold text-slate-400">{ar ? "ريال" : "SAR"}</span>
+            {formatSar(report.totalMonthly)}
           </div>
           <div className="text-xs text-slate-400 mt-1">
             {ar ? "المجموع الشهري" : "total per month"}
@@ -63,7 +63,7 @@ export default function AuditReport({
         </div>
         <div className="bento-card p-5 text-center">
           <div className="text-3xl font-extrabold tracking-tight text-[#00A651] ltr-always">
-            {formatInt(report.totalYearly)} <span className="text-sm font-semibold text-[#8AADA8]">{ar ? "ريال" : "SAR"}</span>
+            {formatSar(report.totalYearly)}
           </div>
           <div className="text-xs text-slate-400 mt-1">
             {ar ? "المجموع السنوي" : "total per year"}
@@ -91,10 +91,10 @@ export default function AuditReport({
             {ar ? "التوفير المتوقع بإلغاء الاشتراكات المختارة" : "Estimated savings from selected cancellations"}
           </p>
           <div className="text-4xl font-extrabold tracking-tight">
-            {formatInt(cancelMonthlySavings * 12)} {ar ? "ريال/سنة" : "SAR/year"}
+            {formatSarPerYear(cancelMonthlySavings * 12)}
           </div>
-          <p className="text-xs text-white/50 mt-1">
-            = {formatInt(cancelMonthlySavings)} {ar ? "ريال/شهر" : "SAR/month"} ({formatInt(cancelSubs.length)} {ar ? "اشتراك" : "subscriptions"})
+          <p className="text-xs text-white/50 mt-1 ltr-always">
+            = {formatSarMo(cancelMonthlySavings)} ({formatInt(cancelSubs.length)} {ar ? "اشتراك" : "subscriptions"})
           </p>
         </motion.div>
       )}

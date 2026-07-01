@@ -24,7 +24,7 @@ import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, Subscription, SubscriptionStatus, Transaction, BankId } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
 import BrandLogo from "@/components/BrandLogo";
-import { formatInt } from "@/lib/format";
+import { formatInt, formatSarYr, formatSar, PRICE_LABEL } from "@/lib/format";
 
 type Step = "landing" | "analyzing" | "results";
 
@@ -42,7 +42,7 @@ interface ParseError {
   warnings: string[];
 }
 
-const AR_PRICE = "49 ريال";
+const AR_PRICE = PRICE_LABEL;
 
 const BANKS = [
   { name: "الراجحي", domain: "alrajhibank.com.sa" },
@@ -57,7 +57,7 @@ const BANKS = [
 ];
 
 const PROBLEM_STATS = [
-  { num: "382 ريال/شهر", numEn: "382 SAR/mo", text: "يُخصم من حسابك على اشتراكات كل شهر", textEn: "deducted from your account on subscriptions monthly" },
+  { num: "382 SAR/mo", numEn: "382 SAR/mo", text: "يُخصم من حسابك على اشتراكات كل شهر", textEn: "deducted from your account on subscriptions monthly" },
   { num: "3 اشتراكات", numEn: "3 subscriptions", text: "معدّل الاشتراكات المنسية لكل سعودي", textEn: "the average Saudi forgets about" },
   { num: "90 ثانية", numEn: "90 seconds", text: "هو كل اللي تحتاجه عشان تكتشفهم وتلغيهم", textEn: "is all it takes to find and cancel them" },
 ];
@@ -121,7 +121,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "هل الأداة مجانية؟",
-    a: "التحليل الأول مجاني. بعدها تقدر تترقى بـ 49 ريال لمرة واحدة، بدون اشتراك شهري.",
+    a: "التحليل الأول مجاني. بعدها تقدر تترقى بـ 49 SAR لمرة واحدة، بدون اشتراك شهري.",
   },
   {
     q: "هل يلا كانسل يلغي الاشتراكات عني؟",
@@ -394,8 +394,8 @@ export default function HomePage() {
       ],
       takeaways: [
         { ar: "اشتراكاتك تمثل <b>32%</b> من إجمالي مصاريفك.", en: "Subscriptions make up <b>32%</b> of your total spending." },
-        { ar: "أعلى اشتراك هو <b>Adobe Creative Cloud</b> بـ 134 ريال/شهر.", en: "Your most expensive subscription is <b>Adobe Creative Cloud</b> at 134 SAR/mo." },
-        { ar: "تصرف على البقالة حوالي <b>471 ريال/شهر</b>.", en: "You spend about <b>471 SAR/mo</b> on groceries." },
+        { ar: "أعلى اشتراك هو <b>Adobe Creative Cloud</b> بـ 134 SAR/mo.", en: "Your most expensive subscription is <b>Adobe Creative Cloud</b> at 134 SAR/mo." },
+        { ar: "تصرف على البقالة حوالي <b>471 SAR/mo</b>.", en: "You spend about <b>471 SAR/mo</b> on groceries." },
       ],
     };
 
@@ -525,8 +525,8 @@ export default function HomePage() {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-1">
                   {ar
-                    ? `تصرف ${formatInt(report.totalYearly)} ريال/سنة`
-                    : `You're spending ${formatInt(report.totalYearly)} SAR/year`}
+                    ? `تصرف ${formatSarYr(report.totalYearly)}`
+                    : `You're spending ${formatSarYr(report.totalYearly)}`}
                 </h1>
                 <p className="text-sm text-slate-400 mb-4">
                   {ar ? `من ${subs.length} اشتراك` : `across ${subs.length} subscriptions`}
@@ -550,7 +550,7 @@ export default function HomePage() {
                       <span className="text-sm text-slate-400 w-8 flex-shrink-0">{i + 1}.</span>
                       <span className="font-bold text-sm flex-1 text-slate-800">{sub.name}</span>
                       <span className="font-bold text-sm mr-4 ml-4 text-slate-700">
-                        {formatInt(sub.yearlyEquivalent)} {ar ? "ريال/سنة" : "SAR/yr"}
+                        <span className="ltr-always">{formatSarYr(sub.yearlyEquivalent)}</span>
                       </span>
                       {info?.cancelUrl ? (
                         <a
@@ -574,8 +574,8 @@ export default function HomePage() {
                   <div key={sub.id} className="flex items-center px-5 py-4 border-b border-slate-100">
                     <span className="text-sm text-slate-400 w-8 flex-shrink-0">{FREE_VISIBLE + i + 1}.</span>
                     <span className="font-bold text-sm flex-1 blur-sm select-none text-slate-800">{sub.name}</span>
-                    <span className="font-bold text-sm mr-4 ml-4 text-slate-700">
-                      {formatInt(sub.yearlyEquivalent)} {ar ? "ريال/سنة" : "SAR/yr"}
+                    <span className="font-bold text-sm mr-4 ml-4 text-slate-700 ltr-always">
+                      {formatSarYr(sub.yearlyEquivalent)}
                     </span>
                     <Lock size={14} strokeWidth={1.5} className="text-slate-300 flex-shrink-0" />
                   </div>
@@ -583,7 +583,7 @@ export default function HomePage() {
 
                 {hidden.length > 0 && (
                   <div className="px-5 py-3 bg-slate-50 text-center text-sm text-slate-400">
-                    + {hidden.length} {ar ? "إضافية" : "more"} ({formatInt(hiddenYearly)} {ar ? "ريال/سنة" : "SAR/yr"})
+                    + {hidden.length} {ar ? "إضافية" : "more"} (<span className="ltr-always">{formatSarYr(hiddenYearly)}</span>)
                   </div>
                 )}
               </motion.div>
@@ -597,7 +597,7 @@ export default function HomePage() {
                 >
                   <p className="text-center text-[#00A651] font-bold text-base mb-4">
                     {ar
-                      ? `ادفع ${AR_PRICE}، ووفر ${formatInt(hiddenYearly)} ريال/سنة`
+                      ? `ادفع ${AR_PRICE}، ووفر ${formatSarYr(hiddenYearly)}`
                       : `Pay 49 SAR, save up to ${formatInt(hiddenYearly)} SAR/yr · that's a ${Math.round(hiddenYearly / 49)}x return`}
                   </p>
                   <button
@@ -830,14 +830,14 @@ export default function HomePage() {
                       <span className="text-xs text-slate-400 mx-2">{item.freq}</span>
                     </div>
                     <div className="text-right ltr-always">
-                      <span className="font-extrabold text-sm text-slate-900">{item.amount}</span>
-                      <span className="text-xs text-slate-400 ml-1">{ar ? "ريال" : "SAR"}</span>
+                      <span className="font-extrabold text-sm text-slate-900 ltr-always">{item.amount}</span>
+                      <span className="text-xs text-slate-400 ml-1 ltr-always">SAR</span>
                     </div>
                   </div>
                 ))}
                 <div className="border-t border-dashed border-slate-200 mt-2 pt-3 flex items-center justify-between">
                   <span className="text-xs text-slate-400">{ar ? "+11 اشتراك آخر..." : "+11 more subscriptions..."}</span>
-                  <span className="text-xs font-bold text-[#00A651]">{ar ? "15,219 ريال/سنة" : "15,219 SAR/year"}</span>
+                  <span className="text-xs font-bold text-[#00A651] ltr-always">15,219 SAR/yr</span>
                 </div>
               </motion.div>
               <p className="text-xs text-slate-400 mt-4">

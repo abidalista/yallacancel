@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Zap, FolderOpen, FileDown, Link2, BookOpen, MessageSquare, Infinity } from "lucide-react";
+import { PRICE_LABEL } from "@/lib/format";
 
 interface PaywallModalProps {
   locale: "ar" | "en";
@@ -26,7 +27,7 @@ const FEATURES_EN = [
   { icon: Infinity, text: "Lifetime updates · pay once, done" },
 ];
 
-const AR_PRICE = "49 ريال";
+const AR_PRICE = PRICE_LABEL;
 
 export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
   const ar = locale === "ar";

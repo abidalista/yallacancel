@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { BarChart3 } from "lucide-react";
 import { SpendingBreakdown as SpendingData } from "@/lib/services";
-import { formatInt } from "@/lib/format";
+import { formatInt, formatSar, formatSarMo } from "@/lib/format";
 
 interface Props {
   data: SpendingData;
@@ -61,8 +61,8 @@ export default function SpendingBreakdownComponent({ data, locale }: Props) {
         </div>
         <p className="text-sm text-slate-500">
           {ar
-            ? `${formatInt(data.totalSpend)} ريال إجمالي (~${formatInt(data.monthlyAvg)} ريال/شهر) من ${formatInt(data.transactionCount)} عملية`
-            : `${formatInt(data.totalSpend)} SAR total (~${formatInt(data.monthlyAvg)} SAR/mo) across ${formatInt(data.transactionCount)} transactions`}
+            ? `${formatSar(data.totalSpend)} إجمالي (~${formatSarMo(data.monthlyAvg)}) من ${formatInt(data.transactionCount)} عملية`
+            : `${formatSar(data.totalSpend)} total (~${formatSarMo(data.monthlyAvg)}) across ${formatInt(data.transactionCount)} transactions`}
         </p>
       </div>
 
@@ -94,10 +94,9 @@ export default function SpendingBreakdownComponent({ data, locale }: Props) {
               </div>
 
               <div className="col-span-3">
-                <span className="text-sm font-bold text-slate-800">
-                  {formatInt(cat.total)}
+                <span className="text-sm font-bold text-slate-800 ltr-always">
+                  {formatSar(cat.total)}
                 </span>
-                <span className="text-[10px] text-slate-400 mr-1 ml-1">{ar ? "ريال" : "SAR"}</span>
               </div>
 
               <div className="col-span-2 flex items-center gap-1.5">
@@ -111,10 +110,9 @@ export default function SpendingBreakdownComponent({ data, locale }: Props) {
               </div>
 
               <div className="col-span-3">
-                <span className="text-sm text-slate-600">
-                  {formatInt(cat.monthlyAvg)}
+                <span className="text-sm text-slate-600 ltr-always">
+                  {formatSarMo(cat.monthlyAvg)}
                 </span>
-                <span className="text-[10px] text-slate-400 mr-1 ml-1">{ar ? "ريال/شهر" : "/mo"}</span>
               </div>
             </div>
           );
