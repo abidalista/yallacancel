@@ -702,7 +702,7 @@ export default function HomePage() {
                   {/* Bank retry buttons */}
                   {parseError.showBankSelector && (
                     <div className="mt-4 flex flex-wrap gap-2">
-                      {(["alrajhi", "snb", "riyadbank", "albilad", "alinma", "sabb", "bsf", "anb", "other"] as BankId[]).map((bankId) => (
+                      {(["alrajhi", "snb", "riyadbank", "albilad", "alinma", "sabb", "bsf", "anb", "revolut", "cryptocom", "other"] as BankId[]).map((bankId) => (
                         <button
                           key={bankId}
                           onClick={() => handleRetryWithBank(bankId)}

@@ -43,11 +43,18 @@ const bankConfigs: Record<BankId, BankConfig> = {
   },
   snb: {
     id: "snb",
-    dateColumn: ["Date", "التاريخ", "Transaction Date", "تاريخ العملية", "Posting Date", "Txn Date", "تاريخ المعاملة"],
-    descriptionColumn: ["Description", "الوصف", "Details", "التفاصيل", "Transaction Description", "Narrative", "البيان", "Particulars", "وصف المعاملة"],
-    amountColumn: ["Amount", "المبلغ", "Value", "القيمة"],
-    debitColumn: ["Debit", "مدين", "Withdrawal", "سحب"],
-    creditColumn: ["Credit", "دائن", "Deposit", "إيداع"],
+    dateColumn: [
+      "Date", "التاريخ", "Transaction Date", "تاريخ العملية", "Posting Date",
+      "Txn Date", "تاريخ المعاملة", "Value Date", "Book Date",
+    ],
+    descriptionColumn: [
+      "Description", "الوصف", "Details", "التفاصيل", "Transaction Description",
+      "Narrative", "البيان", "Particulars", "وصف المعاملة",
+      "English Description", "Arabic Description", "Transaction Details", "Remarks",
+    ],
+    amountColumn: ["Amount", "المبلغ", "Value", "القيمة", "Transaction Amount"],
+    debitColumn: ["Debit", "مدين", "Withdrawal", "سحب", "Debit Amount"],
+    creditColumn: ["Credit", "دائن", "Deposit", "إيداع", "Credit Amount"],
     dateFormats: ["DD/MM/YYYY", "YYYY-MM-DD", "MM/DD/YYYY"],
     delimiter: ",",
   },
@@ -109,6 +116,25 @@ const bankConfigs: Record<BankId, BankConfig> = {
     debitColumn: ["Debit", "مدين"],
     creditColumn: ["Credit", "دائن"],
     dateFormats: ["DD/MM/YYYY", "YYYY-MM-DD"],
+    delimiter: ",",
+  },
+  revolut: {
+    id: "revolut",
+    dateColumn: [
+      "Completed Date", "Date completed (UTC)", "Date completed",
+      "Started Date", "Date started (UTC)", "Date started",
+    ],
+    descriptionColumn: ["Description"],
+    amountColumn: ["Amount", "Orig amount", "Payment amount"],
+    dateFormats: ["YYYY-MM-DD", "DD/MM/YYYY"],
+    delimiter: ",",
+  },
+  cryptocom: {
+    id: "cryptocom",
+    dateColumn: ["Timestamp (UTC)", "Timestamp"],
+    descriptionColumn: ["Transaction Description", "Description"],
+    amountColumn: ["Native Amount", "Amount"],
+    dateFormats: ["YYYY-MM-DD"],
     delimiter: ",",
   },
   other: {
@@ -227,9 +253,12 @@ function looksLikeAmount(value: string): boolean {
 }
 
 function parseDate(dateStr: string): string {
-  const cleaned = normalizeDigits(dateStr.trim());
+  const cleaned = normalizeDigits(dateStr.trim()).replace(
+    /\s+\d{1,2}:\d{2}(?::\d{2})?$/,
+    ""
+  );
 
-  if (/^\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}/.test(cleaned)) {
+  if (/^\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}$/.test(cleaned)) {
     const [y, m, d] = cleaned.split(/[\/\-.]/);
     return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
   }
@@ -496,6 +525,210 @@ function parseCSVHeaderless(
   return { transactions, warnings };
 }
 
+// ── Revolut & Crypto.com (dedicated formats) ──
+
+function headerIndex(headers: string[], names: string[]): number {
+  const normalized = headers.map((h) => h.trim().toLowerCase());
+  for (const name of names) {
+    const lower = name.toLowerCase();
+    const exact = normalized.indexOf(lower);
+    if (exact !== -1) return exact;
+  }
+  for (let i = 0; i < normalized.length; i++) {
+    for (const name of names) {
+      const lower = name.toLowerCase();
+      if (normalized[i].includes(lower) || lower.includes(normalized[i])) {
+        return i;
+      }
+    }
+  }
+  return -1;
+}
+
+function detectCsvFormat(lines: string[]): BankId | null {
+  if (lines.length === 0) return null;
+  const header = lines[0].toLowerCase();
+
+  if (header.includes("transaction kind") && header.includes("timestamp")) {
+    return "cryptocom";
+  }
+
+  if (
+    header.includes("description") &&
+    (header.includes("completed date") ||
+      header.includes("date completed") ||
+      header.includes("date started (utc)"))
+  ) {
+    return "revolut";
+  }
+
+  return null;
+}
+
+function parseRevolutCSV(
+  lines: string[],
+  delimiter: string
+): { transactions: Transaction[]; warnings: string[] } {
+  const warnings: string[] = [];
+  const headers = parseCSVLine(lines[0], delimiter);
+
+  const dateIdx = headerIndex(headers, [
+    "Completed Date",
+    "Date completed (UTC)",
+    "Date completed",
+    "Started Date",
+    "Date started (UTC)",
+  ]);
+  const descIdx = headerIndex(headers, ["Description"]);
+  const amountIdx = headerIndex(headers, ["Amount", "Orig amount", "Payment amount"]);
+  const typeIdx = headerIndex(headers, ["Type"]);
+  const stateIdx = headerIndex(headers, ["State"]);
+
+  if (dateIdx === -1 || descIdx === -1 || amountIdx === -1) {
+    return { transactions: [], warnings: ["no_revolut_headers"] };
+  }
+
+  const skipTypes = new Set([
+    "EXCHANGE",
+    "TRANSFER",
+    "TOPUP",
+    "TOP-UP",
+    "ATM",
+    "FEE",
+    "CARD_REFUND",
+  ]);
+
+  const transactions: Transaction[] = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const fields = parseCSVLine(lines[i], delimiter);
+    if (fields.length <= Math.max(dateIdx, descIdx, amountIdx)) continue;
+
+    if (stateIdx !== -1 && fields[stateIdx]?.trim()) {
+      const state = fields[stateIdx].trim().toUpperCase();
+      if (state !== "COMPLETED") continue;
+    }
+
+    if (typeIdx !== -1 && fields[typeIdx]?.trim()) {
+      const type = fields[typeIdx].trim().toUpperCase();
+      if (skipTypes.has(type)) continue;
+    }
+
+    const description = fields[descIdx]?.trim();
+    if (!description) continue;
+    if (/^exchanged\s+(to|from)\b/i.test(description)) continue;
+
+    const amountRaw = fields[amountIdx]?.trim();
+    if (!amountRaw) continue;
+
+    const signed = parseFloat(
+      normalizeDigits(amountRaw).replace(/,/g, "").replace(/'/g, "")
+    );
+    if (isNaN(signed) || signed === 0) continue;
+    if (signed > 0) continue;
+
+    const dateRaw = fields[dateIdx]?.trim();
+    if (!dateRaw) continue;
+
+    transactions.push({
+      date: parseDate(dateRaw),
+      description,
+      amount: Math.abs(signed),
+    });
+  }
+
+  return { transactions, warnings };
+}
+
+const CRYPTO_COM_FIAT = new Set([
+  "EUR", "USD", "GBP", "SAR", "AED", "CAD", "AUD", "CHF", "SGD", "HKD",
+]);
+
+const CRYPTO_COM_SPEND_KINDS = new Set([
+  "crypto_payment",
+  "viban_purchase",
+  "recurring_buy_order",
+  "card_payment",
+]);
+
+function parseCryptoComCSV(
+  lines: string[],
+  delimiter: string
+): { transactions: Transaction[]; warnings: string[] } {
+  const warnings: string[] = [];
+  const headers = parseCSVLine(lines[0], delimiter);
+
+  const dateIdx = headerIndex(headers, ["Timestamp (UTC)", "Timestamp"]);
+  const descIdx = headerIndex(headers, ["Transaction Description", "Description"]);
+  const kindIdx = headerIndex(headers, ["Transaction Kind"]);
+  const nativeAmountIdx = headerIndex(headers, ["Native Amount"]);
+  const nativeCurrencyIdx = headerIndex(headers, ["Native Currency"]);
+  const amountIdx = headerIndex(headers, ["Amount"]);
+
+  if (dateIdx === -1 || descIdx === -1) {
+    return { transactions: [], warnings: ["no_cryptocom_headers"] };
+  }
+
+  const transactions: Transaction[] = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const fields = parseCSVLine(lines[i], delimiter);
+    if (fields.length <= Math.max(dateIdx, descIdx)) continue;
+
+    const description = fields[descIdx]?.trim();
+    if (!description) continue;
+
+    const kind = (fields[kindIdx]?.trim() || "").toLowerCase();
+    if (!kind || !CRYPTO_COM_SPEND_KINDS.has(kind)) continue;
+
+    if (
+      /^(transfer|balance conversion|card top up|card cashback|cardholder cro|cro lockup|cro unlock|supercharger|pay rewards)/i.test(
+        description
+      ) ||
+      /\s->\s/.test(description)
+    ) {
+      continue;
+    }
+
+    let amount = 0;
+
+    if (nativeAmountIdx !== -1 && nativeCurrencyIdx !== -1) {
+      const nativeCurrency = fields[nativeCurrencyIdx]?.trim().toUpperCase();
+      const nativeRaw = fields[nativeAmountIdx]?.trim();
+      if (nativeCurrency && nativeRaw && CRYPTO_COM_FIAT.has(nativeCurrency)) {
+        const nativeSigned = parseFloat(
+          normalizeDigits(nativeRaw).replace(/,/g, "")
+        );
+        if (!isNaN(nativeSigned) && nativeSigned < 0) {
+          amount = Math.abs(nativeSigned);
+        }
+      }
+    }
+
+    if (amount === 0 && amountIdx !== -1 && fields[amountIdx]?.trim()) {
+      const signed = parseFloat(
+        normalizeDigits(fields[amountIdx]).replace(/,/g, "")
+      );
+      if (!isNaN(signed) && signed < 0) {
+        amount = Math.abs(signed);
+      }
+    }
+
+    if (amount < 0.5) continue;
+
+    const dateRaw = fields[dateIdx]?.trim();
+    if (!dateRaw) continue;
+
+    transactions.push({
+      date: parseDate(dateRaw),
+      description,
+      amount,
+    });
+  }
+
+  return { transactions, warnings };
+}
+
 // ── Line-by-line fallback ──
 
 function parseCSVLineFallback(
@@ -561,6 +794,34 @@ export function parseCSVRobust(content: string, bankId: BankId): CSVParseResult 
   }
 
   const delimiter = detectDelimiter(content);
+
+  const csvFormat = detectCsvFormat(lines);
+  if (csvFormat === "revolut" || bankId === "revolut") {
+    const revolutResult = parseRevolutCSV(lines, delimiter);
+    return {
+      transactions: revolutResult.transactions,
+      bankId: "revolut",
+      parseMethod: "csv-headers",
+      warnings:
+        revolutResult.transactions.length === 0
+          ? [...revolutResult.warnings, "no_revolut_spending"]
+          : revolutResult.warnings,
+      rawLineCount: lines.length,
+    };
+  }
+  if (csvFormat === "cryptocom" || bankId === "cryptocom") {
+    const cryptoResult = parseCryptoComCSV(lines, delimiter);
+    return {
+      transactions: cryptoResult.transactions,
+      bankId: "cryptocom",
+      parseMethod: "csv-headers",
+      warnings:
+        cryptoResult.transactions.length === 0
+          ? [...cryptoResult.warnings, "no_cryptocom_spending"]
+          : cryptoResult.warnings,
+      rawLineCount: lines.length,
+    };
+  }
 
   // Strategy 1: Header-based with detected delimiter
   const headerResult = parseCSVWithHeaders(lines, config, delimiter);
@@ -642,13 +903,22 @@ export function parseCSVRobust(content: string, bankId: BankId): CSVParseResult 
 }
 
 export function detectBank(content: string): BankId {
+  const lines = content.split(/\r?\n/).filter((line) => line.trim());
+  const csvFormat = detectCsvFormat(lines);
+  if (csvFormat) return csvFormat;
+
   const lower = content.toLowerCase();
   const normalized = normalizeDigits(lower);
   const firstLines = normalized.split(/\r?\n/).slice(0, 15).join(" ");
 
+  if (firstLines.includes("revolut")) return "revolut";
+  if (firstLines.includes("crypto.com") || firstLines.includes("cryptocom")) {
+    return "cryptocom";
+  }
+
   if (firstLines.includes("الراجحي") || firstLines.includes("alrajhi") || firstLines.includes("al rajhi"))
     return "alrajhi";
-  if (firstLines.includes("الأهلي") || firstLines.includes("snb") || firstLines.includes("الاهلي") || firstLines.includes("national bank"))
+  if (firstLines.includes("الأهلي") || firstLines.includes("snb") || firstLines.includes("الاهلي") || firstLines.includes("national bank") || firstLines.includes("saudi national bank"))
     return "snb";
   if (firstLines.includes("بنك الرياض") || firstLines.includes("riyad") || firstLines.includes("riyadbank"))
     return "riyadbank";
@@ -663,16 +933,21 @@ export function detectBank(content: string): BankId {
   if (firstLines.includes("العربي") || firstLines.includes("anb") || firstLines.includes("arab national"))
     return "anb";
 
-  // Try all bank configs
+  // Try Saudi bank configs only (avoid mis-parsing fintech CSVs)
   let bestBank: BankId = "other";
   let bestCount = 0;
 
-  for (const [id] of Object.entries(bankConfigs)) {
-    if (id === "other") continue;
-    const txs = parseCSV(content, id as BankId);
-    if (txs.length > bestCount) {
-      bestCount = txs.length;
-      bestBank = id as BankId;
+  const saudiBanks: BankId[] = [
+    "alrajhi", "snb", "riyadbank", "albilad", "alinma", "sabb", "bsf", "anb",
+  ];
+
+  const delimiter = detectDelimiter(content);
+
+  for (const id of saudiBanks) {
+    const result = parseCSVWithHeaders(lines, bankConfigs[id], delimiter);
+    if (result.transactions.length > bestCount) {
+      bestCount = result.transactions.length;
+      bestBank = id;
     }
   }
 

@@ -19,6 +19,8 @@ const banks: { id: BankId; key: TranslationKey; color: string }[] = [
   { id: "sabb", key: "sabb", color: "#007A3D" },
   { id: "bsf", key: "bsf", color: "#1E3A5F" },
   { id: "anb", key: "anb", color: "#C8102E" },
+  { id: "revolut", key: "revolut", color: "#191C1F" },
+  { id: "cryptocom", key: "cryptocom", color: "#002D74" },
   { id: "other", key: "otherBank", color: "#6B7280" },
 ];
 

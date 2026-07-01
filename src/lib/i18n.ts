@@ -31,6 +31,8 @@ export const translations = {
     sabb: "بنك ساب",
     bsf: "البنك السعودي الفرنسي",
     anb: "البنك العربي الوطني",
+    revolut: "Revolut",
+    cryptocom: "Crypto.com",
     otherBank: "بنك آخر",
 
     // Report
@@ -118,6 +120,8 @@ export const translations = {
     sabb: "SABB",
     bsf: "Banque Saudi Fransi",
     anb: "Arab National Bank",
+    revolut: "Revolut",
+    cryptocom: "Crypto.com",
     otherBank: "Other Bank",
 
     reportTitle: "Subscription Report",

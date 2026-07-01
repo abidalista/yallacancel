@@ -60,7 +60,10 @@ function findAmounts(str: string): number[] {
 }
 
 function parseDate(dateStr: string): string {
-  const cleaned = normalizeDigits(dateStr.trim());
+  const cleaned = normalizeDigits(dateStr.trim()).replace(
+    /\s+\d{1,2}:\d{2}(?::\d{2})?$/,
+    ""
+  );
 
   if (/^\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}$/.test(cleaned)) {
     const [y, m, d] = cleaned.split(/[\/\-.]/);

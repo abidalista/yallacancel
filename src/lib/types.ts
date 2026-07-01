@@ -7,6 +7,8 @@ export type BankId =
   | "sabb"
   | "bsf"
   | "anb"
+  | "revolut"
+  | "cryptocom"
   | "other";
 
 export interface Transaction {
