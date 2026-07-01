@@ -26,6 +26,8 @@ const FEATURES_EN = [
   { icon: Infinity, text: "Lifetime updates · pay once, done" },
 ];
 
+const AR_PRICE = "49 ريال";
+
 export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
   const ar = locale === "ar";
   const features = ar ? FEATURES_AR : FEATURES_EN;
@@ -84,7 +86,7 @@ export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
           <div className="px-6 pb-6 space-y-3">
             <div className="bg-[#E8F7EE] border border-[#E5EFED] rounded-2xl p-4 text-center">
               <div className="text-3xl font-extrabold text-[#00A651] tracking-tight">
-                {ar ? "٤٩ ريال" : "49 SAR"}
+                {ar ? AR_PRICE : "49 SAR"}
               </div>
               <div className="text-sm text-slate-500">
                 {ar ? "دفعة واحدة · بدون اشتراك شهري" : "One time payment · no monthly fee"}
@@ -95,7 +97,7 @@ export default function PaywallModal({ locale, onClose }: PaywallModalProps) {
               className="btn-primary w-full text-center"
               onClick={() => alert(ar ? "قريباً · جاري ربط بوابة الدفع" : "Coming soon · payment gateway integration in progress")}
             >
-              {ar ? "ادفع بمدى أو بطاقة · ٤٩ ريال" : "Pay with mada or card · 49 SAR"}
+              {ar ? `ادفع بمدى أو بطاقة، ${AR_PRICE}` : "Pay with mada or card · 49 SAR"}
             </button>
 
             <p className="text-xs text-center text-slate-400">

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { ExternalLink, FileText, AlertTriangle } from "lucide-react";
 import { Subscription, SubscriptionStatus } from "@/lib/types";
 import { getCancelInfo, CancelDifficulty } from "@/lib/cancel-db";
-import { logoUrl as LOGO, faviconUrl as FAV } from "@/lib/logo";
+import BrandLogo from "@/components/BrandLogo";
 
 const FREQ_LABELS: Record<string, { ar: string; en: string }> = {
   weekly:    { ar: "أسبوعي",    en: "Weekly" },
@@ -68,17 +68,12 @@ export default function SubscriptionCard({
           {/* Logo */}
           <div className="flex-shrink-0">
             {domain ? (
-              <img
-                src={LOGO(domain)}
+              <BrandLogo
+                domain={domain}
                 alt={sub.name}
+                name={sub.name}
                 className="w-11 h-11 rounded-xl bg-slate-50 p-1 object-contain"
-                onError={(e) => {
-                  const img = e.currentTarget;
-                  if (!img.dataset.fallback) {
-                    img.dataset.fallback = "1";
-                    img.src = FAV(domain);
-                  }
-                }}
+                fallbackClassName="w-11 h-11 rounded-xl bg-[#E8F7EE] flex items-center justify-center text-sm font-bold text-[#00A651]"
               />
             ) : (
               <div className="w-11 h-11 rounded-xl bg-[#E8F7EE] flex items-center justify-center text-sm font-bold text-[#00A651]">

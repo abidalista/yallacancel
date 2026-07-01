@@ -8,7 +8,7 @@ import {
   RotateCcw, Loader2, Upload, Eye,
 } from "lucide-react";
 import Header from "@/components/Header";
-import FundingTicker from "@/components/FundingTicker";
+import HeroScatteredLogos, { HeroLogoStrip } from "@/components/HeroScatteredLogos";
 import AddToHomeScreen from "@/components/AddToHomeScreen";
 import UploadZone from "@/components/UploadZone";
 import AuditReport from "@/components/AuditReport";
@@ -23,7 +23,7 @@ import {
 import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, Subscription, SubscriptionStatus, Transaction, BankId } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
-import { logoUrl as LOGO, faviconUrl as FAV } from "@/lib/logo";
+import BrandLogo from "@/components/BrandLogo";
 
 type Step = "landing" | "analyzing" | "results";
 
@@ -41,22 +41,7 @@ interface ParseError {
   warnings: string[];
 }
 
-function BrandLogo({ domain, alt, className }: { domain: string; alt: string; className?: string }) {
-  return (
-    <img
-      src={LOGO(domain)}
-      alt={alt}
-      className={className || "w-5 h-5 rounded-sm object-contain"}
-      onError={(e) => {
-        const img = e.currentTarget;
-        if (!img.dataset.fallback) {
-          img.dataset.fallback = "1";
-          img.src = FAV(domain);
-        }
-      }}
-    />
-  );
-}
+const AR_PRICE = "49 ريال";
 
 const BANKS = [
   { name: "الراجحي", domain: "alrajhibank.com.sa" },
@@ -449,7 +434,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#EDF5F3]">
-      <FundingTicker locale={locale} />
       <Header
         locale={locale}
         onLocaleChange={setLocale}
@@ -612,7 +596,7 @@ export default function HomePage() {
                 >
                   <p className="text-center text-[#00A651] font-bold text-base mb-4">
                     {ar
-                      ? `ادفع ٤٩ ريال، ووفر ${hiddenYearly.toFixed(0)} ريال/سنة · يعني ${Math.round(hiddenYearly / 49)}x عائد`
+                      ? `ادفع ${AR_PRICE}، ووفر ${hiddenYearly.toFixed(0)} ريال/سنة`
                       : `Pay 49 SAR, save up to ${hiddenYearly.toFixed(0)} SAR/yr · that's a ${Math.round(hiddenYearly / 49)}x return`}
                   </p>
                   <button
@@ -620,7 +604,7 @@ export default function HomePage() {
                     className="btn-primary w-full text-base py-4 mb-3"
                   >
                     {ar
-                      ? `اكشف كل ${subs.length} اشتراك · ٤٩ ريال`
+                      ? `اكشف كل ${subs.length} اشتراك، ${AR_PRICE}`
                       : `Unlock all ${subs.length} subscriptions · 49 SAR`}
                   </button>
                   <p className="text-xs text-center text-slate-400 mb-8">
@@ -663,8 +647,9 @@ export default function HomePage() {
       {step === "landing" && (
         <>
           {/* Hero */}
-          <section ref={heroRef} className="hero-gradient pt-24 pb-20 px-6">
-            <div className="max-w-[1100px] mx-auto text-center">
+          <section ref={heroRef} className="hero-gradient relative overflow-hidden pt-24 pb-20 px-6">
+            <HeroScatteredLogos />
+            <div className="max-w-[1100px] mx-auto text-center relative z-10">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -684,6 +669,8 @@ export default function HomePage() {
                     : "Upload your bank statement and in seconds we'll list every subscription you're paying for with a direct cancel link for each one."}
                 </p>
               </motion.div>
+
+              <HeroLogoStrip />
 
               {/* Upload zone */}
               <UploadZone
@@ -939,7 +926,7 @@ export default function HomePage() {
                       { labelAr: "روابط إلغاء", labelEn: "Cancel links", ycAr: "✓ مباشرة", ycEn: "✓ Direct", manAr: "✗ تدور بنفسك", manEn: "✗ Search yourself" },
                       { labelAr: "يفهم بنوك سعودية", labelEn: "Saudi bank support", ycAr: "✓ ٩ بنوك", ycEn: "✓ 9 banks", manAr: "·", manEn: "·" },
                       { labelAr: "خصوصية", labelEn: "Privacy", ycAr: "✓ على جهازك", ycEn: "✓ On your device", manAr: "✓", manEn: "✓" },
-                      { labelAr: "السعر", labelEn: "Price", ycAr: "٤٩ ريال مرة واحدة", ycEn: "49 SAR once", manAr: "وقتك", manEn: "Your time" },
+                      { labelAr: "السعر", labelEn: "Price", ycAr: `${AR_PRICE} مرة واحدة`, ycEn: "49 SAR once", manAr: "وقتك", manEn: "Your time" },
                     ].map((row, i) => (
                       <tr key={i} className="border-b border-slate-50">
                         <td className="text-right px-4 py-3 font-medium text-slate-700">{ar ? row.labelAr : row.labelEn}</td>
@@ -960,7 +947,7 @@ export default function HomePage() {
                 <Zap size={12} strokeWidth={1.5} /> {ar ? "سعر واحد. بدون اشتراك." : "One price. No subscription."}
               </span>
               <h2 className="section-title mb-2">
-                {ar ? "٤٩ ريال" : "49 SAR"}
+                {ar ? AR_PRICE : "49 SAR"}
               </h2>
               <p className="text-sm text-slate-400 mb-8">
                 {ar ? "دفعة واحدة · مو اشتراك شهري. وتقدر تسترجع فلوسك كاملة." : "One time payment · not a monthly subscription. Full money back guarantee."}
@@ -983,7 +970,7 @@ export default function HomePage() {
                 onClick={() => setShowPaywall(true)}
                 className="btn-primary w-full text-base py-4 mb-3"
               >
-                {ar ? "حلل كشف حسابك · ٤٩ ريال" : "Analyze your statement · 49 SAR"}
+                {ar ? `حلل كشف حسابك، ${AR_PRICE}` : "Analyze your statement · 49 SAR"}
               </button>
               <p className="text-xs text-slate-400">
                 {ar ? "يقبل مدى · فيزا · ماستركارد · ضمان استرداد كامل" : "Accepts mada · Visa · Mastercard · Full refund guarantee"}
@@ -1103,7 +1090,7 @@ export default function HomePage() {
                 </a>
               </div>
               <p className="text-xs mb-1" style={{ color: "#8AADA8" }}>
-                {ar ? "٤٩ ريال مرة واحدة · بدون اشتراك · ضمان استرداد كامل" : "49 SAR one-time · No subscription · Full refund guarantee"}
+                {ar ? `${AR_PRICE} مرة واحدة، بدون اشتراك، ضمان استرداد كامل` : "49 SAR one-time · No subscription · Full refund guarantee"}
               </p>
               <p className="text-xs" style={{ color: "#4A6862" }}>
                 © {new Date().getFullYear()} YallaCancel · {ar ? "صُنع بحب في السعودية 🇸🇦" : "Made with love in Saudi Arabia 🇸🇦"}

@@ -1,11 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-
-const LOGO = (domain: string) =>
-  `https://logo.clearbit.com/${domain}`;
-const FAV = (domain: string) =>
-  `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+import BrandLogo from "@/components/BrandLogo";
 
 type Difficulty = "easy" | "medium" | "hard";
 
@@ -369,18 +365,12 @@ export default function GuidesPage() {
                 href={`/${g.slug}.html`}
                 className="flex items-center gap-3 bg-white border border-[var(--color-border)] rounded-2xl px-5 py-4 transition-all hover:border-[var(--color-primary)] hover:-translate-y-0.5 hover:shadow-md no-underline"
               >
-                <img
-                  src={LOGO(g.domain)}
-                  alt=""
+                <BrandLogo
+                  domain={g.domain}
+                  alt={g.name}
+                  name={g.name}
                   className="w-8 h-8 rounded-lg flex-shrink-0 object-contain"
-                  loading="lazy"
-                  onError={(e) => {
-                    const img = e.currentTarget;
-                    if (!img.dataset.fallback) {
-                      img.dataset.fallback = "1";
-                      img.src = FAV(g.domain);
-                    }
-                  }}
+                  fallbackClassName="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center text-xs font-bold bg-[#E8F7EE] text-[#00A651]"
                 />
                 <div className="flex-1 min-w-0">
                   <div className="font-bold text-sm text-[var(--color-text-primary)] truncate">
