@@ -73,9 +73,23 @@ const BANKS = [
 ];
 
 const PROBLEM_STATS = [
-  { num: "382 SAR/mo", numEn: "382 SAR/mo", text: "يُخصم من حسابك على اشتراكات كل شهر", textEn: "deducted from your account on subscriptions monthly" },
-  { num: "3 اشتراكات", numEn: "3 subscriptions", text: "معدّل الاشتراكات المنسية لكل سعودي", textEn: "the average Saudi forgets about" },
-  { num: "90 ثانية", numEn: "90 seconds", text: "هو كل اللي تحتاجه عشان تكتشفهم وتلغيهم", textEn: "is all it takes to find and cancel them" },
+  {
+    value: "382 SAR/mo",
+    textAr: "متوسط ما ينصرف على الاشتراكات كل شهر",
+    textEn: "Average monthly spend on subscriptions",
+  },
+  {
+    value: "3",
+    valueSuffixAr: "اشتراكات منسية",
+    valueSuffixEn: "forgotten subscriptions",
+    textAr: "كثير يدفع عنها كل شهر بدون ما ينتبه",
+    textEn: "Still charged every month without noticing",
+  },
+  {
+    value: "90 sec",
+    textAr: "كافية لمسح كشفك وإيجادها كلها",
+    textEn: "Enough to scan your statement and find them all",
+  },
 ];
 
 const STEPS = [
@@ -937,8 +951,18 @@ export default function HomePage() {
                   transition={{ duration: 0.5, delay: i * 0.1 }}
                   className="bg-white border border-[#E5EFED] rounded-[24px] shadow-sm text-center py-8 px-4"
                 >
-                  <div className="text-3xl font-extrabold tracking-tight text-[#00A651] mb-2">{ar ? stat.num : stat.numEn}</div>
-                  <p className="text-sm text-slate-500">{ar ? stat.text : stat.textEn}</p>
+                  <div className="text-3xl font-extrabold tracking-tight text-[#00A651] mb-2 ltr-always">
+                    {stat.value}
+                    {"valueSuffixAr" in stat && ar && (
+                      <span className="block text-lg font-bold text-slate-700 mt-1">{stat.valueSuffixAr}</span>
+                    )}
+                    {"valueSuffixEn" in stat && !ar && (
+                      <span className="block text-lg font-bold text-slate-700 mt-1">{stat.valueSuffixEn}</span>
+                    )}
+                  </div>
+                  <p className="text-sm text-slate-500 leading-relaxed">
+                    {ar ? stat.textAr : stat.textEn}
+                  </p>
                 </motion.div>
               ))}
             </div>

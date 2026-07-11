@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import BrandLogo from "@/components/BrandLogo";
+import ServiceBrandIcon from "@/components/ServiceBrandIcon";
 
 interface ScatteredLogo {
   name: string;
@@ -29,22 +29,22 @@ const LOGOS: ScatteredLogo[] = [
   { name: "iCloud", domain: "icloud.com", top: "78%", right: "20%", rotate: 9, size: "sm", delay: 2.2 },
 ];
 
-const SIZE_CLASS = {
-  sm: "w-10 h-10 p-2",
-  md: "w-12 h-12 p-2.5",
-  lg: "w-16 h-16 p-3",
+const PILL_SIZE = {
+  sm: "w-10 h-10",
+  md: "w-12 h-12",
+  lg: "w-16 h-16",
 } as const;
 
-const IMG_CLASS = {
-  sm: "w-5 h-5",
-  md: "w-6 h-6",
-  lg: "w-8 h-8",
-} as const;
+const ICON_SIZE = {
+  sm: "sm" as const,
+  md: "md" as const,
+  lg: "lg" as const,
+};
 
 function LogoPill({ logo }: { logo: ScatteredLogo }) {
   return (
     <motion.div
-      className={`hero-logo-pill absolute flex items-center justify-center ${SIZE_CLASS[logo.size]}`}
+      className={`hero-logo-pill absolute flex items-center justify-center ${PILL_SIZE[logo.size]}`}
       style={{
         top: logo.top,
         left: logo.left,
@@ -64,12 +64,7 @@ function LogoPill({ logo }: { logo: ScatteredLogo }) {
       }}
       title={logo.name}
     >
-      <BrandLogo
-        domain={logo.domain}
-        alt={logo.name}
-        className={`${IMG_CLASS[logo.size]} object-contain`}
-        fallbackClassName={`${IMG_CLASS[logo.size]} rounded-lg flex items-center justify-center text-[10px] font-bold bg-[#E8F7EE] text-[#00A651]`}
-      />
+      <ServiceBrandIcon domain={logo.domain} size={ICON_SIZE[logo.size]} />
     </motion.div>
   );
 }
@@ -91,18 +86,14 @@ export function HeroLogoStrip() {
       {strip.map((logo, i) => (
         <motion.div
           key={logo.name}
-          className="hero-logo-pill w-10 h-10 p-2 flex items-center justify-center"
+          className="hero-logo-pill w-10 h-10 flex items-center justify-center"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.25 + i * 0.04, duration: 0.35 }}
           style={{ rotate: `${logo.rotate * 0.5}deg` }}
+          title={logo.name}
         >
-          <BrandLogo
-            domain={logo.domain}
-            alt={logo.name}
-            className="w-5 h-5 object-contain"
-            fallbackClassName="w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold bg-[#E8F7EE] text-[#00A651]"
-          />
+          <ServiceBrandIcon domain={logo.domain} size="sm" />
         </motion.div>
       ))}
     </div>
