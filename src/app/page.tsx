@@ -25,7 +25,7 @@ import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, Subscription, SubscriptionStatus, Transaction, BankId } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
 import BrandLogo from "@/components/BrandLogo";
-import { formatInt, formatSarYr, formatSar, PRICE_LABEL, fileCountLabel, subscriptionCountLabel, truncateFilename } from "@/lib/format";
+import { formatInt, formatSubCost, formatPriceOnce, fileCountLabel, subscriptionCountLabel, truncateFilename } from "@/lib/format";
 import Ltr from "@/components/Ltr";
 import {
   storeScanSession,
@@ -59,7 +59,7 @@ interface ParseError {
   warnings: string[];
 }
 
-const AR_PRICE = PRICE_LABEL;
+const AR_PRICE = "49 ريال";
 
 const BANKS = [
   { name: "الراجحي", domain: "alrajhibank.com.sa" },
@@ -663,86 +663,74 @@ export default function HomePage() {
         const showFull = isUnlocked || reportTier === "full";
         const visible = showFull ? subs : subs.slice(0, FREE_VISIBLE);
         const hidden = showFull ? [] : subs.slice(FREE_VISIBLE);
-        const hiddenYearly = hidden.reduce((s, sub) => s + sub.yearlyEquivalent, 0);
+        const hiddenMonthly = hidden.reduce((s, sub) => s + sub.monthlyEquivalent, 0);
 
         return (
           <div className="min-h-screen bg-[#EDF5F3] pt-24 pb-16 px-6">
             <div className="max-w-[700px] mx-auto">
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-1">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-6">
+                <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-2">
                   {subs.length === 0 ? (
                     ar ? "ما لقينا اشتراكات واضحة" : "No clear subscriptions found"
                   ) : ar ? (
-                    <>
-                      تصرف <Ltr>{formatSarYr(report.totalYearly)}</Ltr>
-                    </>
+                    <>تصرف {formatSubCost(report.totalMonthly, true)}</>
                   ) : (
-                    <>
-                      You&apos;re spending <Ltr>{formatSarYr(report.totalYearly)}</Ltr>
-                    </>
+                    <>You&apos;re spending {formatSubCost(report.totalMonthly, false)}</>
                   )}
                 </h1>
-                <p className="text-sm text-slate-400 mb-1">
-                  {showFull
-                    ? ar
-                      ? <>تقرير AI كامل · {subscriptionCountLabel(subs.length, true)}</>
-                      : <>Full AI report · {subscriptionCountLabel(subs.length, false)}</>
-                    : ar
-                      ? <>معاينة سريعة · {subscriptionCountLabel(subs.length, true)}</>
-                      : <>Quick preview · {subscriptionCountLabel(subs.length, false)}</>}
-                </p>
-                {parsedFileCount > 0 && (
-                  <p className="text-xs text-slate-400 mb-4">
-                    {ar ? (
+                {subs.length > 0 && (
+                  <p className="text-[15px] text-slate-500 leading-relaxed">
+                    {showFull
+                      ? ar
+                        ? `تقرير AI كامل · ${subscriptionCountLabel(subs.length, true)}`
+                        : `Full AI report · ${subscriptionCountLabel(subs.length, false)}`
+                      : ar
+                        ? `معاينة سريعة · ${subscriptionCountLabel(subs.length, true)}`
+                        : `Quick preview · ${subscriptionCountLabel(subs.length, false)}`}
+                    {parsedFileCount > 0 && (
                       <>
-                        <Ltr>{formatInt(report.analyzedTransactions)}</Ltr> عملية · قرأنا{" "}
-                        {fileCountLabel(parsedFileCount, true)} من {fileCountLabel(totalScanFiles, true)}
-                      </>
-                    ) : (
-                      <>
-                        <Ltr>{formatInt(report.analyzedTransactions)}</Ltr> transactions · read{" "}
-                        {fileCountLabel(parsedFileCount, false)} of {fileCountLabel(totalScanFiles, false)}
+                        {" · "}
+                        {ar ? (
+                          <>
+                            <Ltr>{formatInt(report.analyzedTransactions)}</Ltr> عملية ·{" "}
+                            {fileCountLabel(parsedFileCount, true)} من {fileCountLabel(totalScanFiles, true)}
+                          </>
+                        ) : (
+                          <>
+                            <Ltr>{formatInt(report.analyzedTransactions)}</Ltr> transactions ·{" "}
+                            {fileCountLabel(parsedFileCount, false)} of {fileCountLabel(totalScanFiles, false)}
+                          </>
+                        )}
                       </>
                     )}
                   </p>
                 )}
-                {!parsedFileCount && <div className="mb-4" />}
-
-                {!showFull && subs.length === 1 && (
-                  <p className="text-xs text-slate-500 mb-3">
-                    {ar
-                      ? "قد يكون فيه اشتراكات اكثر — المعاينة السريعة ما تقرأ كل الملفات. تقرير AI الكامل يحلل الكل."
-                      : "There may be more subscriptions — the quick preview doesn't read every file. Full AI analyzes all of them."}
-                  </p>
-                )}
 
                 {failedScanFiles.length > 0 && !showFull && (
-                  <div className="bento-card bg-amber-50 border-amber-100 p-4 mb-4 text-sm text-amber-900">
-                    <p>
-                      {ar
-                        ? `${fileCountLabel(failedScanFiles.length, true)} ما انقرأ في المعاينة السريعة (من ${fileCountLabel(totalScanFiles, true)}):`
-                        : `${fileCountLabel(failedScanFiles.length, false)} couldn't be read in the quick preview (of ${fileCountLabel(totalScanFiles, false)}):`}
-                    </p>
-                    <ul className="mt-2 space-y-1">
-                      {failedScanFiles.map((name) => (
-                        <li key={name}>
-                          <bdi dir="ltr" className="ltr-always text-xs">
-                            {truncateFilename(name, 40)}
-                          </bdi>
-                        </li>
-                      ))}
-                    </ul>
-                    <p className="mt-2 text-xs text-amber-800">
-                      {ar
-                        ? "تقرير AI الكامل يحلل هذه الملفات — PDF، Revolut، Crypto.com، وغيرها."
-                        : "The full AI report reads these files — PDFs, Revolut, Crypto.com, and more."}
-                    </p>
+                  <div className="mt-4 rounded-2xl bg-amber-50 border border-amber-100 px-4 py-3 text-sm text-amber-900">
+                    {ar ? (
+                      <>
+                        {fileCountLabel(failedScanFiles.length, true)} ما انقرأ:{" "}
+                        <bdi dir="ltr" className="ltr-always text-xs">
+                          {truncateFilename(failedScanFiles[0], 36)}
+                        </bdi>
+                        {failedScanFiles.length > 1 ? ` +${failedScanFiles.length - 1}` : ""}
+                        {" · "}
+                        التقرير الكامل يحلل PDF و Revolut و Crypto.com
+                      </>
+                    ) : (
+                      <>
+                        {fileCountLabel(failedScanFiles.length, false)} not read:{" "}
+                        <bdi dir="ltr" className="ltr-always text-xs">
+                          {truncateFilename(failedScanFiles[0], 36)}
+                        </bdi>
+                        {failedScanFiles.length > 1 ? ` +${failedScanFiles.length - 1}` : ""}
+                        {" · "}
+                        Full AI report handles PDFs, Revolut, Crypto.com
+                      </>
+                    )}
                   </div>
                 )}
-
-                <div className="h-1 bg-[#E5EFED] rounded-full mb-8">
-                  <div className="h-1 bg-[#1A3A35] rounded-full w-full" />
-                </div>
               </motion.div>
 
               {!showFull && subs.length === 0 && (
@@ -753,11 +741,7 @@ export default function HomePage() {
                       : "The quick scan found no clear subscriptions. Full AI analysis may find hidden charges in PDFs, Revolut, or Crypto.com exports."}
                   </p>
                   <button onClick={() => setShowPaywall(true)} className="btn-primary">
-                    {ar ? (
-                      <>تحليل AI كامل · <Ltr>{PRICE_LABEL}</Ltr></>
-                    ) : (
-                      <>Full AI analysis · <Ltr>49 SAR</Ltr></>
-                    )}
+                    {ar ? `تحليل AI كامل · ${formatPriceOnce(true)}` : `Full AI analysis · ${formatPriceOnce(false)}`}
                   </button>
                 </div>
               )}
@@ -776,8 +760,8 @@ export default function HomePage() {
                     <div key={sub.id} className="flex items-center px-5 py-4 border-b border-slate-100">
                       <Ltr className="text-sm text-slate-400 w-8 flex-shrink-0">{i + 1}.</Ltr>
                       <span className="font-bold text-sm flex-1 text-slate-800">{sub.name}</span>
-                      <span className="font-bold text-sm mr-4 ml-4 text-slate-700">
-                        <Ltr>{formatSarYr(sub.yearlyEquivalent)}</Ltr>
+                      <span className="font-bold text-sm mr-4 ml-4 text-slate-700 whitespace-nowrap">
+                        {formatSubCost(sub.monthlyEquivalent, ar)}
                       </span>
                       {showFull && info?.cancelUrl ? (
                         <a
@@ -801,8 +785,8 @@ export default function HomePage() {
                   <div key={sub.id} className="flex items-center px-5 py-4 border-b border-slate-100">
                     <Ltr className="text-sm text-slate-400 w-8 flex-shrink-0">{FREE_VISIBLE + i + 1}.</Ltr>
                     <span className="font-bold text-sm flex-1 blur-sm select-none text-slate-800">{sub.name}</span>
-                    <span className="font-bold text-sm mr-4 ml-4 text-slate-700">
-                      <Ltr>{formatSarYr(sub.yearlyEquivalent)}</Ltr>
+                    <span className="font-bold text-sm mr-4 ml-4 text-slate-700 whitespace-nowrap">
+                      {formatSubCost(sub.monthlyEquivalent, ar)}
                     </span>
                     <Lock size={14} strokeWidth={1.5} className="text-slate-300 flex-shrink-0" />
                   </div>
@@ -810,7 +794,7 @@ export default function HomePage() {
 
                 {hidden.length > 0 && (
                   <div className="px-5 py-3 bg-slate-50 text-center text-sm text-slate-400">
-                    + {hidden.length} {ar ? "إضافية" : "more"} (<Ltr>{formatSarYr(hiddenYearly)}</Ltr>)
+                    + {hidden.length} {ar ? "إضافية" : "more"} ({formatSubCost(hiddenMonthly, ar)})
                   </div>
                 )}
               </motion.div>
@@ -822,30 +806,28 @@ export default function HomePage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
+                  className="bento-card p-5 text-center"
                 >
-                  <p className="text-center text-[#00A651] font-bold text-base mb-4">
+                  <p className="font-bold text-[#00A651] text-base mb-1">
+                    {ar ? "تقرير AI كامل" : "Full AI report"}
+                  </p>
+                  <p className="text-sm text-slate-500 mb-4">
                     {hidden.length > 0
                       ? ar
-                        ? <>افتح التقرير الكامل ووفر حتى <Ltr>{formatSarYr(hiddenYearly)}</Ltr></>
-                        : <>Unlock the full AI report and save up to <Ltr>{formatSarYr(hiddenYearly)}</Ltr></>
+                        ? `يفتح ${hidden.length} اشتراك إضافي ويوفر حتى ${formatSubCost(hiddenMonthly, true)}`
+                        : `Unlocks ${hidden.length} more subscriptions · save up to ${formatSubCost(hiddenMonthly, false)}`
                       : ar
-                        ? `تقرير AI الكامل يحلل كل ${fileCountLabel(totalScanFiles, true)} — PDF، Revolut، Crypto.com`
-                        : `Full AI report analyzes all ${fileCountLabel(totalScanFiles, false)} — PDFs, Revolut, Crypto.com`}
+                        ? `يحلل كل ${fileCountLabel(totalScanFiles, true)} ويلقى اشتراكات PDF و Revolut`
+                        : `Analyzes all ${fileCountLabel(totalScanFiles, false)} · finds PDF & Revolut charges`}
                   </p>
                   <button
                     onClick={() => setShowPaywall(true)}
-                    className="btn-primary w-full text-base py-4 mb-3"
+                    className="btn-primary w-full text-base py-4"
                   >
-                    {ar ? (
-                      <>تقرير AI كامل · <Ltr>{PRICE_LABEL}</Ltr></>
-                    ) : (
-                      <>Full AI report · <Ltr>49 SAR</Ltr></>
-                    )}
+                    {ar ? `افتح التقرير · ${formatPriceOnce(true)}` : `Unlock report · ${formatPriceOnce(false)}`}
                   </button>
-                  <p className="text-xs text-center text-slate-400 mb-8">
-                    {ar
-                      ? "دفعة واحدة · بدون حساب · ضمان استرداد كامل"
-                      : "One time payment · No account needed · 100% money back guarantee"}
+                  <p className="text-xs text-slate-400 mt-3">
+                    {ar ? "دفعة واحدة · بدون حساب" : "One time · no account needed"}
                   </p>
                 </motion.div>
               )}

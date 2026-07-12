@@ -50,6 +50,16 @@ export function formatSarMo(n: number): string {
   return `${formatMoney(n)} SAR/mo`;
 }
 
+/** Monthly subscription cost — Arabic uses ريال/شهر */
+export function formatSubCost(monthly: number, ar: boolean): string {
+  const amount = formatMoney(monthly);
+  return ar ? `${amount} ريال/شهر` : `${amount} SAR/mo`;
+}
+
+export function formatPriceOnce(ar: boolean): string {
+  return ar ? "49 ريال" : "49 SAR";
+}
+
 export function formatSarYr(n: number): string {
   return `${formatMoney(n)} SAR/yr`;
 }
