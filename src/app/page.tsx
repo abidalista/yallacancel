@@ -1155,24 +1155,86 @@ export default function HomePage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-100 bg-slate-50/50">
-                      <th className="text-right px-4 py-3 font-bold text-slate-500 text-xs">{ar ? "" : ""}</th>
-                      <th className="px-4 py-3 font-bold text-[#00A651] text-xs">{ar ? "يلا كانسل" : "YallaCancel"}</th>
-                      <th className="px-4 py-3 font-bold text-slate-400 text-xs">{ar ? "يدوياً" : "Manually"}</th>
+                      <th className="text-right px-4 py-4 font-bold text-slate-500 text-xs w-[38%]" />
+                      <th className="px-3 py-4 text-center w-[31%]">
+                        <div className="flex flex-col items-center gap-2">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src="/logo-yallacancel.svg"
+                            alt="YallaCancel"
+                            className="h-5 w-auto max-w-[120px]"
+                          />
+                          <span className="font-bold text-[#00A651] text-xs">
+                            {ar ? "يلا كانسل" : "YallaCancel"}
+                          </span>
+                        </div>
+                      </th>
+                      <th className="px-3 py-4 text-center font-bold text-slate-400 text-xs w-[31%]">
+                        {ar ? "يدوياً" : "Manually"}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {[
-                      { labelAr: "وقت البحث", labelEn: "Time to find", ycAr: "90 ثانية", ycEn: "90 sec", manAr: "3-4 ساعات", manEn: "3-4 hours" },
-                      { labelAr: "الاشتراكات المكتشفة", labelEn: "Subscriptions found", ycAr: "كلها", ycEn: "All of them", manAr: "بعضها", manEn: "Some" },
-                      { labelAr: "روابط إلغاء", labelEn: "Cancel links", ycAr: "✓ مباشرة", ycEn: "✓ Direct", manAr: "✗ تدور بنفسك", manEn: "✗ Search yourself" },
-                      { labelAr: "يفهم بنوك سعودية", labelEn: "Saudi bank support", ycAr: "✓ 9 بنوك", ycEn: "✓ 9 banks", manAr: "·", manEn: "·" },
-                      { labelAr: "خصوصية", labelEn: "Privacy", ycAr: "✓ على جهازك", ycEn: "✓ On your device", manAr: "✓", manEn: "✓" },
-                      { labelAr: "السعر", labelEn: "Price", ycAr: `${AR_PRICE} مرة واحدة`, ycEn: "49 SAR once", manAr: "وقتك", manEn: "Your time" },
+                      {
+                        labelAr: "وقت البحث",
+                        labelEn: "Time to find",
+                        ycAr: "✅ 90 ثانية",
+                        ycEn: "✅ 90 seconds",
+                        manAr: "❌ 3-4 ساعات",
+                        manEn: "❌ 3-4 hours",
+                      },
+                      {
+                        labelAr: "الاشتراكات المكتشفة",
+                        labelEn: "Subscriptions found",
+                        ycAr: "✅ كلها",
+                        ycEn: "✅ All of them",
+                        manAr: "❌ بعضها يفوتك",
+                        manEn: "❌ Easy to miss some",
+                      },
+                      {
+                        labelAr: "روابط إلغاء",
+                        labelEn: "Cancel links",
+                        ycAr: "✅ مباشرة",
+                        ycEn: "✅ Direct links",
+                        manAr: "❌ تدور بنفسك",
+                        manEn: "❌ Search yourself",
+                      },
+                      {
+                        labelAr: "يفهم بنوك سعودية",
+                        labelEn: "Saudi bank support",
+                        ycAr: "✅ 9 بنوك",
+                        ycEn: "✅ 9 banks",
+                        manAr: "❌ ما يفهم صيغ البنوك",
+                        manEn: "❌ No SA bank formats",
+                      },
+                      {
+                        labelAr: "خصوصية",
+                        labelEn: "Privacy",
+                        ycAr: "✅ على جهازك",
+                        ycEn: "✅ On your device",
+                        manAr: "❌ مجهود يدوي طويل",
+                        manEn: "❌ Hours of manual work",
+                      },
+                      {
+                        labelAr: "السعر",
+                        labelEn: "Price",
+                        ycAr: "✅ 49 Riyal مرة واحدة",
+                        ycEn: "✅ 49 Riyal once",
+                        manAr: "❌ وقتك + مجهودك",
+                        manEn: "❌ Your time + effort",
+                      },
                     ].map((row, i) => (
-                      <tr key={i} className="border-b border-slate-50">
-                        <td className="text-right px-4 py-3 font-medium text-slate-700">{ar ? row.labelAr : row.labelEn}</td>
-                        <td className="px-4 py-3 text-center font-bold text-[#00A651]">{ar ? row.ycAr : row.ycEn}</td>
-                        <td className="px-4 py-3 text-center text-slate-400">{ar ? row.manAr : row.manEn}</td>
+                      <tr key={i} className="border-b border-slate-50 last:border-0">
+                        <td className="text-right px-4 py-3.5 font-medium text-slate-700 text-[13px]">
+                          {ar ? row.labelAr : row.labelEn}
+                        </td>
+                        <td className="px-3 py-3.5 text-center font-bold text-[#00A651] text-[13px]">
+                          {ar ? row.ycAr : row.ycEn}
+                        </td>
+                        <td className="px-3 py-3.5 text-center text-slate-400 text-[13px]">
+                          {ar ? row.manAr : row.manEn}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
