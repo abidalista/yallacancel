@@ -25,7 +25,8 @@ import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, Subscription, SubscriptionStatus, Transaction, BankId } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
 import BrandLogo from "@/components/BrandLogo";
-import { formatInt, formatSarYr, formatSar, PRICE_LABEL } from "@/lib/format";
+import { formatInt, formatSarYr, formatSar, PRICE_LABEL, fileCountLabel, subscriptionCountLabel, truncateFilename } from "@/lib/format";
+import Ltr from "@/components/Ltr";
 import {
   storeScanSession,
   getPendingScanFiles,
@@ -74,21 +75,19 @@ const BANKS = [
 
 const PROBLEM_STATS = [
   {
-    value: "382 SAR/mo",
-    textAr: "متوسط ما ينصرف على الاشتراكات كل شهر",
-    textEn: "Average monthly spend on subscriptions",
+    headline: "382 SAR/mo",
+    bodyAr: "متوسط صرف سعودي على اشتراكاته كل شهر",
+    bodyEn: "Average monthly subscription spend in Saudi Arabia",
   },
   {
-    value: "3",
-    valueSuffixAr: "اشتراكات منسية",
-    valueSuffixEn: "forgotten subscriptions",
-    textAr: "كثير يدفع عنها كل شهر بدون ما ينتبه",
-    textEn: "Still charged every month without noticing",
+    headline: "3 subscriptions",
+    bodyAr: "ينساها معظم الناس ولسا تُخصم كل شهر",
+    bodyEn: "Most people forget they are still paying for",
   },
   {
-    value: "90 sec",
-    textAr: "كافية لمسح كشفك وإيجادها كلها",
-    textEn: "Enough to scan your statement and find them all",
+    headline: "90 seconds",
+    bodyAr: "تكفي لمسح كشفك وإيجاد كل اشتراكاتك",
+    bodyEn: "To scan your statement and find them all",
   },
 ];
 
@@ -668,37 +667,73 @@ export default function HomePage() {
             <div className="max-w-[700px] mx-auto">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-1">
-                  {subs.length === 0
-                    ? ar
-                      ? "ما لقينا اشتراكات واضحة"
-                      : "No clear subscriptions found"
-                    : ar
-                      ? `تصرف ${formatSarYr(report.totalYearly)}`
-                      : `You're spending ${formatSarYr(report.totalYearly)}`}
+                  {subs.length === 0 ? (
+                    ar ? "ما لقينا اشتراكات واضحة" : "No clear subscriptions found"
+                  ) : ar ? (
+                    <>
+                      تصرف <Ltr>{formatSarYr(report.totalYearly)}</Ltr>
+                    </>
+                  ) : (
+                    <>
+                      You&apos;re spending <Ltr>{formatSarYr(report.totalYearly)}</Ltr>
+                    </>
+                  )}
                 </h1>
                 <p className="text-sm text-slate-400 mb-1">
                   {showFull
                     ? ar
-                      ? `تقرير AI كامل · ${subs.length} اشتراك`
-                      : `Full AI report · ${subs.length} subscriptions`
+                      ? <>تقرير AI كامل · {subscriptionCountLabel(subs.length, true)}</>
+                      : <>Full AI report · {subscriptionCountLabel(subs.length, false)}</>
                     : ar
-                      ? `معاينة سريعة · ${subs.length} اشتراك متكرر`
-                      : `Quick preview · ${subs.length} recurring subscriptions`}
+                      ? <>معاينة سريعة · {subscriptionCountLabel(subs.length, true)}</>
+                      : <>Quick preview · {subscriptionCountLabel(subs.length, false)}</>}
                 </p>
                 {parsedFileCount > 0 && (
                   <p className="text-xs text-slate-400 mb-4">
-                    {ar
-                      ? `${formatInt(report.analyzedTransactions)} عملية من ${parsedFileCount} ملف`
-                      : `${formatInt(report.analyzedTransactions)} transactions from ${parsedFileCount} files`}
+                    {ar ? (
+                      <>
+                        <Ltr>{formatInt(report.analyzedTransactions)}</Ltr> عملية · قرأنا{" "}
+                        {fileCountLabel(parsedFileCount, true)} من {fileCountLabel(totalScanFiles, true)}
+                      </>
+                    ) : (
+                      <>
+                        <Ltr>{formatInt(report.analyzedTransactions)}</Ltr> transactions · read{" "}
+                        {fileCountLabel(parsedFileCount, false)} of {fileCountLabel(totalScanFiles, false)}
+                      </>
+                    )}
                   </p>
                 )}
                 {!parsedFileCount && <div className="mb-4" />}
 
+                {!showFull && subs.length === 1 && (
+                  <p className="text-xs text-slate-500 mb-3">
+                    {ar
+                      ? "قد يكون فيه اشتراكات اكثر — المعاينة السريعة ما تقرأ كل الملفات. تقرير AI الكامل يحلل الكل."
+                      : "There may be more subscriptions — the quick preview doesn't read every file. Full AI analyzes all of them."}
+                  </p>
+                )}
+
                 {failedScanFiles.length > 0 && !showFull && (
                   <div className="bento-card bg-amber-50 border-amber-100 p-4 mb-4 text-sm text-amber-900">
-                    {ar
-                      ? `${formatInt(failedScanFiles.length)} من ${formatInt(totalScanFiles)} ملف ما انقرأ في المعاينة السريعة (${failedScanFiles.join("، ")}). تحليل AI قد يقرأ PDF وملفات Revolut و Crypto.com.`
-                      : `${formatInt(failedScanFiles.length)} of ${formatInt(totalScanFiles)} files couldn't be read in the quick scan (${failedScanFiles.join(", ")}). Full AI may parse PDFs, Revolut, and Crypto.com exports.`}
+                    <p>
+                      {ar
+                        ? `${fileCountLabel(failedScanFiles.length, true)} ما انقرأ في المعاينة السريعة (من ${fileCountLabel(totalScanFiles, true)}):`
+                        : `${fileCountLabel(failedScanFiles.length, false)} couldn't be read in the quick preview (of ${fileCountLabel(totalScanFiles, false)}):`}
+                    </p>
+                    <ul className="mt-2 space-y-1">
+                      {failedScanFiles.map((name) => (
+                        <li key={name}>
+                          <bdi dir="ltr" className="ltr-always text-xs">
+                            {truncateFilename(name, 40)}
+                          </bdi>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-2 text-xs text-amber-800">
+                      {ar
+                        ? "تقرير AI الكامل يحلل هذه الملفات — PDF، Revolut، Crypto.com، وغيرها."
+                        : "The full AI report reads these files — PDFs, Revolut, Crypto.com, and more."}
+                    </p>
                   </div>
                 )}
 
@@ -715,7 +750,11 @@ export default function HomePage() {
                       : "The quick scan found no clear subscriptions. Full AI analysis may find hidden charges in PDFs, Revolut, or Crypto.com exports."}
                   </p>
                   <button onClick={() => setShowPaywall(true)} className="btn-primary">
-                    {ar ? `تحليل AI كامل · ${AR_PRICE}` : `Full AI analysis · 49 SAR`}
+                    {ar ? (
+                      <>تحليل AI كامل · <Ltr>{PRICE_LABEL}</Ltr></>
+                    ) : (
+                      <>Full AI analysis · <Ltr>49 SAR</Ltr></>
+                    )}
                   </button>
                 </div>
               )}
@@ -732,10 +771,10 @@ export default function HomePage() {
                   const info = getCancelInfo(sub.name);
                   return (
                     <div key={sub.id} className="flex items-center px-5 py-4 border-b border-slate-100">
-                      <span className="text-sm text-slate-400 w-8 flex-shrink-0">{i + 1}.</span>
+                      <Ltr className="text-sm text-slate-400 w-8 flex-shrink-0">{i + 1}.</Ltr>
                       <span className="font-bold text-sm flex-1 text-slate-800">{sub.name}</span>
                       <span className="font-bold text-sm mr-4 ml-4 text-slate-700">
-                        <span className="ltr-always">{formatSarYr(sub.yearlyEquivalent)}</span>
+                        <Ltr>{formatSarYr(sub.yearlyEquivalent)}</Ltr>
                       </span>
                       {showFull && info?.cancelUrl ? (
                         <a
@@ -757,10 +796,10 @@ export default function HomePage() {
 
                 {hidden.map((sub, i) => (
                   <div key={sub.id} className="flex items-center px-5 py-4 border-b border-slate-100">
-                    <span className="text-sm text-slate-400 w-8 flex-shrink-0">{FREE_VISIBLE + i + 1}.</span>
+                    <Ltr className="text-sm text-slate-400 w-8 flex-shrink-0">{FREE_VISIBLE + i + 1}.</Ltr>
                     <span className="font-bold text-sm flex-1 blur-sm select-none text-slate-800">{sub.name}</span>
-                    <span className="font-bold text-sm mr-4 ml-4 text-slate-700 ltr-always">
-                      {formatSarYr(sub.yearlyEquivalent)}
+                    <span className="font-bold text-sm mr-4 ml-4 text-slate-700">
+                      <Ltr>{formatSarYr(sub.yearlyEquivalent)}</Ltr>
                     </span>
                     <Lock size={14} strokeWidth={1.5} className="text-slate-300 flex-shrink-0" />
                   </div>
@@ -768,7 +807,7 @@ export default function HomePage() {
 
                 {hidden.length > 0 && (
                   <div className="px-5 py-3 bg-slate-50 text-center text-sm text-slate-400">
-                    + {hidden.length} {ar ? "إضافية" : "more"} (<span className="ltr-always">{formatSarYr(hiddenYearly)}</span>)
+                    + {hidden.length} {ar ? "إضافية" : "more"} (<Ltr>{formatSarYr(hiddenYearly)}</Ltr>)
                   </div>
                 )}
               </motion.div>
@@ -784,19 +823,21 @@ export default function HomePage() {
                   <p className="text-center text-[#00A651] font-bold text-base mb-4">
                     {hidden.length > 0
                       ? ar
-                        ? `افتح التقرير الكامل ووفر حتى ${formatSarYr(hiddenYearly)}`
-                        : `Unlock the full AI report and save up to ${formatSarYr(hiddenYearly)}/yr`
+                        ? <>افتح التقرير الكامل ووفر حتى <Ltr>{formatSarYr(hiddenYearly)}</Ltr></>
+                        : <>Unlock the full AI report and save up to <Ltr>{formatSarYr(hiddenYearly)}</Ltr></>
                       : ar
-                        ? "تحليل AI يقرأ كل ملفاتك (SNB، Revolut، Crypto.com)"
-                        : "AI reads every file properly (SNB, Revolut, Crypto.com)"}
+                        ? `تقرير AI الكامل يحلل كل ${fileCountLabel(totalScanFiles, true)} — PDF، Revolut، Crypto.com`
+                        : `Full AI report analyzes all ${fileCountLabel(totalScanFiles, false)} — PDFs, Revolut, Crypto.com`}
                   </p>
                   <button
                     onClick={() => setShowPaywall(true)}
                     className="btn-primary w-full text-base py-4 mb-3"
                   >
-                    {ar
-                      ? `تقرير AI كامل · ${AR_PRICE}`
-                      : `Full AI report · 49 SAR`}
+                    {ar ? (
+                      <>تقرير AI كامل · <Ltr>{PRICE_LABEL}</Ltr></>
+                    ) : (
+                      <>Full AI report · <Ltr>49 SAR</Ltr></>
+                    )}
                   </button>
                   <p className="text-xs text-center text-slate-400 mb-8">
                     {ar
@@ -951,17 +992,11 @@ export default function HomePage() {
                   transition={{ duration: 0.5, delay: i * 0.1 }}
                   className="bg-white border border-[#E5EFED] rounded-[24px] shadow-sm text-center py-8 px-4"
                 >
-                  <div className="text-3xl font-extrabold tracking-tight text-[#00A651] mb-2 ltr-always">
-                    {stat.value}
-                    {"valueSuffixAr" in stat && ar && (
-                      <span className="block text-lg font-bold text-slate-700 mt-1">{stat.valueSuffixAr}</span>
-                    )}
-                    {"valueSuffixEn" in stat && !ar && (
-                      <span className="block text-lg font-bold text-slate-700 mt-1">{stat.valueSuffixEn}</span>
-                    )}
+                  <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#00A651] mb-3 ltr-always">
+                    {stat.headline}
                   </div>
-                  <p className="text-sm text-slate-500 leading-relaxed">
-                    {ar ? stat.textAr : stat.textEn}
+                  <p className="text-[15px] text-slate-600 leading-relaxed max-w-[220px] mx-auto">
+                    {ar ? stat.bodyAr : stat.bodyEn}
                   </p>
                 </motion.div>
               ))}

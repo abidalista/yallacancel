@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isFounderReceipt } from "@/lib/format";
 
 export async function POST(request: NextRequest) {
   try {
@@ -6,6 +7,10 @@ export async function POST(request: NextRequest) {
 
     if (!receiptId || typeof receiptId !== "string") {
       return NextResponse.json({ valid: false }, { status: 400 });
+    }
+
+    if (isFounderReceipt(receiptId, process.env.FOUNDER_ACCESS_TOKEN)) {
+      return NextResponse.json({ valid: true });
     }
 
     if (

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Zap, FolderOpen, FileDown, Link2, BookOpen, Loader2, Mail, Sparkles } from "lucide-react";
 import { WhopCheckoutEmbed } from "@whop/checkout/react";
 import { PRICE_LABEL } from "@/lib/format";
+import Ltr from "@/components/Ltr";
 
 interface PaywallModalProps {
   locale: "ar" | "en";
@@ -28,7 +29,6 @@ const FEATURES_EN = [
   { icon: BookOpen, text: "Step by step cancellation guide for each subscription" },
 ];
 
-const AR_PRICE = PRICE_LABEL;
 const DEV_UNLOCK = process.env.NEXT_PUBLIC_DEV_UNLOCK === "true";
 
 export default function PaywallModal({
@@ -94,7 +94,7 @@ export default function PaywallModal({
               <div className="px-6 pb-6 space-y-3">
                 <div className="bg-[#E8F7EE] border border-[#E5EFED] rounded-2xl p-4 text-center">
                   <div className="text-3xl font-extrabold text-[#00A651] tracking-tight">
-                    {ar ? AR_PRICE : "49 SAR"}
+                    <Ltr>{ar ? PRICE_LABEL : "49 SAR"}</Ltr>
                   </div>
                   <div className="text-sm text-slate-500">
                     {ar ? "دفعة واحدة · بدون اشتراك شهري" : "One time payment · no monthly fee"}
@@ -105,9 +105,11 @@ export default function PaywallModal({
                   className="btn-primary w-full text-center"
                   onClick={() => setShowCheckout(true)}
                 >
-                  {ar
-                    ? `افتح التقرير الكامل · ${AR_PRICE}`
-                    : `Unlock full AI report · 49 SAR`}
+                  {ar ? (
+                    <>افتح التقرير الكامل · <Ltr>{PRICE_LABEL}</Ltr></>
+                  ) : (
+                    <>Unlock full AI report · <Ltr>49 SAR</Ltr></>
+                  )}
                 </button>
 
                 {DEV_UNLOCK && (

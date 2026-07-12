@@ -35,6 +35,9 @@ jobs:
           printf '%s' "${{ secrets.ANTHROPIC_API_KEY }}" | npx wrangler pages secret put ANTHROPIC_API_KEY --project-name=yallacancel
           printf '%s' "${{ secrets.LLAMA_CLOUD_API_KEY }}" | npx wrangler pages secret put LLAMA_CLOUD_API_KEY --project-name=yallacancel
           printf '%s' "${{ secrets.WHOP_API_KEY }}" | npx wrangler pages secret put WHOP_API_KEY --project-name=yallacancel
+          if [ -n "${{ secrets.FOUNDER_ACCESS_TOKEN }}" ]; then
+            printf '%s' "${{ secrets.FOUNDER_ACCESS_TOKEN }}" | npx wrangler pages secret put FOUNDER_ACCESS_TOKEN --project-name=yallacancel
+          fi
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3

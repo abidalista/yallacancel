@@ -3,7 +3,8 @@
 import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, X, FileText, Sparkles } from "lucide-react";
-import { formatBytes, formatByteBudget } from "@/lib/format";
+import { formatBytes, formatByteBudget, fileCountLabel, truncateFilename } from "@/lib/format";
+import Ltr from "@/components/Ltr";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_TOTAL_SIZE = 25 * 1024 * 1024;
@@ -20,27 +21,8 @@ interface UploadZoneProps {
   onTestClick: () => void;
 }
 
-function fileCountLabel(count: number, ar: boolean): string {
-  if (ar) {
-    if (count === 1) return "ملف واحد";
-    if (count === 2) return "ملفين";
-    if (count >= 3 && count <= 10) return `${count} ملفات`;
-    return `${count} ملف`;
-  }
-  return count === 1 ? "1 file" : `${count} files`;
-}
-
 function sizeBudgetLabel(usedBytes: number, maxBytes: number): string {
   return formatByteBudget(usedBytes, maxBytes);
-}
-
-function truncateName(name: string, max = 28): string {
-  const dot = name.lastIndexOf(".");
-  if (dot === -1) return name.length > max ? name.slice(0, max) + "..." : name;
-  const ext = name.slice(dot);
-  const base = name.slice(0, dot);
-  if (base.length <= max) return name;
-  return base.slice(0, max) + "..." + ext;
 }
 
 export default function UploadZone({
@@ -147,8 +129,16 @@ export default function UploadZone({
         </p>
         <p className="text-sm text-center" style={{ color: "#8AADA8" }}>
           {ar
-            ? "PDF او CSV من اي بنك. تقدر ترفع اكثر من ملف. الحد الاقصى 25 MB"
-            : "PDF or CSV from any bank. Multiple files OK. Up to 25 MB total"}
+            ? "PDF او CSV من اي بنك. تقدر ترفع اكثر من ملف. الحد الاقصى "
+            : "PDF or CSV from any bank. Multiple files OK. Up to "}
+          {ar ? (
+            <>
+              {" "}
+              <Ltr>25 MB</Ltr>
+            </>
+          ) : (
+            <Ltr>25 MB total</Ltr>
+          )}
         </p>
         <input
           ref={fileInputRef}
@@ -182,8 +172,8 @@ export default function UploadZone({
                 <div key={`${f.name}-${i}`} className="flex items-center justify-between gap-2">
                   <span className="flex items-center gap-2 text-sm min-w-0" style={{ color: "#4A6862" }}>
                     <FileText size={14} strokeWidth={1.5} style={{ color: "#8AADA8" }} className="flex-shrink-0" />
-                    <span className="truncate">{truncateName(f.name)}</span>
-                    <span style={{ color: "#8AADA8" }} className="flex-shrink-0 ltr-always">({formatBytes(f.size)})</span>
+                    <span className="truncate">{truncateFilename(f.name, 28)}</span>
+                    <Ltr className="flex-shrink-0 text-[#8AADA8]">({formatBytes(f.size)})</Ltr>
                   </span>
                   <button
                     onClick={(e) => { e.stopPropagation(); removeFile(i); }}

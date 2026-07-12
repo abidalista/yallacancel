@@ -9,6 +9,11 @@ export async function onRequestPost(context: {
       return Response.json({ valid: false }, { status: 400 });
     }
 
+    const founderToken = context.env.FOUNDER_ACCESS_TOKEN;
+    if (founderToken && receiptId === `founder_${founderToken}`) {
+      return Response.json({ valid: true });
+    }
+
     if (
       context.env.NEXT_PUBLIC_DEV_UNLOCK === "true" &&
       (receiptId === "dev_unlock" || receiptId === "dev_test")

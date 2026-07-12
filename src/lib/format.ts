@@ -57,3 +57,39 @@ export function formatSarYr(n: number): string {
 export function formatSarPerYear(n: number): string {
   return `${formatMoney(n)} SAR/year`;
 }
+
+export function fileCountLabel(count: number, ar: boolean): string {
+  if (ar) {
+    if (count === 1) return "ملف واحد";
+    if (count === 2) return "ملفين";
+    if (count >= 3 && count <= 10) return `${count} ملفات`;
+    return `${count} ملف`;
+  }
+  return count === 1 ? "1 file" : `${count} files`;
+}
+
+export function subscriptionCountLabel(count: number, ar: boolean): string {
+  if (ar) {
+    if (count === 1) return "اشتراك متكرر واحد";
+    if (count === 2) return "اشتراكين متكررين";
+    if (count >= 3 && count <= 10) return `${count} اشتراكات متكررة`;
+    return `${count} اشتراك متكرر`;
+  }
+  return count === 1 ? "1 recurring subscription" : `${count} recurring subscriptions`;
+}
+
+export function truncateFilename(name: string, max = 32): string {
+  if (name.length <= max) return name;
+  const dot = name.lastIndexOf(".");
+  if (dot > 0 && name.length - dot <= 6) {
+    const ext = name.slice(dot);
+    const base = name.slice(0, dot);
+    const keep = max - ext.length - 3;
+    return keep > 0 ? `${base.slice(0, keep)}...${ext}` : `${name.slice(0, max - 3)}...`;
+  }
+  return `${name.slice(0, max - 3)}...`;
+}
+
+export function isFounderReceipt(receiptId: string, token?: string): boolean {
+  return !!token && receiptId === `founder_${token}`;
+}
