@@ -75,17 +75,20 @@ const BANKS = [
 
 const PROBLEM_STATS = [
   {
-    headline: "382 SAR/mo",
+    headlineAr: "382 ريال كل شهر",
+    headlineEn: "382 Riyal/mo",
     bodyAr: "متوسط صرف سعودي على اشتراكاته كل شهر",
     bodyEn: "Average monthly subscription spend in Saudi Arabia",
   },
   {
-    headline: "3 subscriptions",
+    headlineAr: "3 اشتراكات",
+    headlineEn: "3 subscriptions",
     bodyAr: "ينساها معظم الناس ولسا تُخصم كل شهر",
     bodyEn: "Most people forget they are still paying for",
   },
   {
-    headline: "90 seconds",
+    headlineAr: "90 ثانية",
+    headlineEn: "90 seconds",
     bodyAr: "تكفي لمسح كشفك وإيجاد كل اشتراكاتك",
     bodyEn: "To scan your statement and find them all",
   },
@@ -992,8 +995,8 @@ export default function HomePage() {
                   transition={{ duration: 0.5, delay: i * 0.1 }}
                   className="bg-white border border-[#E5EFED] rounded-[24px] shadow-sm text-center py-8 px-4"
                 >
-                  <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#00A651] mb-3 ltr-always">
-                    {stat.headline}
+                  <div className={`text-2xl sm:text-3xl font-extrabold tracking-tight text-[#00A651] mb-3 ${ar ? "" : "ltr-always"}`}>
+                    {ar ? stat.headlineAr : stat.headlineEn}
                   </div>
                   <p className="text-[15px] text-slate-600 leading-relaxed max-w-[220px] mx-auto">
                     {ar ? stat.bodyAr : stat.bodyEn}
