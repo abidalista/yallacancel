@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, X, FileText, Sparkles } from "lucide-react";
-import { formatBytes, formatByteBudget, fileCountLabel, truncateFilename } from "@/lib/format";
+import { formatBytes, fileCountLabel, truncateFilename } from "@/lib/format";
 import Ltr from "@/components/Ltr";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -21,8 +21,8 @@ interface UploadZoneProps {
   onTestClick: () => void;
 }
 
-function sizeBudgetLabel(usedBytes: number, maxBytes: number): string {
-  return formatByteBudget(usedBytes, maxBytes);
+function totalSizeLabel(bytes: number): string {
+  return formatBytes(bytes);
 }
 
 export default function UploadZone({
@@ -165,7 +165,7 @@ export default function UploadZone({
             <p className="text-sm font-bold mb-4" style={{ color: "#1A3A35" }}>
               {fileCountLabel(selectedFiles.length, ar)}
               {" "}
-              <span className="ltr-always">({sizeBudgetLabel(totalSize, MAX_TOTAL_SIZE)})</span>
+              <Ltr>({totalSizeLabel(totalSize)})</Ltr>
             </p>
             <div className="space-y-3 mb-5 max-h-48 overflow-y-auto">
               {selectedFiles.map((f, i) => (
