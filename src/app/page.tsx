@@ -24,7 +24,7 @@ import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, Subscription, Transaction, BankId } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
 import BrandLogo from "@/components/BrandLogo";
-import { formatInt, formatHeadlineYearly, formatNativeYearly, formatPriceOnce, fileCountLabel, subscriptionCountLabel, truncateFilename } from "@/lib/format";
+import { formatInt, formatHeadlineYearly, formatPriceOnce, fileCountLabel, subscriptionCountLabel, truncateFilename } from "@/lib/format";
 import Ltr from "@/components/Ltr";
 import {
   storeScanSession,
@@ -738,7 +738,7 @@ export default function HomePage() {
         />
       )}
 
-      {/* ── RESULTS (JFC layout · mint + Arabic) ── */}
+      {/* ── RESULTS (JFC-inspired · mint + Arabic) ── */}
       {step === "results" && report && (() => {
         const subs = report.subscriptions;
         const FREE_VISIBLE = 3;
@@ -746,12 +746,74 @@ export default function HomePage() {
         const visible = showFull ? subs : subs.slice(0, FREE_VISIBLE);
         const hidden = showFull ? [] : subs.slice(FREE_VISIBLE);
         const hiddenYearlySar = hidden.reduce((sum, sub) => sum + sub.monthlySar * 12, 0);
+        const needsPaywall = !showFull && hidden.length > 0;
+
+        const cancelLabel = (
+          <>
+            {ar ? "الغي" : "Cancel"}{" "}
+            <span aria-hidden>{ar ? "←" : "→"}</span>
+          </>
+        );
+
+        function SubRow({
+          sub,
+          index,
+          locked,
+        }: {
+          sub: Subscription;
+          index: number;
+          locked?: boolean;
+        }) {
+          const info = getCancelInfo(sub.name);
+          const yearlySar = sub.monthlySar * 12;
+
+          return (
+            <div
+              className="grid grid-cols-[1.75rem_minmax(0,1fr)_auto_4.5rem] items-center gap-x-3 px-4 sm:px-5 py-[15px] border-b border-slate-100 last:border-b-0"
+            >
+              <Ltr className="text-[13px] text-slate-400 tabular-nums">{index}.</Ltr>
+              {locked ? (
+                <span
+                  className="block h-[15px] w-[72%] max-w-[11rem] rounded-[4px] bg-slate-300/90 select-none"
+                  aria-label={ar ? "مخفي" : "Hidden"}
+                />
+              ) : (
+                <span className="font-semibold text-[15px] text-slate-900 truncate" dir="auto">
+                  {sub.name}
+                </span>
+              )}
+              <Ltr className="font-semibold text-[15px] text-slate-900 tabular-nums whitespace-nowrap">
+                {formatHeadlineYearly(yearlySar, ar)}
+              </Ltr>
+              {locked ? (
+                <Lock size={15} strokeWidth={1.75} className="text-slate-300 justify-self-end" />
+              ) : info?.cancelUrl ? (
+                <a
+                  href={info.cancelUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#00A651] font-semibold text-sm no-underline hover:underline whitespace-nowrap justify-self-end"
+                >
+                  {cancelLabel}
+                </a>
+              ) : (
+                <span className="text-[#00A651] font-semibold text-sm whitespace-nowrap justify-self-end">
+                  {cancelLabel}
+                </span>
+              )}
+            </div>
+          );
+        }
 
         return (
-          <div className="min-h-screen bg-white pt-24 pb-16 px-6">
-            <div className="max-w-[640px] mx-auto">
-              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="mb-2">
-                <h1 className="text-3xl sm:text-[2.5rem] font-extrabold tracking-tight text-slate-900 leading-tight mb-1">
+          <div className="min-h-screen bg-white pt-24 pb-20 px-6">
+            <div className="max-w-[560px] mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35 }}
+              >
+                <h1 className="text-[2rem] sm:text-[2.75rem] font-extrabold tracking-tight text-slate-900 leading-[1.15] mb-1.5">
                   {subs.length === 0 ? (
                     ar ? "ما لقينا اشتراكات واضحة" : "No clear subscriptions found"
                   ) : ar ? (
@@ -761,164 +823,104 @@ export default function HomePage() {
                   )}
                 </h1>
                 {subs.length > 0 && (
-                  <p className="text-[15px] text-slate-500">
+                  <p className="text-[15px] text-slate-500 mb-0">
                     {ar
                       ? `عبر ${subscriptionCountLabel(subs.length, true)}`
                       : `across ${subscriptionCountLabel(subs.length, false)}`}
                   </p>
                 )}
-                <div className="mt-5 border-t border-dashed border-[#00A651]/50" />
+                <div className="mt-5 border-t border-dashed border-[#00A651]/55" />
 
-                {failedScanFiles.length > 0 && !showFull && (
-                  <div className="mt-4 rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 text-sm text-amber-900">
+                {failedScanFiles.length > 0 && (
+                  <p className="mt-4 text-[13px] text-slate-500 leading-relaxed">
                     {ar ? (
                       <>
-                        ملاحظة: {fileCountLabel(failedScanFiles.length, true)} ما انقرأ:{" "}
+                        ملاحظة: {fileCountLabel(failedScanFiles.length, true)} ما انقرأ (
                         <bdi dir="ltr" className="ltr-always text-xs">
-                          {truncateFilename(failedScanFiles[0], 36)}
+                          {truncateFilename(failedScanFiles[0], 28)}
                         </bdi>
                         {failedScanFiles.length > 1 ? ` +${failedScanFiles.length - 1}` : ""}
-                        {" · "}
-                        التقرير الكامل يحلل PDF و Revolut و Crypto.com
+                        ). جرّب CSV لو تقدر.
                       </>
                     ) : (
                       <>
-                        Note: {fileCountLabel(failedScanFiles.length, false)} not read:{" "}
+                        Note: {fileCountLabel(failedScanFiles.length, false)} not read (
                         <bdi dir="ltr" className="ltr-always text-xs">
-                          {truncateFilename(failedScanFiles[0], 36)}
+                          {truncateFilename(failedScanFiles[0], 28)}
                         </bdi>
                         {failedScanFiles.length > 1 ? ` +${failedScanFiles.length - 1}` : ""}
-                        {" · "}
-                        Full AI report handles PDFs, Revolut, Crypto.com
+                        ). Try CSV if you can.
                       </>
                     )}
-                  </div>
+                  </p>
                 )}
               </motion.div>
 
-              {!showFull && subs.length === 0 && (
-                <div className="border border-slate-200 rounded-xl p-6 mb-6 mt-6 text-center">
-                  {isClaudeScan() ? (
-                    <p className="text-slate-600">
-                      {ar
-                        ? "فحصنا كل العمليات بالذكاء الاصطناعي وما لقينا اشتراكات واضحة."
-                        : "We scanned every transaction with AI and found no clear subscriptions."}
-                    </p>
-                  ) : (
-                    <>
-                      <p className="text-slate-600 mb-3">
-                        {ar
-                          ? "المعاينة السريعة ما لقت اشتراكات واضحة. التحليل AI قد يلقى اشتراكات مخفية."
-                          : "The quick scan found no clear subscriptions. Full AI analysis may find hidden charges."}
-                      </p>
-                      <button onClick={() => setShowPaywall(true)} className="btn-primary">
-                        {ar ? `افتح — ${formatPriceOnce(true)}` : `Unlock — ${formatPriceOnce(false)}`}
-                      </button>
-                    </>
-                  )}
+              {subs.length === 0 && (
+                <div className="mt-8 text-center">
+                  <p className="text-slate-600 text-[15px] leading-relaxed">
+                    {isClaudeScan()
+                      ? ar
+                        ? "فحصنا كل العمليات وما لقينا اشتراكات واضحة."
+                        : "We scanned every transaction and found no clear subscriptions."
+                      : ar
+                        ? "ما لقينا اشتراكات واضحة في هالملفات."
+                        : "No clear subscriptions in these files."}
+                  </p>
                 </div>
               )}
 
               {subs.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.05 }}
-                className="border border-slate-200 rounded-xl overflow-hidden mb-8 mt-6 bg-white"
-              >
-                {visible.map((sub, i) => {
-                  const info = getCancelInfo(sub.name);
-                  const cancelLabel = (
-                    <>
-                      {ar ? "الغي" : "Cancel"}{" "}
-                      <span aria-hidden>{ar ? "←" : "→"}</span>
-                    </>
-                  );
-                  return (
-                    <div
-                      key={sub.id}
-                      className="grid grid-cols-[1.5rem_1fr_auto_auto] items-center gap-x-3 px-4 py-3.5 border-b border-slate-100 last:border-b-0"
-                    >
-                      <Ltr className="text-sm text-slate-400 tabular-nums">{i + 1}.</Ltr>
-                      <span className="font-semibold text-[15px] text-slate-900 truncate" dir="auto">
-                        {sub.name}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, delay: 0.05 }}
+                  className="mt-6 border border-slate-200 rounded-xl overflow-hidden bg-white"
+                >
+                  {visible.map((sub, i) => (
+                    <SubRow key={sub.id} sub={sub} index={i + 1} />
+                  ))}
+                  {hidden.map((sub, i) => (
+                    <SubRow key={sub.id} sub={sub} index={FREE_VISIBLE + i + 1} locked />
+                  ))}
+                  {hidden.length > 0 && (
+                    <div className="px-4 sm:px-5 py-3 bg-slate-50 text-[13px] text-slate-500 flex items-center justify-center gap-1.5">
+                      <span>
+                        + {hidden.length} {ar ? "إضافية" : "more"} (
+                        <Ltr>{formatHeadlineYearly(hiddenYearlySar, ar)}</Ltr>)
                       </span>
-                      <Ltr className="font-semibold text-[15px] text-slate-900 tabular-nums whitespace-nowrap">
-                        {formatNativeYearly(sub.yearlyEquivalent, sub.currency, ar)}
-                      </Ltr>
-                      {info?.cancelUrl ? (
-                        <a
-                          href={info.cancelUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[#00A651] font-semibold text-sm no-underline hover:underline whitespace-nowrap"
-                        >
-                          {cancelLabel}
-                        </a>
-                      ) : (
-                        <span className="text-[#00A651] font-semibold text-sm whitespace-nowrap">
-                          {cancelLabel}
-                        </span>
-                      )}
                     </div>
-                  );
-                })}
-
-                {hidden.map((sub, i) => (
-                  <div
-                    key={sub.id}
-                    className="grid grid-cols-[1.5rem_1fr_auto_auto] items-center gap-x-3 px-4 py-3.5 border-b border-slate-100 last:border-b-0"
-                  >
-                    <Ltr className="text-sm text-slate-400 tabular-nums">{FREE_VISIBLE + i + 1}.</Ltr>
-                    <span className="font-semibold text-[15px] text-slate-900 blur-[6px] select-none truncate bg-slate-200 rounded-sm text-transparent">
-                      {sub.name}
-                    </span>
-                    <Ltr className="font-semibold text-[15px] text-slate-900 tabular-nums whitespace-nowrap">
-                      {formatNativeYearly(sub.yearlyEquivalent, sub.currency, ar)}
-                    </Ltr>
-                    <Lock size={14} strokeWidth={1.5} className="text-slate-300 justify-self-end" />
-                  </div>
-                ))}
-
-                {hidden.length > 0 && (
-                  <div className="px-4 py-3 bg-slate-50 text-sm text-slate-500 flex items-center justify-center gap-2">
-                    <span>
-                      + {hidden.length} {ar ? "إضافية" : "more"} (
-                      <Ltr>{formatHeadlineYearly(hiddenYearlySar, ar)}</Ltr>)
-                    </span>
-                  </div>
-                )}
-              </motion.div>
+                  )}
+                </motion.div>
               )}
 
-              {!showFull && subs.length > 0 && (
+              {needsPaywall && (
                 <motion.div
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.1 }}
-                  className="text-center"
+                  transition={{ duration: 0.35, delay: 0.1 }}
+                  className="mt-10 text-center"
                 >
-                  <p className="text-[15px] text-slate-900 mb-4">
+                  <p className="text-[15px] text-slate-900 mb-5">
                     {ar
-                      ? subs.length === 1
-                        ? "روابط إلغاء مباشرة للاشتراك."
-                        : `روابط إلغاء مباشرة لجميع الـ ${subs.length} اشتراكات.`
+                      ? `روابط إلغاء مباشرة لجميع الـ ${subs.length} اشتراكات.`
                       : `Direct cancel links for all ${subs.length} subscriptions.`}
                   </p>
                   <button
+                    type="button"
                     onClick={() => setShowPaywall(true)}
-                    className="btn-primary w-full text-base py-4"
+                    className="btn-primary w-full max-w-none rounded-xl py-4 text-base tracking-tight"
                   >
                     {ar ? `افتح — ${formatPriceOnce(true)}` : `Unlock — ${formatPriceOnce(false)}`}
                   </button>
-                  <p className="text-xs text-slate-400 mt-3">
+                  <p className="text-[12px] text-slate-400 mt-3">
                     {ar ? "دفعة واحدة. بدون حساب." : "One-time. No account needed."}
                   </p>
                 </motion.div>
               )}
 
-              <div className="text-center mt-10">
-                <button onClick={handleStartOver} className="btn-ghost">
+              <div className="text-center mt-12">
+                <button type="button" onClick={handleStartOver} className="btn-ghost text-sm">
                   <RotateCcw size={14} strokeWidth={1.5} />
                   {ar ? "ابدأ من جديد" : "Start Over"}
                 </button>

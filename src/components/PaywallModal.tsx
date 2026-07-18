@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Zap, FolderOpen, FileDown, Link2, BookOpen, Loader2, Mail, Sparkles } from "lucide-react";
+import { X, FolderOpen, FileDown, Link2, BookOpen, Loader2, Mail, Zap } from "lucide-react";
 import { WhopCheckoutEmbed } from "@whop/checkout/react";
 import { PRICE_LABEL, normalizeAccessCode } from "@/lib/format";
 import Ltr from "@/components/Ltr";
@@ -14,19 +14,17 @@ interface PaywallModalProps {
 }
 
 const FEATURES_AR = [
-  { icon: Sparkles, text: "تحليل AI كامل لكل ملفاتك (SNB، Revolut، Crypto.com)" },
-  { icon: FolderOpen, text: "كل الاشتراكات المخفية عبر كل البنوك والبطاقات" },
-  { icon: FileDown, text: "تقرير كامل مع تصنيف وإلغاء لكل خدمة" },
-  { icon: Link2, text: "روابط إلغاء مباشرة لأكثر من 50 خدمة" },
-  { icon: BookOpen, text: "دليل خطوة بخطوة لإلغاء كل اشتراك" },
+  { icon: Link2, text: "روابط إلغاء مباشرة لكل اشتراك مخفي" },
+  { icon: FolderOpen, text: "أسماء كل الاشتراكات بدون تمويه" },
+  { icon: FileDown, text: "المبلغ السنوي الكامل واضح" },
+  { icon: BookOpen, text: "دليل خطوة بخطوة لإلغاء كل خدمة" },
 ];
 
 const FEATURES_EN = [
-  { icon: Sparkles, text: "Full AI analysis across all your files (SNB, Revolut, Crypto.com)" },
-  { icon: FolderOpen, text: "Every hidden subscription across banks and cards" },
-  { icon: FileDown, text: "Complete report with cancel links for each service" },
-  { icon: Link2, text: "Direct cancel links for 50+ services" },
-  { icon: BookOpen, text: "Step by step cancellation guide for each subscription" },
+  { icon: Link2, text: "Direct cancel links for every hidden subscription" },
+  { icon: FolderOpen, text: "Unblur every subscription name" },
+  { icon: FileDown, text: "Full yearly spend, clearly listed" },
+  { icon: BookOpen, text: "Step-by-step cancel guide for each service" },
 ];
 
 const DEV_UNLOCK = process.env.NEXT_PUBLIC_DEV_UNLOCK === "true";
@@ -82,7 +80,7 @@ export default function PaywallModal({
             <Zap size={28} strokeWidth={1.5} className="mx-auto mb-2" />
             <h2 className="text-xl font-extrabold">YallaCancel Pro</h2>
             <p className="text-white/70 text-sm mt-1">
-              {ar ? "تقرير AI كامل لكل اشتراكاتك" : "Full AI audit of every subscription"}
+              {ar ? "افتح كل الاشتراكات وروابط الإلغاء" : "Unblur every sub + direct cancel links"}
             </p>
           </div>
 
@@ -119,9 +117,9 @@ export default function PaywallModal({
                   onClick={() => setShowCheckout(true)}
                 >
                   {ar ? (
-                    <>افتح التقرير الكامل · <Ltr>{PRICE_LABEL}</Ltr></>
+                    <>افتح الكل · <Ltr>{PRICE_LABEL}</Ltr></>
                   ) : (
-                    <>Unlock full AI report · <Ltr>49 SAR</Ltr></>
+                    <>Unlock all · <Ltr>49 SAR</Ltr></>
                   )}
                 </button>
 
