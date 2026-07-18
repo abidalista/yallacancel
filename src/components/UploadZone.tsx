@@ -251,8 +251,8 @@ export default function UploadZone({
 
             <p className="text-xs font-medium text-center mb-4" style={{ color: "#C2410C" }}>
               {ar
-                ? "ملاحظة: أفضل نتيجة من كشوفات آخر 2 إلى 3 أشهر. زيادة الشهور ما تحسّن النتيجة وقد تطلع اشتراكات ملغاة"
-                : "Note: Best results from the last 2 to 3 months. More months won't improve results and may show cancelled subscriptions."}
+                ? "نصيحة: ارفع كشوفات آخر شهرين أو 3 شهور كحد أقصى. الفترات الأطول بتطلّع اشتراكات قديمة وملغية"
+                : "Tip: Upload the last 2 or 3 months max. Longer periods surface old cancelled subscriptions."}
             </p>
 
             <button onClick={handleScan} className="btn-primary w-full">
