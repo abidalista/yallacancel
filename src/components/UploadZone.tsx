@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, X, FileText, Sparkles } from "lucide-react";
+import { Upload, X, FileText } from "lucide-react";
 import { formatBytes, fileCountLabel, truncateFilename } from "@/lib/format";
 import Ltr from "@/components/Ltr";
 
@@ -19,10 +19,6 @@ interface UploadZoneProps {
   locale: "ar" | "en";
   onScan: (files: File[]) => void;
   onTestClick: () => void;
-}
-
-function totalSizeLabel(bytes: number): string {
-  return formatBytes(bytes);
 }
 
 export default function UploadZone({
@@ -107,7 +103,10 @@ export default function UploadZone({
       className="w-full max-w-[560px] mx-auto"
     >
       <div
-        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
@@ -125,19 +124,15 @@ export default function UploadZone({
           <Upload size={22} strokeWidth={1.5} style={{ color: "#00A651" }} />
         </div>
         <p className="font-bold text-base mb-1" style={{ color: "#1A3A35" }}>
-          {ar ? "ارفع كشوفاتك البنكية" : "Upload your bank statements"}
+          {ar ? "ارفع كشوفات آخر 2 إلى 3 أشهر" : "Drop your last 2 to 3 months of statements"}
         </p>
         <p className="text-sm text-center" style={{ color: "#8AADA8" }}>
-          {ar
-            ? "PDF او CSV من اي بنك. تقدر ترفع اكثر من ملف. الحد الاقصى "
-            : "PDF or CSV from any bank. Multiple files OK. Up to "}
           {ar ? (
             <>
-              {" "}
-              <Ltr>25 MB</Ltr>
+              PDF او CSV من اي بنك · يأخذ أقل من <Ltr>90</Ltr> ثانية
             </>
           ) : (
-            <Ltr>25 MB total</Ltr>
+            <>PDF or CSV from any bank · Takes under 90 seconds</>
           )}
         </p>
         <input
@@ -163,39 +158,53 @@ export default function UploadZone({
             className="mt-4 bento-card px-6 pt-5 pb-5 overflow-hidden"
           >
             <p className="text-sm font-bold mb-4" style={{ color: "#1A3A35" }}>
-              {fileCountLabel(selectedFiles.length, ar)}
-              {" "}
-              <Ltr>({totalSizeLabel(totalSize)})</Ltr>
+              {fileCountLabel(selectedFiles.length, ar)}{" "}
+              <Ltr>({formatBytes(totalSize)})</Ltr>
             </p>
-            <div className="space-y-3 mb-5 max-h-48 overflow-y-auto">
+            <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
               {selectedFiles.map((f, i) => (
                 <div key={`${f.name}-${i}`} className="flex items-center justify-between gap-2">
                   <span className="flex items-center gap-2 text-sm min-w-0" style={{ color: "#4A6862" }}>
-                    <FileText size={14} strokeWidth={1.5} style={{ color: "#8AADA8" }} className="flex-shrink-0" />
+                    <FileText
+                      size={14}
+                      strokeWidth={1.5}
+                      style={{ color: "#8AADA8" }}
+                      className="flex-shrink-0"
+                    />
                     <span className="truncate">{truncateFilename(f.name, 28)}</span>
                     <Ltr className="flex-shrink-0 text-[#8AADA8]">({formatBytes(f.size)})</Ltr>
                   </span>
                   <button
-                    onClick={(e) => { e.stopPropagation(); removeFile(i); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFile(i);
+                    }}
                     className="p-1 rounded-full transition-colors flex-shrink-0"
                     style={{ color: "#8AADA8", cursor: "pointer" }}
-                    onMouseEnter={e => (e.currentTarget.style.color = "#1A3A35")}
-                    onMouseLeave={e => (e.currentTarget.style.color = "#8AADA8")}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = "#1A3A35")}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = "#8AADA8")}
                   >
                     <X size={14} strokeWidth={1.5} />
                   </button>
                 </div>
               ))}
             </div>
-            <button onClick={handleScan} className="btn-primary w-full">
-              <Sparkles size={16} strokeWidth={1.5} />
+
+            <p className="text-xs font-medium text-center mb-4" style={{ color: "#C2410C" }}>
               {ar
-                ? `حلل ${fileCountLabel(selectedFiles.length, true)}`
-                : `Analyze ${fileCountLabel(selectedFiles.length, false)}`}
+                ? "مثالي: 2 إلى 3 أشهر. زيادة الشهور ما تحسّن النتيجة وقد تطلع اشتراكات ملغاة"
+                : "2 to 3 months is ideal. More data won't improve results and may show cancelled subscriptions."}
+            </p>
+
+            <button onClick={handleScan} className="btn-primary w-full">
+              {ar ? "افحص الاشتراكات" : "Scan for subscriptions"}
             </button>
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                fileInputRef.current?.click();
+              }}
               className="btn-ghost w-full mt-2 text-sm"
             >
               {ar ? "اضف ملفات اخرى" : "Add more files"}
@@ -206,7 +215,9 @@ export default function UploadZone({
 
       {selectedFiles.length === 0 && (
         <div className="mt-5 text-center">
-          <span className="text-xs font-medium" style={{ color: "#8AADA8" }}>{ar ? "او" : "or"}</span>
+          <span className="text-xs font-medium" style={{ color: "#8AADA8" }}>
+            {ar ? "او" : "or"}
+          </span>
           <button
             onClick={onTestClick}
             className="font-bold text-sm py-3 px-7 rounded-full mx-auto block mt-3 transition-all hover:-translate-y-0.5"
@@ -216,8 +227,14 @@ export default function UploadZone({
               cursor: "pointer",
               boxShadow: "0 2px 8px rgba(0,166,81,0.25)",
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = "#009147"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,166,81,0.35)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "#00A651"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,166,81,0.25)"; }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#009147";
+              e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,166,81,0.35)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "#00A651";
+              e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,166,81,0.25)";
+            }}
           >
             {ar ? "جرب بمثال جاهز" : "Try with sample data"}
           </button>
@@ -226,8 +243,8 @@ export default function UploadZone({
 
       <p className="text-xs text-center mt-3" style={{ color: "#8AADA8" }}>
         {ar
-          ? "المعاينة المجانية داخل متصفحك. التقرير الكامل يستخدم AI آمن بعد الدفع."
-          : "Free preview runs in your browser. Full AI report uploads securely after payment."}
+          ? "ملفاتك تتحلل وتنحذف فورا. ما نخزن شي."
+          : "Your files are analyzed and immediately discarded. Nothing is stored."}
       </p>
     </motion.div>
   );

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Shield, Zap, Link2, BarChart3, FileText, ArrowRight,
   Lock, ChevronDown, ChevronUp, Clock, CheckCircle2,
-  RotateCcw, Loader2, Upload, Eye,
+  RotateCcw, Upload, Eye,
 } from "lucide-react";
 import Header from "@/components/Header";
 import HeroScatteredLogos, { HeroLogoStrip } from "@/components/HeroScatteredLogos";
@@ -13,6 +13,7 @@ import AddToHomeScreen from "@/components/AddToHomeScreen";
 import UploadZone from "@/components/UploadZone";
 import AuditReport from "@/components/AuditReport";
 import PaywallModal from "@/components/PaywallModal";
+import ConfirmUnsure from "@/components/ConfirmUnsure";
 import SpendingBreakdownComponent from "@/components/SpendingBreakdown";
 import {
   parseCSVRobust, detectBank,
@@ -42,7 +43,7 @@ import {
 } from "@/lib/payment-store";
 import { verifyPaymentReceipt } from "@/lib/verify-payment";
 
-type Step = "landing" | "analyzing" | "results";
+type Step = "landing" | "uploading" | "analyzing" | "confirm" | "results";
 type ReportTier = "teaser" | "full";
 
 interface ParseError {
@@ -180,6 +181,10 @@ export default function HomePage() {
   const [failedScanFiles, setFailedScanFiles] = useState<string[]>([]);
   const [totalScanFiles, setTotalScanFiles] = useState(0);
   const [aiProgress, setAiProgress] = useState<{ current: number; total: number } | null>(null);
+  const [unsureSubs, setUnsureSubs] = useState<Subscription[]>([]);
+  const [clearCount, setClearCount] = useState(0);
+  const [elapsedSec, setElapsedSec] = useState(0);
+  const [baseReport, setBaseReport] = useState<Report | null>(null);
   const heroRef = useRef<HTMLElement>(null);
 
 
@@ -195,6 +200,34 @@ export default function HomePage() {
       setIsUnlocked(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (step !== "analyzing" && step !== "uploading") return;
+    setElapsedSec(0);
+    const id = window.setInterval(() => setElapsedSec((s) => s + 1), 1000);
+    return () => window.clearInterval(id);
+  }, [step]);
+
+  function rebuildReport(subs: Subscription[], template: Report): Report {
+    const sorted = [...subs].sort((a, b) => b.monthlyEquivalent - a.monthlyEquivalent);
+    const totalMonthly = sorted.reduce((sum, s) => sum + s.monthlyEquivalent, 0);
+    return {
+      ...template,
+      subscriptions: sorted,
+      totalMonthly: Math.round(totalMonthly * 100) / 100,
+      totalYearly: Math.round(totalMonthly * 12 * 100) / 100,
+    };
+  }
+
+  function finishTeaser(finalReport: Report, spending: SpendingData | null, files: File[], failed: string[]) {
+    storeScanSession(files, finalReport, spending, failed);
+    setReport(finalReport);
+    setSpendingData(spending);
+    setReportTier("teaser");
+    setUnsureSubs([]);
+    setStep("results");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   async function parseFile(file: File, bankOverride?: BankId): Promise<{ transactions: Transaction[]; warnings: string[] }> {
     const ext = file.name.split(".").pop()?.toLowerCase();
@@ -257,15 +290,25 @@ export default function HomePage() {
 
   async function handleScan(files: File[], bankOverride?: BankId) {
     setParseError(null);
-    setStep("analyzing");
+    setStep("uploading");
     setTxCount(0);
+    setAiProgress(null);
     setParsedFileCount(0);
     setFailedScanFiles([]);
     setTotalScanFiles(files.length);
     setReportTier("teaser");
     setIsUnlocked(false);
-    setAnalyzeStatus(ar ? "نقرأ الملفات..." : "Reading your files...");
+    setUnsureSubs([]);
+    setAnalyzeStatus(ar ? "جاري رفع الملفات..." : "Uploading files...");
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    await new Promise((r) => setTimeout(r, 700));
+    setStep("analyzing");
+    setAnalyzeStatus(
+      ar
+        ? "فحص عميق يبدأ الآن (30 إلى 90 ثانية)"
+        : "Deep scan starting... (this takes 30 to 90 seconds)"
+    );
 
     try {
       let allTx: Transaction[] = [];
@@ -275,11 +318,6 @@ export default function HomePage() {
 
       for (const file of files) {
         try {
-          setAnalyzeStatus(
-            ar
-              ? `نقرأ ${file.name} (${successFileCount + 1} من ${files.length})...`
-              : `Reading ${file.name} (${successFileCount + 1} of ${files.length})...`
-          );
           const { transactions, warnings } = await parseFile(file, bankOverride || undefined);
           allWarnings = allWarnings.concat(warnings);
           if (transactions.length === 0) {
@@ -304,23 +342,33 @@ export default function HomePage() {
         return;
       }
 
+      setTxCount(allTx.length);
       setAnalyzeStatus(
-        ar ? "نبحث عن أقوى الاشتراكات المتكررة..." : "Finding your top recurring charges..."
+        ar ? "نفحص الاشتراكات المتكررة..." : "Scanning for recurring subscriptions..."
       );
-      await new Promise((r) => setTimeout(r, 800));
+      await new Promise((r) => setTimeout(r, 600));
 
       const result = analyzeTransactions(allTx);
       const spending = analyzeSpending(allTx);
-
-      storeScanSession(files, result, spending, failedFiles);
       setParsedFileCount(successFileCount);
       setFailedScanFiles(failedFiles);
       setTotalScanFiles(files.length);
-      setReport(result);
+      setBaseReport(result);
       setSpendingData(spending);
-      setReportTier("teaser");
-      setStep("results");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      const clear = result.subscriptions.filter((s) => s.confidence === "confirmed");
+      const unsure = result.subscriptions.filter((s) => s.confidence === "suspicious");
+
+      storeScanSession(files, result, spending, failedFiles);
+
+      if (unsure.length > 0) {
+        setClearCount(clear.length);
+        setUnsureSubs(unsure);
+        setReport(rebuildReport(clear, result));
+        setStep("confirm");
+      } else {
+        finishTeaser(result, spending, files, failedFiles);
+      }
 
       if (failedFiles.length > 0) {
         console.warn("[scan] Some files had no transactions:", failedFiles);
@@ -539,8 +587,18 @@ export default function HomePage() {
     };
 
     setReport(hardcodedReport);
+    setBaseReport(hardcodedReport);
     setSpendingData(hardcodedSpending);
-    setStep("results");
+    const clear = hardcodedReport.subscriptions.filter((s) => s.confidence === "confirmed");
+    const unsure = hardcodedReport.subscriptions.filter((s) => s.confidence === "suspicious");
+    if (unsure.length > 0) {
+      setClearCount(clear.length);
+      setUnsureSubs(unsure);
+      setReport(rebuildReport(clear, hardcodedReport));
+      setStep("confirm");
+    } else {
+      setStep("results");
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -557,6 +615,7 @@ export default function HomePage() {
   function handleStartOver() {
     setStep("landing");
     setReport(null);
+    setBaseReport(null);
     setSpendingData(null);
     setParseError(null);
     setManualBankId(null);
@@ -567,6 +626,8 @@ export default function HomePage() {
     setFailedScanFiles([]);
     setTotalScanFiles(0);
     setAiProgress(null);
+    setUnsureSubs([]);
+    setClearCount(0);
     setReportTier("teaser");
     setIsUnlocked(false);
     clearScanSession();
@@ -598,6 +659,43 @@ export default function HomePage() {
         />
       )}
 
+      {/* ── UPLOADING ── */}
+      <AnimatePresence>
+        {step === "uploading" && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="min-h-screen px-6 pt-24 pb-16 bg-[#EDF5F3]"
+          >
+            <div className="max-w-[520px] mx-auto">
+              <div
+                className="rounded-2xl bg-white text-center py-16 px-6"
+                style={{ border: "2px dashed #C5DDD9" }}
+              >
+                <div className="flex justify-center gap-2 mb-6">
+                  {[0, 1, 2].map((i) => (
+                    <motion.span
+                      key={i}
+                      className="w-2.5 h-2.5 rounded-full bg-[#00A651]"
+                      animate={{ opacity: [0.3, 1, 0.3] }}
+                      transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
+                    />
+                  ))}
+                </div>
+                <p className="font-bold text-slate-800 mb-4">
+                  {ar ? "جاري رفع الملفات..." : "Uploading files..."}
+                </p>
+                <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-full px-4 py-2 text-xs text-slate-500">
+                  <Lock size={12} strokeWidth={1.5} />
+                  {ar ? "ملفاتك ما تنحفظ" : "Your files are never stored."}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ── ANALYZING ── */}
       <AnimatePresence>
         {step === "analyzing" && (
@@ -607,19 +705,17 @@ export default function HomePage() {
             exit={{ opacity: 0 }}
             className="min-h-screen px-6 pt-24 pb-16 bg-[#EDF5F3]"
           >
-            <div className="max-w-[700px] mx-auto">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="text-center mb-8"
+            <div className="max-w-[520px] mx-auto">
+              <div
+                className="rounded-2xl bg-white text-center py-12 px-6"
+                style={{ border: "2px dashed #C5DDD9" }}
               >
                 <div className="text-5xl sm:text-6xl font-extrabold tracking-tight text-slate-900 mb-2 ltr-always">
                   {aiProgress
                     ? `${aiProgress.current}/${aiProgress.total}`
                     : formatInt(txCount)}
                 </div>
-                <div className="text-sm text-slate-400 mb-4">
+                <div className="text-sm text-slate-400 mb-5">
                   {aiProgress
                     ? ar
                       ? "ملفات تحت التحليل بـ Claude"
@@ -628,47 +724,61 @@ export default function HomePage() {
                       ? "عملية"
                       : "transactions"}
                 </div>
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <Loader2 size={14} strokeWidth={1.5} className="text-[#00A651] animate-spin" />
-                  <span className="text-sm text-slate-500">{analyzeStatus}</span>
-                </div>
+                <p className="text-sm font-medium text-slate-700 mb-3">
+                  {analyzeStatus ||
+                    (ar
+                      ? "فحص عميق يبدأ الآن (30 إلى 90 ثانية)"
+                      : "Deep scan starting... (this takes 30 to 90 seconds)")}
+                </p>
+                <p className="text-2xl font-extrabold text-[#00A651] mb-6 ltr-always">
+                  {elapsedSec}s
+                </p>
                 <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-full px-4 py-2 text-xs text-slate-400">
                   <Clock size={12} strokeWidth={1.5} />
-                  {ar ? "خذ وقتك · لا تطلع من الصفحة (ملفات PDF تأخذ أطول)" : "Stay on this page · PDFs take longer"}
+                  {ar ? "تقريباً خلصنا · ابقَ في الصفحة" : "Almost there · stay on this page"}
                 </div>
-              </motion.div>
-
-              {/* Skeleton cards */}
-              <div className="space-y-4">
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.3 + i * 0.12 }}
-                    className="bento-card p-5"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="skeleton-circle w-11 h-11 flex-shrink-0" />
-                      <div className="flex-1 space-y-2.5">
-                        <div className="flex items-center gap-3">
-                          <div className="skeleton h-4 w-28" />
-                          <div className="skeleton h-4 w-14" />
-                        </div>
-                        <div className="skeleton h-6 w-40" />
-                        <div className="flex gap-4">
-                          <div className="skeleton h-3 w-24" />
-                          <div className="skeleton h-3 w-20" />
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── CONFIRM UNSURE ── */}
+      {step === "confirm" && unsureSubs.length > 0 && (
+        <ConfirmUnsure
+          locale={locale}
+          clearCount={clearCount}
+          unsure={unsureSubs}
+          onComplete={(kept) => {
+            const template = baseReport || report;
+            if (!template) return;
+            const clear = template.subscriptions.filter((s) => s.confidence === "confirmed");
+            const merged = rebuildReport(
+              [
+                ...clear,
+                ...kept.map((s) => ({
+                  ...s,
+                  confidence: "confirmed" as const,
+                  userConfirmed: true,
+                })),
+              ],
+              template
+            );
+            const files = getPendingScanFiles();
+            finishTeaser(merged, spendingData, files, failedScanFiles);
+          }}
+          onSkip={() => {
+            const template = baseReport || report;
+            if (!template) return;
+            const clearOnly = rebuildReport(
+              template.subscriptions.filter((s) => s.confidence === "confirmed"),
+              template
+            );
+            const files = getPendingScanFiles();
+            finishTeaser(clearOnly, spendingData, files, failedScanFiles);
+          }}
+        />
+      )}
 
       {/* ── RESULTS ── */}
       {step === "results" && report && (() => {
@@ -694,29 +804,9 @@ export default function HomePage() {
                 </h1>
                 {subs.length > 0 && (
                   <p className="text-[15px] text-slate-500 leading-relaxed">
-                    {showFull
-                      ? ar
-                        ? `تقرير AI كامل · ${subscriptionCountLabel(subs.length, true)}`
-                        : `Full AI report · ${subscriptionCountLabel(subs.length, false)}`
-                      : ar
-                        ? `معاينة سريعة · ${subscriptionCountLabel(subs.length, true)}`
-                        : `Quick preview · ${subscriptionCountLabel(subs.length, false)}`}
-                    {parsedFileCount > 0 && (
-                      <>
-                        {" · "}
-                        {ar ? (
-                          <>
-                            <Ltr>{formatInt(report.analyzedTransactions)}</Ltr> عملية ·{" "}
-                            {fileCountLabel(parsedFileCount, true)} من {fileCountLabel(totalScanFiles, true)}
-                          </>
-                        ) : (
-                          <>
-                            <Ltr>{formatInt(report.analyzedTransactions)}</Ltr> transactions ·{" "}
-                            {fileCountLabel(parsedFileCount, false)} of {fileCountLabel(totalScanFiles, false)}
-                          </>
-                        )}
-                      </>
-                    )}
+                    {ar
+                      ? `عبر ${subscriptionCountLabel(subs.length, true)}`
+                      : `across ${subscriptionCountLabel(subs.length, false)}`}
                   </p>
                 )}
 
@@ -777,7 +867,7 @@ export default function HomePage() {
                       <span className="font-bold text-sm mr-4 ml-4 text-slate-700 whitespace-nowrap">
                         {formatSubCost(sub.monthlyEquivalent, ar)}
                       </span>
-                      {showFull && info?.cancelUrl ? (
+                      {info?.cancelUrl ? (
                         <a
                           href={info.cancelUrl}
                           target="_blank"
@@ -786,11 +876,11 @@ export default function HomePage() {
                         >
                           {ar ? "الغي" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
                         </a>
-                      ) : showFull ? (
+                      ) : (
                         <span className="text-[#00A651] font-bold text-sm flex-shrink-0">
                           {ar ? "الغي" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
                         </span>
-                      ) : null}
+                      )}
                     </div>
                   );
                 })}
@@ -823,22 +913,20 @@ export default function HomePage() {
                   className="bento-card p-5 text-center"
                 >
                   <p className="font-bold text-[#00A651] text-base mb-1">
-                    {ar ? "تقرير AI كامل" : "Full AI report"}
+                    {ar
+                      ? `روابط إلغاء مباشرة لكل ${subs.length} اشتراك`
+                      : `Direct cancel links for all ${subs.length} subscriptions`}
                   </p>
                   <p className="text-sm text-slate-500 mb-4">
-                    {hidden.length > 0
-                      ? ar
-                        ? `يفتح ${hidden.length} اشتراك إضافي ويوفر حتى ${formatSubCost(hiddenMonthly, true)}`
-                        : `Unlocks ${hidden.length} more subscriptions · save up to ${formatSubCost(hiddenMonthly, false)}`
-                      : ar
-                        ? `يحلل كل ${fileCountLabel(totalScanFiles, true)} ويلقى اشتراكات PDF و Revolut`
-                        : `Analyzes all ${fileCountLabel(totalScanFiles, false)} · finds PDF & Revolut charges`}
+                    {ar
+                      ? "دفعة واحدة · بدون حساب · تقرير AI كامل لكل ملفاتك"
+                      : "One time · no account · full AI report across all files"}
                   </p>
                   <button
                     onClick={() => setShowPaywall(true)}
                     className="btn-primary w-full text-base py-4"
                   >
-                    {ar ? `افتح التقرير · ${formatPriceOnce(true)}` : `Unlock report · ${formatPriceOnce(false)}`}
+                    {ar ? `افتح الكل · ${formatPriceOnce(true)}` : `Unlock · ${formatPriceOnce(false)}`}
                   </button>
                   <p className="text-xs text-slate-400 mt-3">
                     {ar ? "دفعة واحدة · بدون حساب" : "One time · no account needed"}
