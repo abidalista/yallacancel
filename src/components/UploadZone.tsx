@@ -138,9 +138,9 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="w-full max-w-[560px] mx-auto"
+      className="w-full max-w-[680px] mx-auto"
     >
-      {/* Whole box = file picker (JFC style) */}
+      {/* Whole box = file picker (JFC style · bigger + louder border) */}
       <div
         role="button"
         tabIndex={0}
@@ -157,16 +157,19 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
         onClick={openPicker}
-        className="cursor-pointer select-none flex flex-col items-center justify-center py-14 px-6 rounded-xl transition-colors"
+        className="cursor-pointer select-none flex flex-col items-center justify-center min-h-[220px] sm:min-h-[260px] py-16 sm:py-20 px-8 rounded-2xl transition-all"
         style={{
-          border: dragging ? "2px dashed #00A651" : "2px dashed #C5DDD9",
-          background: dragging ? "#E8F7EE" : "white",
+          border: dragging ? "3px dashed #00A651" : "3px dashed #00A651",
+          background: dragging ? "#E8F7EE" : "#FFFFFF",
+          boxShadow: dragging
+            ? "0 0 0 4px rgba(0,166,81,0.12)"
+            : "0 0 0 1px rgba(0,166,81,0.08)",
         }}
       >
-        <p className="font-bold text-lg text-center mb-2" style={{ color: "#1A3A35" }}>
+        <p className="font-extrabold text-xl sm:text-2xl text-center mb-3 leading-snug" style={{ color: "#1A3A35" }}>
           {ar ? "ارفع كشوفات آخر شهرين أو 3 شهور" : "Drop your last 2-3 months of statements"}
         </p>
-        <p className="text-sm text-center" style={{ color: "#8AADA8" }}>
+        <p className="text-base text-center" style={{ color: "#4A6862" }}>
           {ar ? (
             <>
               PDF أو CSV من أي بنك · أقل من <Ltr>90</Ltr> ثانية
