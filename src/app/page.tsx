@@ -75,21 +75,21 @@ const BANKS = [
 
 const PROBLEM_STATS = [
   {
-    headlineAr: "382 ريال كل شهر",
+    headlineAr: "382 ريال/شهر",
     headlineEn: "382 Riyal/mo",
-    bodyAr: "متوسط صرف سعودي على اشتراكاته كل شهر",
-    bodyEn: "Average monthly subscription spend in Saudi Arabia",
+    bodyAr: "متوسط صرف السعوديين على الاشتراكات",
+    bodyEn: "Average Saudi spend on subscriptions",
   },
   {
     headlineAr: "3 اشتراكات",
     headlineEn: "3 subscriptions",
-    bodyAr: "ينساها معظم الناس ولسا تُخصم كل شهر",
-    bodyEn: "Most people forget they are still paying for",
+    bodyAr: "ينساها معظم الناس وما زالت تُخصم",
+    bodyEn: "Most people forget · still get charged",
   },
   {
     headlineAr: "90 ثانية",
     headlineEn: "90 seconds",
-    bodyAr: "تكفي لمسح كشفك وإيجاد كل اشتراكاتك",
+    bodyAr: "تكفي لمسح كشفك وإيجاد الكل",
     bodyEn: "To scan your statement and find them all",
   },
 ];
