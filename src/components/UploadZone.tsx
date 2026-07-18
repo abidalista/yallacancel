@@ -8,6 +8,7 @@ import Ltr from "@/components/Ltr";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_TOTAL_SIZE = 25 * 1024 * 1024;
+const MAX_FILES = 5;
 
 interface SelectedFile {
   file: File;
@@ -61,8 +62,26 @@ export default function UploadZone({
     }
 
     setSelectedFiles((prev) => {
+      const room = MAX_FILES - prev.length;
+      if (room <= 0) {
+        setFileError(
+          ar ? "الحد الاقصى 5 ملفات" : "Maximum 5 files"
+        );
+        return prev;
+      }
+
+      let accepted = newFiles;
+      if (newFiles.length > room) {
+        accepted = newFiles.slice(0, room);
+        rejected.push(
+          ar
+            ? `ما قدرنا نضيف الكل · الحد الاقصى ${MAX_FILES} ملفات`
+            : `Couldn't add all files · max ${MAX_FILES} files`
+        );
+      }
+
       const prevTotal = prev.reduce((sum, f) => sum + f.size, 0);
-      const newTotal = newFiles.reduce((sum, f) => sum + f.size, 0);
+      const newTotal = accepted.reduce((sum, f) => sum + f.size, 0);
       if (prevTotal + newTotal > MAX_TOTAL_SIZE) {
         setFileError(
           ar
@@ -72,7 +91,7 @@ export default function UploadZone({
         return prev;
       }
       if (rejected.length > 0) setFileError(rejected.join("\n"));
-      return [...prev, ...newFiles];
+      return [...prev, ...accepted];
     });
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
@@ -129,10 +148,10 @@ export default function UploadZone({
         <p className="text-sm text-center" style={{ color: "#8AADA8" }}>
           {ar ? (
             <>
-              PDF او CSV من اي بنك · يأخذ أقل من <Ltr>90</Ltr> ثانية
+              PDF او CSV من اي بنك · حتى 5 ملفات · أقل من <Ltr>90</Ltr> ثانية
             </>
           ) : (
-            <>PDF or CSV from any bank · Takes under 90 seconds</>
+            <>PDF or CSV from any bank · up to 5 files · under 90 seconds</>
           )}
         </p>
         <input
@@ -192,8 +211,8 @@ export default function UploadZone({
 
             <p className="text-xs font-medium text-center mb-4" style={{ color: "#C2410C" }}>
               {ar
-                ? "مثالي: 2 إلى 3 أشهر. زيادة الشهور ما تحسّن النتيجة وقد تطلع اشتراكات ملغاة"
-                : "2 to 3 months is ideal. More data won't improve results and may show cancelled subscriptions."}
+                ? "ملاحظة: أفضل نتيجة من كشوفات آخر 2 إلى 3 أشهر. زيادة الشهور ما تحسّن النتيجة وقد تطلع اشتراكات ملغاة"
+                : "Note: Best results from the last 2 to 3 months. More months won't improve results and may show cancelled subscriptions."}
             </p>
 
             <button onClick={handleScan} className="btn-primary w-full">
@@ -201,13 +220,21 @@ export default function UploadZone({
             </button>
             <button
               type="button"
+              disabled={selectedFiles.length >= MAX_FILES}
               onClick={(e) => {
                 e.stopPropagation();
+                if (selectedFiles.length >= MAX_FILES) return;
                 fileInputRef.current?.click();
               }}
-              className="btn-ghost w-full mt-2 text-sm"
+              className="btn-ghost w-full mt-2 text-sm disabled:opacity-40"
             >
-              {ar ? "اضف ملفات اخرى" : "Add more files"}
+              {selectedFiles.length >= MAX_FILES
+                ? ar
+                  ? "وصلت لحد 5 ملفات"
+                  : "5 file limit reached"
+                : ar
+                  ? "اضف ملفات اخرى"
+                  : "Add more files"}
             </button>
           </motion.div>
         )}
