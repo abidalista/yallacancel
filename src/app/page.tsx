@@ -375,9 +375,7 @@ export default function HomePage() {
       setTotalScanFiles(files.length);
       setAiProgress(null);
       setAnalyzeStatus(
-        ar
-          ? "فحص عميق يبدأ الآن (30 إلى 90 ثانية)"
-          : "Deep scan starting... (this takes 30 to 90 seconds)"
+        ar ? "فحص عميق يبدأ الآن..." : "Deep scan starting..."
       );
 
       const scanStarted = Date.now();
@@ -676,7 +674,7 @@ export default function HomePage() {
         )}
       </AnimatePresence>
 
-      {/* ── ANALYZING ── */}
+      {/* ── ANALYZING (JFC: only the seconds counter, centered) ── */}
       <AnimatePresence>
         {step === "analyzing" && (
           <motion.div
@@ -687,25 +685,17 @@ export default function HomePage() {
           >
             <div className="max-w-[520px] mx-auto">
               <div
-                className="rounded-2xl bg-white text-center py-12 px-6"
+                className="rounded-2xl bg-white text-center py-16 px-6 flex flex-col items-center"
                 style={{ border: "2px dashed #00A65166" }}
               >
-                <div className="text-5xl sm:text-6xl font-extrabold tracking-tight text-slate-900 mb-2 ltr-always">
-                  {txCount > 0 ? formatInt(txCount) : "…"}
-                </div>
-                <div className="text-sm text-slate-400 mb-5">
-                  {ar ? "عملية تم التعرف عليها" : "transactions identified"}
-                </div>
-                <p className="text-sm font-medium text-slate-700 mb-2">
+                <p className="text-sm font-medium text-slate-600 mb-8 max-w-xs">
                   {analyzeStatus ||
-                    (ar
-                      ? "فحص عميق يبدأ الآن (30 إلى 90 ثانية)"
-                      : "Deep scan starting... (this takes 30 to 90 seconds)")}
+                    (ar ? "فحص عميق يبدأ الآن..." : "Deep scan starting...")}
                 </p>
-                <p className="text-xl font-bold text-[#00A651] mb-6 tabular-nums ltr-always">
+                <p className="text-6xl sm:text-7xl font-extrabold tracking-tight text-[#00A651] tabular-nums ltr-always leading-none mb-8">
                   {elapsedSec}s
                 </p>
-                <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-full px-4 py-2 text-xs text-slate-400">
+                <div className="inline-flex items-center justify-center gap-2 bg-slate-50 border border-slate-200 rounded-full px-4 py-2 text-xs text-slate-400">
                   <Clock size={12} strokeWidth={1.5} />
                   {ar ? "تقريباً خلصنا · ابقَ في الصفحة" : "Almost there · stay on this page"}
                 </div>
