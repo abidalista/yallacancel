@@ -136,7 +136,7 @@ async function analyzeWithClaude(rawText: string, anthropicKey: string): Promise
 }
 
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT = 8; // files per window — free Claude path
+const RATE_LIMIT = 20; // free Claude path — 4–5 files per scan, don't kill retries
 const RATE_WINDOW_MS = 10 * 60 * 1000;
 
 function isRateLimited(ip: string): boolean {

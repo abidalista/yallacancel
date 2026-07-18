@@ -357,7 +357,7 @@ export default function HomePage() {
       const uploadElapsed = Date.now() - uploadStarted;
       await new Promise((r) => setTimeout(r, Math.max(0, 3000 - uploadElapsed)));
 
-      // Deep scan = Claude (JFC engine). Local parse is for tx-count UX + fallback only.
+      // Deep scan: Claude (JFC) + local always. Never trust empty Claude over a good local hit.
       const identified = Math.max(identifiedTotal, allTx.length);
       setTxCount(identified);
       setStep("analyzing");
@@ -372,6 +372,7 @@ export default function HomePage() {
 
       const scanStarted = Date.now();
       const spending = allTx.length > 0 ? analyzeSpending(allTx) : null;
+      const localReport = allTx.length > 0 ? analyzeTransactions(allTx) : null;
       setSpendingData(spending);
 
       setAnalyzeStatus(
@@ -390,18 +391,35 @@ export default function HomePage() {
 
       let result: Report;
       let engine: ScanEngine;
+      const localCount = localReport?.subscriptions.length ?? 0;
+      const claudeCount = aiResult.success ? aiResult.report.subscriptions.length : 0;
 
-      if (aiResult.success) {
+      if (aiResult.success && claudeCount > 0) {
         result = aiResult.report;
         engine = "claude";
-        // Claude read the files — drop local-parse "failed" flags
+        // Claude found subs — drop weak local-parse flags (PDF etc.)
         failedFiles = [];
         setFailedScanFiles([]);
         const aiTx = result.analyzedTransactions || 0;
         if (aiTx > 0) setTxCount(Math.max(identified, aiTx));
-      } else if (allTx.length > 0) {
-        console.warn("[scan] Claude failed, local fallback:", aiResult.error);
-        result = analyzeTransactions(allTx);
+      } else if (localCount > 0 && localReport) {
+        // Claude empty/failed → keep local (what used to work on your 4 files)
+        if (!aiResult.success) {
+          console.warn("[scan] Claude failed, using local:", aiResult.error);
+        } else {
+          console.warn("[scan] Claude returned 0 subs, using local:", localCount);
+        }
+        result = localReport;
+        engine = "local";
+      } else if (aiResult.success) {
+        // Both empty — still mark as Claude so empty copy is honest
+        result = aiResult.report;
+        engine = "claude";
+        failedFiles = [];
+        setFailedScanFiles([]);
+      } else if (localReport) {
+        console.warn("[scan] Claude failed, local also empty:", aiResult.error);
+        result = localReport;
         engine = "local";
       } else {
         setParseError(buildParseError(failedFiles, allWarnings));
