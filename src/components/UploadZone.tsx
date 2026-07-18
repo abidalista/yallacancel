@@ -272,7 +272,7 @@ export default function UploadZone({
 
       <p className="text-xs text-center mt-3" style={{ color: "#8AADA8" }}>
         {ar
-          ? "ملفاتك تتحلل وتنحذف فورا. ما نخزن شي."
+          ? "ملفاتك تتحلل وتنحذف فوراً. ما نخزن شي · الخصوصية أولاً."
           : "Your files are analyzed and immediately discarded. Nothing is stored."}
       </p>
     </motion.div>

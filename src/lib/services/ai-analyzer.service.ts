@@ -117,18 +117,20 @@ function mergeAuditReports(reports: AuditReport[]): AuditReport {
       if (sub.lastCharge && (!existing.lastCharge || sub.lastCharge > existing.lastCharge)) {
         existing.lastCharge = sub.lastCharge;
         existing.amount = sub.amount;
+        existing.currency = sub.currency;
         existing.monthlyEquivalent = sub.monthlyEquivalent;
         existing.yearlyEquivalent = sub.yearlyEquivalent;
+        existing.monthlySar = sub.monthlySar;
       }
       existing.transactions = [...existing.transactions, ...sub.transactions].slice(0, 12);
     }
   }
 
   const subscriptions = [...byName.values()]
-    .sort((a, b) => b.monthlyEquivalent - a.monthlyEquivalent)
+    .sort((a, b) => b.monthlySar - a.monthlySar)
     .map((sub, i) => ({ ...sub, id: `sub_${i + 1}` }));
 
-  const totalMonthly = subscriptions.reduce((sum, s) => sum + s.monthlyEquivalent, 0);
+  const totalMonthly = subscriptions.reduce((sum, s) => sum + s.monthlySar, 0);
   const dateFrom =
     reports.map((r) => r.dateRange.from).filter(Boolean).sort()[0] || "";
   const dateTo =
@@ -145,20 +147,6 @@ function mergeAuditReports(reports: AuditReport[]): AuditReport {
   };
 }
 
-function toSarAmount(
-  amount: number,
-  originalAmount: number | undefined,
-  originalCurrency: string | undefined
-): number {
-  const cur = (originalCurrency || "SAR").toUpperCase();
-
-  if (originalAmount != null && Number.isFinite(originalAmount) && cur !== "SAR") {
-    return toSar(originalAmount, cur);
-  }
-
-  return amount;
-}
-
 function transformClaudeResponse(data: Record<string, unknown>): AuditReport {
   const subs = (data.subscriptions || []) as Array<Record<string, unknown>>;
   const subscriptions: Subscription[] = [];
@@ -168,22 +156,41 @@ function transformClaudeResponse(data: Record<string, unknown>): AuditReport {
     const name = String(sub.name || "Unknown");
     const originalAmount =
       sub.original_amount != null ? Number(sub.original_amount) : undefined;
-    const originalCurrency =
-      sub.original_currency != null ? String(sub.original_currency) : undefined;
-    const rawAmount = Number(sub.amount) || 0;
-    const amount = toSarAmount(rawAmount, originalAmount, originalCurrency);
+    const originalCurrency = (
+      sub.original_currency != null ? String(sub.original_currency) : "SAR"
+    ).toUpperCase();
+    const rawSar = Number(sub.amount) || 0;
     const frequency = normalizeFrequency(String(sub.frequency || "monthly"));
     const occurrences = Number(sub.occurrences) || 1;
-    const monthlyEquivalent = calculateMonthly(amount, frequency);
+
+    const nativeCharge =
+      originalAmount != null && Number.isFinite(originalAmount)
+        ? originalAmount
+        : originalCurrency === "SAR"
+          ? rawSar
+          : rawSar;
+    const currency =
+      originalAmount != null && originalCurrency
+        ? originalCurrency
+        : "SAR";
+
+    const monthlyNative = calculateMonthly(nativeCharge, frequency);
+    const monthlySar =
+      currency === "SAR"
+        ? monthlyNative
+        : toSar(monthlyNative, currency) ||
+          (rawSar > 0 ? calculateMonthly(rawSar, frequency) : toSar(monthlyNative, currency));
 
     subscriptions.push({
       id: `sub_${++idCounter}`,
       name,
       normalizedName: name.toLowerCase(),
-      amount: Math.round(amount * 100) / 100,
+      amount: Math.round(nativeCharge * 100) / 100,
+      currency,
       frequency,
-      monthlyEquivalent: Math.round(monthlyEquivalent * 100) / 100,
-      yearlyEquivalent: Math.round(monthlyEquivalent * 12 * 100) / 100,
+      monthlyEquivalent: Math.round(monthlyNative * 100) / 100,
+      yearlyEquivalent: Math.round(monthlyNative * 12 * 100) / 100,
+      monthlySar: Math.round(monthlySar * 100) / 100,
       occurrences,
       lastCharge: String(sub.last_date || ""),
       firstCharge: String(sub.first_date || ""),
@@ -191,13 +198,13 @@ function transformClaudeResponse(data: Record<string, unknown>): AuditReport {
       confidence: "confirmed",
       aiDescription: sub.category ? String(sub.category) : undefined,
       rawDescription: String(sub.raw_description || name),
-      transactions: buildFakeTransactions(sub, amount),
+      transactions: buildFakeTransactions(sub, nativeCharge, currency),
     });
   }
 
-  subscriptions.sort((a, b) => b.monthlyEquivalent - a.monthlyEquivalent);
+  subscriptions.sort((a, b) => b.monthlySar - a.monthlySar);
 
-  const totalMonthly = subscriptions.reduce((sum, s) => sum + s.monthlyEquivalent, 0);
+  const totalMonthly = subscriptions.reduce((sum, s) => sum + s.monthlySar, 0);
   const period = data.statement_period as Record<string, string> | undefined;
 
   return {
@@ -237,7 +244,8 @@ function calculateMonthly(amount: number, frequency: SubscriptionFrequency): num
 
 function buildFakeTransactions(
   sub: Record<string, unknown>,
-  amountSar: number
+  amount: number,
+  currency: string
 ): Transaction[] {
   const txs: Transaction[] = [];
   const occurrences = Number(sub.occurrences) || 1;
@@ -247,7 +255,8 @@ function buildFakeTransactions(
     txs.push({
       date: i === 0 ? String(sub.last_date || "") : String(sub.first_date || ""),
       description: name,
-      amount: amountSar,
+      amount,
+      currency,
     });
   }
 

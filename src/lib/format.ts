@@ -56,6 +56,47 @@ export function formatSubCost(monthly: number, ar: boolean): string {
   return ar ? `${amount} ريال/شهر` : `${amount} SAR/mo`;
 }
 
+const CURRENCY_SYMBOL: Record<string, string> = {
+  USD: "$",
+  EUR: "€",
+  GBP: "£",
+  PLN: "zł",
+  AED: "AED ",
+  SAR: "",
+};
+
+/** JFC-style native yearly display: $316/yr · €210/yr · 672 ريال/سنة */
+export function formatNativeYearly(
+  yearly: number,
+  currency: string | undefined,
+  ar: boolean
+): string {
+  const cur = (currency || "SAR").toUpperCase();
+  const amount = formatMoney(yearly);
+  if (cur === "SAR") {
+    return ar ? `${amount} ريال/سنة` : `${amount} SAR/yr`;
+  }
+  const sym = CURRENCY_SYMBOL[cur] ?? `${cur} `;
+  if (sym.endsWith(" ")) return `${sym}${amount}/yr`;
+  return `${sym}${amount}/yr`;
+}
+
+/** Native monthly for HITL cards */
+export function formatNativeMonthly(
+  monthly: number,
+  currency: string | undefined,
+  ar: boolean
+): string {
+  const cur = (currency || "SAR").toUpperCase();
+  const amount = formatMoney(monthly);
+  if (cur === "SAR") {
+    return ar ? `${amount} ريال/شهر` : `${amount} SAR/mo`;
+  }
+  const sym = CURRENCY_SYMBOL[cur] ?? `${cur} `;
+  if (sym.endsWith(" ")) return `${sym}${amount}/mo`;
+  return `${sym}${amount}/mo`;
+}
+
 export function formatPriceOnce(ar: boolean): string {
   return ar ? "49 ريال" : "49 SAR";
 }

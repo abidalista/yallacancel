@@ -12,19 +12,42 @@ import {
 } from "../types";
 
 /**
- * Free/local path sometimes treats USD charges as SAR (missing Currency col).
- * Correct known ~$20 AI tools when amount still looks like raw USD.
+ * Free/local path sometimes misses Currency col and treats USD as SAR.
+ * Fix known ~$20 AI tools by tagging USD — keep native amount for display.
  */
-function correctLikelyForeignAmount(name: string, amount: number): number {
+function resolveNativeAmount(
+  name: string,
+  amount: number,
+  currency: string
+): { amount: number; currency: string } {
   const n = name.toLowerCase();
+  const cur = currency.toUpperCase();
   const looksUsdMonthly = amount >= 17 && amount <= 23;
   if (
+    cur === "SAR" &&
     looksUsdMonthly &&
     /claude|anthropic|chatgpt|openai|cursor|perplexity|midjourney/.test(n)
   ) {
-    return toSar(amount, "USD");
+    return { amount, currency: "USD" };
   }
-  return amount;
+  return { amount, currency: cur || "SAR" };
+}
+
+function majorityCurrency(txs: Transaction[]): string {
+  const counts = new Map<string, number>();
+  for (const t of txs) {
+    const c = (t.currency || "SAR").toUpperCase();
+    counts.set(c, (counts.get(c) || 0) + 1);
+  }
+  let best = "SAR";
+  let bestN = 0;
+  for (const [c, n] of counts) {
+    if (n > bestN) {
+      best = c;
+      bestN = n;
+    }
+  }
+  return best;
 }
 
 // Known subscription services (Arabic and English names)
@@ -424,8 +447,11 @@ function pushSubscription(
 ): void {
   const { key, txs, name, frequency, confidence } = params;
   const rawAvg = txs.reduce((sum, t) => sum + t.amount, 0) / txs.length;
-  const avgAmount = correctLikelyForeignAmount(name, rawAvg);
+  const resolved = resolveNativeAmount(name, rawAvg, majorityCurrency(txs));
+  const avgAmount = resolved.amount;
+  const currency = resolved.currency;
   const monthlyEquivalent = calculateMonthlyEquivalent(avgAmount, frequency);
+  const monthlySar = toSar(monthlyEquivalent, currency);
   const sortedDates = txs
     .map((t) => t.date)
     .sort()
@@ -436,9 +462,11 @@ function pushSubscription(
     name,
     normalizedName: key,
     amount: Math.round(avgAmount * 100) / 100,
+    currency,
     frequency,
     monthlyEquivalent: Math.round(monthlyEquivalent * 100) / 100,
     yearlyEquivalent: Math.round(monthlyEquivalent * 12 * 100) / 100,
+    monthlySar: Math.round(monthlySar * 100) / 100,
     occurrences: txs.length,
     lastCharge: sortedDates[sortedDates.length - 1] || "",
     firstCharge: sortedDates[0] || "",
@@ -512,17 +540,17 @@ export function analyzeTransactions(
     }
   }
 
-  subscriptions.sort((a, b) => b.monthlyEquivalent - a.monthlyEquivalent);
+  subscriptions.sort((a, b) => b.monthlySar - a.monthlySar);
 
   const totalMonthly = subscriptions.reduce(
-    (sum, s) => sum + s.monthlyEquivalent,
+    (sum, s) => sum + s.monthlySar,
     0
   );
   const totalYearly = totalMonthly * 12;
 
   const cancelSubs = subscriptions.filter((s) => s.status === "cancel");
   const potentialMonthlySavings = cancelSubs.reduce(
-    (sum, s) => sum + s.monthlyEquivalent,
+    (sum, s) => sum + s.monthlySar,
     0
   );
 

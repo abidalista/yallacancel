@@ -24,7 +24,7 @@ import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, Subscription, Transaction, BankId } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
 import BrandLogo from "@/components/BrandLogo";
-import { formatInt, formatSubCost, formatPriceOnce, fileCountLabel, subscriptionCountLabel, truncateFilename } from "@/lib/format";
+import { formatInt, formatSubCost, formatNativeYearly, formatPriceOnce, fileCountLabel, subscriptionCountLabel, truncateFilename } from "@/lib/format";
 import Ltr from "@/components/Ltr";
 import {
   storeScanSession,
@@ -207,8 +207,8 @@ export default function HomePage() {
   }, [step]);
 
   function rebuildReport(subs: Subscription[], template: Report): Report {
-    const sorted = [...subs].sort((a, b) => b.monthlyEquivalent - a.monthlyEquivalent);
-    const totalMonthly = sorted.reduce((sum, s) => sum + s.monthlyEquivalent, 0);
+    const sorted = [...subs].sort((a, b) => b.monthlySar - a.monthlySar);
+    const totalMonthly = sorted.reduce((sum, s) => sum + s.monthlySar, 0);
     return {
       ...template,
       subscriptions: sorted,
@@ -522,22 +522,29 @@ export default function HomePage() {
     const now = "2026-02-27";
     const makeSub = (
       name: string, amount: number, freq: "monthly" | "yearly", occ: number,
-      confidence: "confirmed" | "suspicious", status: "investigate" | "cancel" | "keep"
-    ): Subscription => ({
-      id: name.toLowerCase().replace(/\s+/g, "-"),
-      name,
-      normalizedName: name.toLowerCase(),
-      amount,
-      frequency: freq,
-      monthlyEquivalent: freq === "yearly" ? +(amount / 12).toFixed(2) : amount,
-      yearlyEquivalent: freq === "yearly" ? amount : +(amount * 12).toFixed(2),
-      occurrences: occ,
-      lastCharge: now,
-      firstCharge: "2025-11-01",
-      status,
-      confidence,
-      transactions: [],
-    });
+      confidence: "confirmed" | "suspicious", status: "investigate" | "cancel" | "keep",
+      currency = "SAR"
+    ): Subscription => {
+      const monthly = freq === "yearly" ? +(amount / 12).toFixed(2) : amount;
+      const yearly = freq === "yearly" ? amount : +(amount * 12).toFixed(2);
+      return {
+        id: name.toLowerCase().replace(/\s+/g, "-"),
+        name,
+        normalizedName: name.toLowerCase(),
+        amount,
+        currency,
+        frequency: freq,
+        monthlyEquivalent: monthly,
+        yearlyEquivalent: yearly,
+        monthlySar: monthly,
+        occurrences: occ,
+        lastCharge: now,
+        firstCharge: "2025-11-01",
+        status,
+        confidence,
+        transactions: [],
+      };
+    };
 
     const hardcodedReport: Report = {
       subscriptions: [
@@ -775,7 +782,7 @@ export default function HomePage() {
         const showFull = isUnlocked || reportTier === "full";
         const visible = showFull ? subs : subs.slice(0, FREE_VISIBLE);
         const hidden = showFull ? [] : subs.slice(FREE_VISIBLE);
-        const hiddenMonthly = hidden.reduce((s, sub) => s + sub.monthlyEquivalent, 0);
+        const hiddenMonthly = hidden.reduce((sum, sub) => sum + sub.monthlySar, 0);
 
         return (
           <div className="min-h-screen bg-white pt-24 pb-16 px-6">
@@ -854,7 +861,7 @@ export default function HomePage() {
                       <Ltr className="text-sm text-slate-400 w-6 flex-shrink-0 tabular-nums">{i + 1}.</Ltr>
                       <span className="font-bold text-sm flex-1 text-slate-800 isolate" dir="auto">{sub.name}</span>
                       <span className="font-bold text-sm text-slate-700 whitespace-nowrap">
-                        {formatSubCost(sub.monthlyEquivalent, ar)}
+                        <Ltr>{formatNativeYearly(sub.yearlyEquivalent, sub.currency, ar)}</Ltr>
                       </span>
                       {info?.cancelUrl ? (
                         <a
@@ -879,7 +886,7 @@ export default function HomePage() {
                     <Ltr className="text-sm text-slate-400 w-6 flex-shrink-0 tabular-nums">{FREE_VISIBLE + i + 1}.</Ltr>
                     <span className="font-bold text-sm flex-1 blur-sm select-none text-slate-800 isolate" dir="auto">{sub.name}</span>
                     <span className="font-bold text-sm text-slate-700 whitespace-nowrap">
-                      {formatSubCost(sub.monthlyEquivalent, ar)}
+                      <Ltr>{formatNativeYearly(sub.yearlyEquivalent, sub.currency, ar)}</Ltr>
                     </span>
                     <Lock size={14} strokeWidth={1.5} className="text-slate-300 flex-shrink-0" />
                   </div>
@@ -888,7 +895,8 @@ export default function HomePage() {
                 {hidden.length > 0 && (
                   <div className="px-5 py-3 bg-slate-50 text-center text-sm text-slate-500 flex items-center justify-center gap-2 flex-wrap">
                     <span>
-                      + {hidden.length} {ar ? "إضافية" : "more"} ({formatSubCost(hiddenMonthly, ar)})
+                      + {hidden.length} {ar ? "إضافية" : "more"} (
+                      <Ltr>{formatSubCost(hiddenMonthly, ar)}</Ltr>)
                     </span>
                   </div>
                 )}

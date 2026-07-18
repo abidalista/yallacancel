@@ -4,7 +4,6 @@
  * Supports all Saudi banks + generic formats.
  */
 
-import { toSar } from "../fx";
 import { BankId, Transaction } from "../types";
 
 interface BankConfig {
@@ -409,6 +408,7 @@ function parseCSVWithHeaders(
       date,
       description,
       amount,
+      currency: "SAR",
       reference: fields.length > 3 ? fields[3] : undefined,
     });
   }
@@ -520,6 +520,7 @@ function parseCSVHeaderless(
       date: parseDate(dateVal),
       description: descVal,
       amount,
+      currency: "SAR",
     });
   }
 
@@ -642,7 +643,8 @@ function parseRevolutCSV(
     transactions.push({
       date: parseDate(dateRaw),
       description,
-      amount: toSar(Math.abs(signed), currency || "SAR"),
+      amount: Math.abs(signed),
+      currency: currency || "SAR",
     });
   }
 
@@ -726,7 +728,7 @@ function parseCryptoComCSV(
       }
     }
 
-    amount = toSar(amount, currency);
+    amount = Math.abs(amount);
     if (amount < 0.5) continue;
 
     const dateRaw = fields[dateIdx]?.trim();
@@ -736,6 +738,7 @@ function parseCryptoComCSV(
       date: parseDate(dateRaw),
       description,
       amount,
+      currency,
     });
   }
 
@@ -779,6 +782,7 @@ function parseCSVLineFallback(
       date: parseDate(dateMatch[0]),
       description: desc,
       amount,
+      currency: "SAR",
     });
   }
 

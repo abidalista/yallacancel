@@ -75,7 +75,7 @@ Status key:
 |---|------|-----|-------------|--------|
 | 4.1 | Headline | “You're spending **$1,240/year**” | “تصرف **X ريال/شهر**” | **DECIDE** — year vs month |
 | 4.2 | Subline | “across 7 subscriptions” | معاينة سريعة · count · txs · files | **BOTH** (ours denser) |
-| 4.3 | Currency in list | **Mixed native** (€210/yr, $316/yr) | All converted to **ريال/شهر** | **DECIDE** — show native vs SAR |
+| 4.3 | Currency in list | **Mixed native** (€210/yr, $316/yr) | **Native yearly** + SAR headline totals | **SHIPPED** 2026-07-18 |
 | 4.4 | Free unlock depth | Top expensive visible + Cancel links; rest blurred + padlock | Top **3** visible; rest blur; amounts visible | **BOTH** freemium |
 | 4.5 | Free Cancel links | Yes on unlocked rows | Cancel only after full unlock | **THEIR** stronger teaser |
 | 4.6 | “+ N more” | Logos strip (Spotify/Netflix) + yearly | Text + monthly SAR | **THEIR** polish |

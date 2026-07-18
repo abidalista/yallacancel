@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import type { Subscription } from "@/lib/types";
-import { formatSubCost } from "@/lib/format";
+import { formatNativeMonthly } from "@/lib/format";
 
 type Verdict = "yes" | "no" | "unknown";
 
@@ -88,7 +88,7 @@ export default function ConfirmUnsure({
                     )}
                   </div>
                   <div className="text-sm font-extrabold text-slate-900 whitespace-nowrap flex-shrink-0">
-                    {formatSubCost(sub.monthlyEquivalent, ar)}
+                    <span dir="ltr">{formatNativeMonthly(sub.monthlyEquivalent, sub.currency, ar)}</span>
                   </div>
                 </div>
 
