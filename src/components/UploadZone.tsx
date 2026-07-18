@@ -138,9 +138,9 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="w-full max-w-[680px] mx-auto"
+      className="w-full max-w-[640px] mx-auto"
     >
-      {/* Whole box = file picker (JFC style · bigger + louder border) */}
+      {/* Whole box = file picker — compact so files list fits above the fold */}
       <div
         role="button"
         tabIndex={0}
@@ -157,7 +157,7 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
         onClick={openPicker}
-        className="cursor-pointer select-none flex flex-col items-center justify-center min-h-[220px] sm:min-h-[260px] py-16 sm:py-20 px-8 rounded-2xl transition-all"
+        className="cursor-pointer select-none flex flex-col items-center justify-center min-h-[120px] sm:min-h-[140px] py-8 sm:py-10 px-6 rounded-2xl transition-all"
         style={{
           border: dragging ? "3px dashed #00A651" : "3px dashed #00A651",
           background: dragging ? "#E8F7EE" : "#FFFFFF",
@@ -166,10 +166,10 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
             : "0 0 0 1px rgba(0,166,81,0.08)",
         }}
       >
-        <p className="font-extrabold text-xl sm:text-2xl text-center mb-3 leading-snug" style={{ color: "#1A3A35" }}>
+        <p className="font-extrabold text-base sm:text-lg text-center mb-1.5 leading-snug" style={{ color: "#1A3A35" }}>
           {ar ? "ارفع كشوفات آخر شهرين أو 3 شهور" : "Drop your last 2-3 months of statements"}
         </p>
-        <p className="text-base text-center" style={{ color: "#4A6862" }}>
+        <p className="text-sm text-center" style={{ color: "#4A6862" }}>
           {ar ? (
             <>
               PDF أو CSV من أي بنك · أقل من <Ltr>90</Ltr> ثانية
@@ -210,9 +210,9 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="mt-4 rounded-xl bg-slate-100 px-5 pt-4 pb-5 overflow-hidden"
+            className="mt-3 rounded-xl bg-slate-100 px-4 pt-3 pb-4 overflow-hidden"
           >
-            <div className="flex items-center justify-between gap-2 mb-3">
+            <div className="flex items-center justify-between gap-2 mb-2">
               <p className="text-sm font-bold" style={{ color: "#1A3A35" }}>
                 {ar
                   ? `${selectedFiles.length} ملف محدد`
@@ -230,7 +230,7 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
                 {ar ? "مسح الكل" : "Clear all"}
               </button>
             </div>
-            <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
+            <div className="space-y-2 mb-3 max-h-28 overflow-y-auto">
               {selectedFiles.map((f, i) => (
                 <div key={`${f.name}-${i}`} className="flex items-center justify-between gap-2">
                   <span className="flex items-center gap-2 text-sm min-w-0" style={{ color: "#4A6862" }}>
@@ -258,7 +258,7 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
               ))}
             </div>
 
-            <p className="text-xs font-medium text-center mb-4" style={{ color: "#C2410C" }}>
+            <p className="text-xs font-medium text-center mb-3" style={{ color: "#C2410C" }}>
               {selectedFiles.length === 1
                 ? ar
                   ? "أضف شهر إضافي عشان نأكد الاشتراكات المتكررة"
@@ -268,7 +268,7 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
                   : "Tip: Upload the last 2 or 3 months max. Longer periods surface old cancelled subscriptions."}
             </p>
 
-            <button type="button" onClick={handleScan} className="btn-primary w-full">
+            <button type="button" onClick={handleScan} className="btn-primary w-full py-3">
               {ar ? "افحص الاشتراكات" : "Scan for subscriptions"}
             </button>
             <button
@@ -279,7 +279,7 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
                 if (selectedFiles.length >= MAX_FILES) return;
                 openPicker();
               }}
-              className="btn-ghost w-full mt-2 text-sm disabled:opacity-40"
+              className="btn-ghost w-full mt-1.5 text-sm disabled:opacity-40"
             >
               {selectedFiles.length >= MAX_FILES
                 ? ar

@@ -845,24 +845,24 @@ export default function HomePage() {
       {/* ── LANDING PAGE ── */}
       {step === "landing" && (
         <>
-          {/* Hero */}
-          <section ref={heroRef} className="hero-gradient relative overflow-hidden pt-24 pb-20 px-6">
+          {/* Hero — compact first viewport (JFC-style: headline + box + files without scroll) */}
+          <section ref={heroRef} className="hero-gradient relative overflow-hidden pt-20 pb-8 px-6 lg:pt-16 lg:pb-6">
             <HeroScatteredLogos />
-            <div className="max-w-[1100px] mx-auto text-center relative z-10">
+            <div className="max-w-[900px] mx-auto text-center relative z-10">
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.4 }}
               >
-                <span className="section-label inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full mb-5">
-                  <Shield size={12} strokeWidth={1.5} /> {ar ? "متتبع اشتراكاتك الشخصي" : "Your personal subscription tracker"}
+                <span className="section-label inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 rounded-full mb-3">
+                  <Shield size={11} strokeWidth={1.5} /> {ar ? "متتبع اشتراكاتك الشخصي" : "Your personal subscription tracker"}
                 </span>
-                <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-4 max-w-3xl mx-auto leading-[1.1]" style={{ color: "#1A3A35" }}>
+                <h1 className="text-3xl sm:text-4xl lg:text-[2.35rem] font-extrabold tracking-tight mb-2 max-w-2xl mx-auto leading-[1.15]" style={{ color: "#1A3A35" }}>
                   {ar
                     ? "اعرف وين تروح فلوسك كل شهر"
                     : "See exactly where your money goes each month"}
                 </h1>
-                <p className="text-lg max-w-[600px] mx-auto mb-12 leading-relaxed" style={{ color: "#4A6862" }}>
+                <p className="text-sm sm:text-[15px] max-w-[520px] mx-auto mb-5 leading-relaxed" style={{ color: "#4A6862" }}>
                   {ar
                     ? "ارفع كشف حسابك البنكي وفي ثواني نجيب لك كل اشتراكاتك الشهرية مع رابط الغاء مباشر لكل خدمة."
                     : "Upload your bank statement and in seconds we'll list every subscription you're paying for with a direct cancel link for each one."}
@@ -932,12 +932,12 @@ export default function HomePage() {
                 </motion.div>
               )}
 
-              {/* Bank logos */}
-              <div className="mt-12 flex flex-wrap justify-center gap-4">
+              {/* Bank logos — below first fold */}
+              <div className="mt-6 flex flex-wrap justify-center gap-3">
                 {BANKS.map((bank) => (
-                  <div key={bank.name} className="flex items-center gap-2 bg-white border border-[#E5EFED] rounded-full px-3 py-1.5">
-                    <BrandLogo domain={bank.domain} alt={bank.name} className="w-5 h-5 rounded-sm object-contain" />
-                    <span className="text-xs font-medium" style={{ color: "#4A6862" }}>{bank.name}</span>
+                  <div key={bank.name} className="flex items-center gap-2 bg-white border border-[#E5EFED] rounded-full px-2.5 py-1">
+                    <BrandLogo domain={bank.domain} alt={bank.name} className="w-4 h-4 rounded-sm object-contain" />
+                    <span className="text-[11px] font-medium" style={{ color: "#4A6862" }}>{bank.name}</span>
                   </div>
                 ))}
               </div>

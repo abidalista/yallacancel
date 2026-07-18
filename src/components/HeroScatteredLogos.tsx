@@ -79,8 +79,8 @@ function LogoPill({ logo }: { logo: ScatteredLogo }) {
 
 export default function HeroScatteredLogos() {
   return (
-    <div className="pointer-events-none absolute inset-0 z-0 hidden md:block" aria-hidden>
-      {LOGOS.map((logo) => (
+    <div className="pointer-events-none absolute inset-0 z-0 hidden xl:block opacity-70" aria-hidden>
+      {LOGOS.slice(0, 8).map((logo) => (
         <LogoPill key={logo.name} logo={logo} />
       ))}
     </div>
@@ -90,7 +90,7 @@ export default function HeroScatteredLogos() {
 export function HeroLogoStrip() {
   const strip = LOGOS.slice(0, 8);
   return (
-    <div className="flex flex-wrap justify-center gap-2.5 mb-8 md:hidden" aria-hidden>
+    <div className="flex flex-wrap justify-center gap-2 mb-4 md:hidden" aria-hidden>
       {strip.map((logo, i) => (
         <motion.div
           key={logo.name}
