@@ -39,7 +39,20 @@ export default function PaywallModal({
   const ar = locale === "ar";
   const features = ar ? FEATURES_AR : FEATURES_EN;
   const [showCheckout, setShowCheckout] = useState(false);
+  const [showCode, setShowCode] = useState(false);
+  const [accessCode, setAccessCode] = useState("");
+  const [codeError, setCodeError] = useState(false);
   const planId = process.env.NEXT_PUBLIC_WHOP_PLAN_ID || "plan_3E0V8cxU8VYXI";
+
+  function submitAccessCode() {
+    const code = accessCode.trim();
+    if (!code) {
+      setCodeError(true);
+      return;
+    }
+    setCodeError(false);
+    onPaymentSuccess(`founder_${code}`);
+  }
 
   return (
     <AnimatePresence>
@@ -120,6 +133,45 @@ export default function PaywallModal({
                   >
                     Dev unlock (no payment)
                   </button>
+                )}
+
+                {!showCode ? (
+                  <button
+                    type="button"
+                    className="w-full text-center text-xs text-slate-400 py-1 hover:text-slate-600"
+                    onClick={() => setShowCode(true)}
+                  >
+                    {ar ? "لديك كود؟" : "Have an access code?"}
+                  </button>
+                ) : (
+                  <div className="space-y-2 pt-1">
+                    <input
+                      type="text"
+                      value={accessCode}
+                      onChange={(e) => {
+                        setAccessCode(e.target.value);
+                        setCodeError(false);
+                      }}
+                      onKeyDown={(e) => e.key === "Enter" && submitAccessCode()}
+                      placeholder={ar ? "اكتب الكود هنا" : "Enter access code"}
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-[#00A651]"
+                      dir="ltr"
+                      autoComplete="off"
+                      autoCapitalize="off"
+                    />
+                    {codeError && (
+                      <p className="text-xs text-red-500 text-center">
+                        {ar ? "الكود غلط أو فاضي" : "Code is empty or invalid"}
+                      </p>
+                    )}
+                    <button
+                      type="button"
+                      className="btn-ghost w-full text-sm"
+                      onClick={submitAccessCode}
+                    >
+                      {ar ? "فتح بالكود" : "Unlock with code"}
+                    </button>
+                  </div>
                 )}
 
                 <p className="text-xs text-center text-slate-400">
