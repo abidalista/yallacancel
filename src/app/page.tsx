@@ -11,10 +11,8 @@ import Header from "@/components/Header";
 import HeroScatteredLogos, { HeroLogoStrip } from "@/components/HeroScatteredLogos";
 import AddToHomeScreen from "@/components/AddToHomeScreen";
 import UploadZone from "@/components/UploadZone";
-import AuditReport from "@/components/AuditReport";
 import PaywallModal from "@/components/PaywallModal";
 import ConfirmUnsure from "@/components/ConfirmUnsure";
-import SpendingBreakdownComponent from "@/components/SpendingBreakdown";
 import {
   parseCSVRobust, detectBank,
   parsePDFRobust,
@@ -23,7 +21,7 @@ import {
   analyzeFilesWithAI,
 } from "@/lib/services";
 import type { SpendingBreakdown as SpendingData } from "@/lib/services";
-import { AuditReport as Report, Subscription, SubscriptionStatus, Transaction, BankId } from "@/lib/types";
+import { AuditReport as Report, Subscription, Transaction, BankId } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
 import BrandLogo from "@/components/BrandLogo";
 import { formatInt, formatSubCost, formatPriceOnce, fileCountLabel, subscriptionCountLabel, truncateFilename } from "@/lib/format";
@@ -602,16 +600,6 @@ export default function HomePage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function handleStatusChange(id: string, status: SubscriptionStatus) {
-    if (!report) return;
-    setReport({
-      ...report,
-      subscriptions: report.subscriptions.map((s) =>
-        s.id === id ? { ...s, status } : s
-      ),
-    });
-  }
-
   function handleStartOver() {
     setStep("landing");
     setReport(null);
@@ -666,12 +654,12 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="min-h-screen px-6 pt-24 pb-16 bg-[#EDF5F3]"
+            className="min-h-screen px-6 pt-24 pb-16 bg-white"
           >
             <div className="max-w-[520px] mx-auto">
               <div
                 className="rounded-2xl bg-white text-center py-16 px-6"
-                style={{ border: "2px dashed #C5DDD9" }}
+                style={{ border: "2px dashed #00A65166" }}
               >
                 <div className="flex justify-center gap-2 mb-6">
                   {[0, 1, 2].map((i) => (
@@ -703,12 +691,12 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="min-h-screen px-6 pt-24 pb-16 bg-[#EDF5F3]"
+            className="min-h-screen px-6 pt-24 pb-16 bg-white"
           >
             <div className="max-w-[520px] mx-auto">
               <div
                 className="rounded-2xl bg-white text-center py-12 px-6"
-                style={{ border: "2px dashed #C5DDD9" }}
+                style={{ border: "2px dashed #00A65166" }}
               >
                 <div className="text-5xl sm:text-6xl font-extrabold tracking-tight text-slate-900 mb-2 ltr-always">
                   {aiProgress
@@ -790,8 +778,8 @@ export default function HomePage() {
         const hiddenMonthly = hidden.reduce((s, sub) => s + sub.monthlyEquivalent, 0);
 
         return (
-          <div className="min-h-screen bg-[#EDF5F3] pt-24 pb-16 px-6">
-            <div className="max-w-[700px] mx-auto">
+          <div className="min-h-screen bg-white pt-24 pb-16 px-6">
+            <div className="max-w-[640px] mx-auto">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-6">
                 <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-2">
                   {subs.length === 0 ? (
@@ -809,12 +797,13 @@ export default function HomePage() {
                       : `across ${subscriptionCountLabel(subs.length, false)}`}
                   </p>
                 )}
+                <div className="mt-4 border-t border-dashed border-[#00A651]/40" />
 
                 {failedScanFiles.length > 0 && !showFull && (
-                  <div className="mt-4 rounded-2xl bg-amber-50 border border-amber-100 px-4 py-3 text-sm text-amber-900">
+                  <div className="mt-4 rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 text-sm text-amber-900">
                     {ar ? (
                       <>
-                        {fileCountLabel(failedScanFiles.length, true)} ما انقرأ:{" "}
+                        ملاحظة: {fileCountLabel(failedScanFiles.length, true)} ما انقرأ:{" "}
                         <bdi dir="ltr" className="ltr-always text-xs">
                           {truncateFilename(failedScanFiles[0], 36)}
                         </bdi>
@@ -824,7 +813,7 @@ export default function HomePage() {
                       </>
                     ) : (
                       <>
-                        {fileCountLabel(failedScanFiles.length, false)} not read:{" "}
+                        Note: {fileCountLabel(failedScanFiles.length, false)} not read:{" "}
                         <bdi dir="ltr" className="ltr-always text-xs">
                           {truncateFilename(failedScanFiles[0], 36)}
                         </bdi>
@@ -838,33 +827,33 @@ export default function HomePage() {
               </motion.div>
 
               {!showFull && subs.length === 0 && (
-                <div className="bento-card p-6 mb-6 text-center">
+                <div className="border border-slate-200 rounded-2xl p-6 mb-6 text-center">
                   <p className="text-slate-600 mb-3">
                     {ar
                       ? "المعاينة السريعة ما لقت اشتراكات واضحة. التحليل AI قد يلقى اشتراكات مخفية في PDF أو ملفات Revolut و Crypto.com."
                       : "The quick scan found no clear subscriptions. Full AI analysis may find hidden charges in PDFs, Revolut, or Crypto.com exports."}
                   </p>
                   <button onClick={() => setShowPaywall(true)} className="btn-primary">
-                    {ar ? `تحليل AI كامل · ${formatPriceOnce(true)}` : `Full AI analysis · ${formatPriceOnce(false)}`}
+                    {ar ? `افتح الكل · ${formatPriceOnce(true)}` : `Unlock · ${formatPriceOnce(false)}`}
                   </button>
                 </div>
               )}
 
-              {/* Subscription list */}
+              {/* Subscription list — JFC-style */}
               {subs.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
-                className="bento-card overflow-hidden mb-6 p-0"
+                className="border border-slate-200 rounded-2xl overflow-hidden mb-6 bg-white"
               >
                 {visible.map((sub, i) => {
                   const info = getCancelInfo(sub.name);
                   return (
-                    <div key={sub.id} className="flex items-center px-5 py-4 border-b border-slate-100">
-                      <Ltr className="text-sm text-slate-400 w-8 flex-shrink-0">{i + 1}.</Ltr>
-                      <span className="font-bold text-sm flex-1 text-slate-800">{sub.name}</span>
-                      <span className="font-bold text-sm mr-4 ml-4 text-slate-700 whitespace-nowrap">
+                    <div key={sub.id} className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 last:border-b-0">
+                      <Ltr className="text-sm text-slate-400 w-6 flex-shrink-0 tabular-nums">{i + 1}.</Ltr>
+                      <span className="font-bold text-sm flex-1 text-slate-800 isolate" dir="auto">{sub.name}</span>
+                      <span className="font-bold text-sm text-slate-700 whitespace-nowrap">
                         {formatSubCost(sub.monthlyEquivalent, ar)}
                       </span>
                       {info?.cancelUrl ? (
@@ -886,10 +875,10 @@ export default function HomePage() {
                 })}
 
                 {hidden.map((sub, i) => (
-                  <div key={sub.id} className="flex items-center px-5 py-4 border-b border-slate-100">
-                    <Ltr className="text-sm text-slate-400 w-8 flex-shrink-0">{FREE_VISIBLE + i + 1}.</Ltr>
-                    <span className="font-bold text-sm flex-1 blur-sm select-none text-slate-800">{sub.name}</span>
-                    <span className="font-bold text-sm mr-4 ml-4 text-slate-700 whitespace-nowrap">
+                  <div key={sub.id} className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 last:border-b-0">
+                    <Ltr className="text-sm text-slate-400 w-6 flex-shrink-0 tabular-nums">{FREE_VISIBLE + i + 1}.</Ltr>
+                    <span className="font-bold text-sm flex-1 blur-sm select-none text-slate-800 isolate" dir="auto">{sub.name}</span>
+                    <span className="font-bold text-sm text-slate-700 whitespace-nowrap">
                       {formatSubCost(sub.monthlyEquivalent, ar)}
                     </span>
                     <Lock size={14} strokeWidth={1.5} className="text-slate-300 flex-shrink-0" />
@@ -897,30 +886,27 @@ export default function HomePage() {
                 ))}
 
                 {hidden.length > 0 && (
-                  <div className="px-5 py-3 bg-slate-50 text-center text-sm text-slate-400">
-                    + {hidden.length} {ar ? "إضافية" : "more"} ({formatSubCost(hiddenMonthly, ar)})
+                  <div className="px-5 py-3 bg-slate-50 text-center text-sm text-slate-500 flex items-center justify-center gap-2 flex-wrap">
+                    <span>
+                      + {hidden.length} {ar ? "إضافية" : "more"} ({formatSubCost(hiddenMonthly, ar)})
+                    </span>
                   </div>
                 )}
               </motion.div>
               )}
 
-              {/* Paywall CTA */}
+              {/* Paywall CTA — JFC pitch */}
               {!showFull && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
-                  className="bento-card p-5 text-center"
+                  className="text-center"
                 >
-                  <p className="font-bold text-[#00A651] text-base mb-1">
+                  <p className="font-bold text-slate-900 text-base mb-4">
                     {ar
                       ? `روابط إلغاء مباشرة لكل ${subs.length} اشتراك`
                       : `Direct cancel links for all ${subs.length} subscriptions`}
-                  </p>
-                  <p className="text-sm text-slate-500 mb-4">
-                    {ar
-                      ? "دفعة واحدة · بدون حساب · تقرير AI كامل لكل ملفاتك"
-                      : "One time · no account · full AI report across all files"}
                   </p>
                   <button
                     onClick={() => setShowPaywall(true)}
@@ -929,31 +915,13 @@ export default function HomePage() {
                     {ar ? `افتح الكل · ${formatPriceOnce(true)}` : `Unlock · ${formatPriceOnce(false)}`}
                   </button>
                   <p className="text-xs text-slate-400 mt-3">
-                    {ar ? "دفعة واحدة · بدون حساب" : "One time · no account needed"}
+                    {ar ? "دفعة واحدة · بدون حساب" : "One-time. No account needed."}
                   </p>
                 </motion.div>
               )}
 
-              {/* Full audit report — paid only */}
-              {showFull && (
-              <AuditReport
-                report={report}
-                locale={locale}
-                onStatusChange={handleStatusChange}
-                onStartOver={handleStartOver}
-                onUpgradeClick={() => setShowPaywall(true)}
-              />
-              )}
-
-              {/* Spending breakdown — paid only */}
-              {showFull && spendingData && spendingData.categories.length > 0 && (
-                <div className="mt-6">
-                  <SpendingBreakdownComponent data={spendingData} locale={locale} />
-                </div>
-              )}
-
               {/* Start over */}
-              <div className="text-center mt-8">
+              <div className="text-center mt-10">
                 <button onClick={handleStartOver} className="btn-ghost">
                   <RotateCcw size={14} strokeWidth={1.5} />
                   {ar ? "ابدأ من جديد" : "Start Over"}
@@ -1166,8 +1134,8 @@ export default function HomePage() {
               </motion.div>
               <p className="text-xs text-slate-400 mt-4">
                 {ar
-                  ? "مع روابط إلغاء مباشرة + تحليل مصاريفك بالفئات"
-                  : "With direct cancel links + spending breakdown by category"}
+                  ? "مع روابط إلغاء مباشرة لكل اشتراك"
+                  : "With direct cancel links for every subscription"}
               </p>
             </div>
           </section>

@@ -4,6 +4,7 @@
  * Supports all Saudi banks + generic formats.
  */
 
+import { toSar } from "../fx";
 import { BankId, Transaction } from "../types";
 
 interface BankConfig {
@@ -581,6 +582,11 @@ function parseRevolutCSV(
   ]);
   const descIdx = headerIndex(headers, ["Description"]);
   const amountIdx = headerIndex(headers, ["Amount", "Orig amount", "Payment amount"]);
+  const currencyIdx = headerIndex(headers, [
+    "Currency",
+    "Payment currency",
+    "Orig currency",
+  ]);
   const typeIdx = headerIndex(headers, ["Type"]);
   const stateIdx = headerIndex(headers, ["State"]);
 
@@ -630,10 +636,13 @@ function parseRevolutCSV(
     const dateRaw = fields[dateIdx]?.trim();
     if (!dateRaw) continue;
 
+    const currency =
+      currencyIdx !== -1 ? fields[currencyIdx]?.trim().toUpperCase() : "SAR";
+
     transactions.push({
       date: parseDate(dateRaw),
       description,
-      amount: Math.abs(signed),
+      amount: toSar(Math.abs(signed), currency || "SAR"),
     });
   }
 
@@ -691,6 +700,7 @@ function parseCryptoComCSV(
     }
 
     let amount = 0;
+    let currency = "SAR";
 
     if (nativeAmountIdx !== -1 && nativeCurrencyIdx !== -1) {
       const nativeCurrency = fields[nativeCurrencyIdx]?.trim().toUpperCase();
@@ -701,6 +711,7 @@ function parseCryptoComCSV(
         );
         if (!isNaN(nativeSigned) && nativeSigned < 0) {
           amount = Math.abs(nativeSigned);
+          currency = nativeCurrency;
         }
       }
     }
@@ -711,9 +722,11 @@ function parseCryptoComCSV(
       );
       if (!isNaN(signed) && signed < 0) {
         amount = Math.abs(signed);
+        currency = "USD";
       }
     }
 
+    amount = toSar(amount, currency);
     if (amount < 0.5) continue;
 
     const dateRaw = fields[dateIdx]?.trim();

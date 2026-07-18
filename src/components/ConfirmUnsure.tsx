@@ -37,18 +37,19 @@ export default function ConfirmUnsure({
   }
 
   return (
-    <div className="min-h-screen bg-[#EDF5F3] pt-24 pb-16 px-6">
+    <div className="min-h-screen bg-white pt-24 pb-16 px-6">
       <div className="max-w-[640px] mx-auto">
         <p className="text-sm font-bold text-[#00A651] mb-2">
           {ar
             ? `لقينا ${clearCount} اشتراكات واضحة`
             : `Found ${clearCount} clear subscriptions`}
         </p>
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-2">
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-3">
           {ar
             ? `ساعدنا نحدد ${unsure.length} إضافية`
             : `Help identify ${unsure.length} more`}
         </h1>
+        <div className="border-t border-dashed border-[#00A651]/40 mb-4" />
         <p className="text-[15px] text-slate-500 mb-8 leading-relaxed">
           {ar
             ? "لقينا خصومات متكررة مو متأكدين منها. ساعدنا نضيفها للمجموع:"
@@ -69,7 +70,7 @@ export default function ConfirmUnsure({
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="bento-card p-5"
+                className="border border-slate-200 rounded-xl p-5 bg-white"
               >
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="min-w-0 text-right flex-1">
@@ -86,7 +87,7 @@ export default function ConfirmUnsure({
                       <p className="text-xs text-slate-500 italic mt-1">{sub.aiDescription}</p>
                     )}
                   </div>
-                  <div className="text-sm font-extrabold text-[#00A651] whitespace-nowrap flex-shrink-0">
+                  <div className="text-sm font-extrabold text-slate-900 whitespace-nowrap flex-shrink-0">
                     {formatSubCost(sub.monthlyEquivalent, ar)}
                   </div>
                 </div>

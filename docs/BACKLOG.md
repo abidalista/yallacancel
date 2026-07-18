@@ -26,7 +26,7 @@ Capabilities to eventually beat or match. Source: skill report screenshots, Jul 
 5. **Already stopped detection** (no charge since month X)  
 6. **Price variance notes** (Apple €17.99 Jan vs €16.99 May)  
 7. **Savings headline** (“up to €780/yr on the table”)  
-8. **Deep spending report** (categories + “two things worth acting on”)  
+8. **Deep spending report** (categories + “two things worth acting on”) — **CUT from web for now** (removed from paid results 2026-07-18)  
 9. **Multi-account caveat** (this card vs salary account vs rewards card)  
 10. **Kill checklist → Copy** action UX  
 

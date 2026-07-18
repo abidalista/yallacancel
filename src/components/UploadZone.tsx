@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, X, FileText } from "lucide-react";
-import { formatBytes, fileCountLabel, truncateFilename } from "@/lib/format";
+import { formatBytes, truncateFilename } from "@/lib/format";
 import Ltr from "@/components/Ltr";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -174,11 +174,13 @@ export default function UploadZone({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="mt-4 bento-card px-6 pt-5 pb-5 overflow-hidden"
+            className="mt-4 rounded-xl bg-slate-100 px-5 pt-4 pb-5 overflow-hidden"
           >
-            <p className="text-sm font-bold mb-4" style={{ color: "#1A3A35" }}>
-              {fileCountLabel(selectedFiles.length, ar)}{" "}
-              <Ltr>({formatBytes(totalSize)})</Ltr>
+            <p className="text-sm font-bold mb-3" style={{ color: "#1A3A35" }}>
+              {ar
+                ? `${selectedFiles.length} ملف محدد`
+                : `${selectedFiles.length} file(s) selected`}{" "}
+              <Ltr className="font-normal text-[#8AADA8]">({formatBytes(totalSize)})</Ltr>
             </p>
             <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
               {selectedFiles.map((f, i) => (

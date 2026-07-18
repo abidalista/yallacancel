@@ -3,12 +3,29 @@
  * Detects recurring subscriptions from bank transactions with tiered confidence.
  */
 
+import { toSar } from "../fx";
 import {
   Transaction,
   Subscription,
   SubscriptionFrequency,
   AuditReport,
 } from "../types";
+
+/**
+ * Free/local path sometimes treats USD charges as SAR (missing Currency col).
+ * Correct known ~$20 AI tools when amount still looks like raw USD.
+ */
+function correctLikelyForeignAmount(name: string, amount: number): number {
+  const n = name.toLowerCase();
+  const looksUsdMonthly = amount >= 17 && amount <= 23;
+  if (
+    looksUsdMonthly &&
+    /claude|anthropic|chatgpt|openai|cursor|perplexity|midjourney/.test(n)
+  ) {
+    return toSar(amount, "USD");
+  }
+  return amount;
+}
 
 // Known subscription services (Arabic and English names)
 const KNOWN_SUBSCRIPTIONS: Record<string, string> = {
@@ -406,7 +423,8 @@ function pushSubscription(
   }
 ): void {
   const { key, txs, name, frequency, confidence } = params;
-  const avgAmount = txs.reduce((sum, t) => sum + t.amount, 0) / txs.length;
+  const rawAvg = txs.reduce((sum, t) => sum + t.amount, 0) / txs.length;
+  const avgAmount = correctLikelyForeignAmount(name, rawAvg);
   const monthlyEquivalent = calculateMonthlyEquivalent(avgAmount, frequency);
   const sortedDates = txs
     .map((t) => t.date)

@@ -2,6 +2,7 @@
  * Client-side AI analysis — calls /api/parse-pdf and maps to AuditReport.
  */
 
+import { toSar } from "../fx";
 import {
   Transaction,
   Subscription,
@@ -21,19 +22,6 @@ export interface ClaudeAnalysisError {
 }
 
 export type AIAnalysisResult = ClaudeAnalysisResult | ClaudeAnalysisError;
-
-/** Fallback rates if Claude forgets to convert */
-const FX_TO_SAR: Record<string, number> = {
-  SAR: 1,
-  USD: 3.75,
-  EUR: 4.1,
-  GBP: 4.8,
-  AED: 1.02,
-  KWD: 12.2,
-  BHD: 9.95,
-  QAR: 1.03,
-  CHF: 4.25,
-};
 
 export async function analyzeFileWithAI(file: File): Promise<AIAnalysisResult> {
   try {
@@ -163,19 +151,9 @@ function toSarAmount(
   originalCurrency: string | undefined
 ): number {
   const cur = (originalCurrency || "SAR").toUpperCase();
-  const rate = FX_TO_SAR[cur] ?? 1;
 
   if (originalAmount != null && Number.isFinite(originalAmount) && cur !== "SAR") {
-    return originalAmount * rate;
-  }
-
-  if (
-    originalAmount != null &&
-    Number.isFinite(originalAmount) &&
-    cur !== "SAR" &&
-    Math.abs(amount - originalAmount) < 0.02
-  ) {
-    return originalAmount * rate;
+    return toSar(originalAmount, cur);
   }
 
   return amount;

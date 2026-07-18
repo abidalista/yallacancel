@@ -109,7 +109,7 @@ Status key:
 | Founder access code | Phone testing |
 | Saudi bank parsers (SNB, etc.) + Revolut/Crypto.com CSV | Local teaser |
 | Cancel guides / blog / SEO pages | Distribution |
-| Spending breakdown (paid) | Extra |
+| Spending breakdown (paid) | **CUT for now** — not shown on results |
 | 49 SAR Whop + mada | Local payments |
 
 ---
