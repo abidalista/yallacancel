@@ -77,8 +77,8 @@ const PROBLEM_STATS = [
   {
     headlineAr: "382 ريال/شهر",
     headlineEn: "382 Riyal/mo",
-    bodyAr: "متوسط صرف السعوديين على الاشتراكات",
-    bodyEn: "Average Saudi spend on subscriptions",
+    bodyAr: "متوسط صرف السعودي على الاشتراكات",
+    bodyEn: "Average spend of the Saudi on subscriptions",
   },
   {
     headlineAr: "3 اشتراكات",
