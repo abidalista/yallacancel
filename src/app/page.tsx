@@ -142,7 +142,7 @@ const TESTIMONIALS: { quote: string; name: string; role: string; initial: string
 const FAQ_ITEMS = [
   {
     q: "هل بياناتي آمنة؟",
-    a: "المعاينة المجانية تتم داخل متصفحك وما تترك جهازك. التقرير الكامل يستخدم تحليل AI آمن على السيرفر وما نخزن ملفاتك بعد التحليل.",
+    a: "الفحص العميق يستخدم تحليل AI آمن على السيرفر (نفس محرك Just Fucking Cancel). ما نخزن ملفاتك بعد التحليل، وما نبيع بياناتك.",
   },
   {
     q: "أي بنوك تدعمون؟",
@@ -154,7 +154,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "هل الأداة مجانية؟",
-    a: "المعاينة السريعة مجانية وتطلع لك أقوى الاشتراكات المتكررة. التقرير الكامل بـ 49 SAR مرة واحدة يشمل تحليل AI لكل ملفاتك.",
+    a: "الفحص العميق بالذكاء الاصطناعي مجاني ويطلع لك الاشتراكات. فتح القائمة كاملة وروابط الإلغاء بـ 49 ريال مرة واحدة.",
   },
   {
     q: "هل يلا كانسل يلغي الاشتراكات عني؟",
@@ -798,14 +798,24 @@ export default function HomePage() {
 
               {!showFull && subs.length === 0 && (
                 <div className="border border-slate-200 rounded-xl p-6 mb-6 mt-6 text-center">
-                  <p className="text-slate-600 mb-3">
-                    {ar
-                      ? "المعاينة السريعة ما لقت اشتراكات واضحة. التحليل AI قد يلقى اشتراكات مخفية."
-                      : "The quick scan found no clear subscriptions. Full AI analysis may find hidden charges."}
-                  </p>
-                  <button onClick={() => setShowPaywall(true)} className="btn-primary">
-                    {ar ? `افتح — ${formatPriceOnce(true)}` : `Unlock — ${formatPriceOnce(false)}`}
-                  </button>
+                  {isClaudeScan() ? (
+                    <p className="text-slate-600">
+                      {ar
+                        ? "فحصنا كل العمليات بالذكاء الاصطناعي وما لقينا اشتراكات واضحة."
+                        : "We scanned every transaction with AI and found no clear subscriptions."}
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-slate-600 mb-3">
+                        {ar
+                          ? "المعاينة السريعة ما لقت اشتراكات واضحة. التحليل AI قد يلقى اشتراكات مخفية."
+                          : "The quick scan found no clear subscriptions. Full AI analysis may find hidden charges."}
+                      </p>
+                      <button onClick={() => setShowPaywall(true)} className="btn-primary">
+                        {ar ? `افتح — ${formatPriceOnce(true)}` : `Unlock — ${formatPriceOnce(false)}`}
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
 
