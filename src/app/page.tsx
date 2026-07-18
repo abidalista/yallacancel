@@ -19,6 +19,7 @@ import {
   analyzeTransactions,
   analyzeSpending,
   analyzeFilesWithAI,
+  mergeSubscriptionReports,
 } from "@/lib/services";
 import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, Subscription, Transaction, BankId } from "@/lib/types";
@@ -357,8 +358,8 @@ export default function HomePage() {
       const uploadElapsed = Date.now() - uploadStarted;
       await new Promise((r) => setTimeout(r, Math.max(0, 3000 - uploadElapsed)));
 
-      // Free deep scan = local engine (fast, reliable). Claude runs on unlock.
-      // UI matches JFC: transaction count + timer — never "file 1/4".
+      // JFC UI: big number = transactions, never file 1/4.
+      // Engine: local + silent Claude (PDFs need server). Merge — never prefer empty.
       const identified = Math.max(identifiedTotal, allTx.length);
       if (identified === 0 && failedFiles.length === files.length) {
         setParseError(buildParseError(failedFiles, allWarnings));
@@ -381,24 +382,61 @@ export default function HomePage() {
 
       const scanStarted = Date.now();
       const spending = allTx.length > 0 ? analyzeSpending(allTx) : null;
-      const result = allTx.length > 0
-        ? analyzeTransactions(allTx)
-        : {
-            subscriptions: [],
-            totalMonthly: 0,
-            totalYearly: 0,
-            potentialMonthlySavings: 0,
-            potentialYearlySavings: 0,
-            analyzedTransactions: 0,
-            dateRange: { from: "", to: "" },
-          };
-      const engine: ScanEngine = "local";
+      const localReport =
+        allTx.length > 0
+          ? {
+              ...analyzeTransactions(allTx),
+              analyzedTransactions: identified,
+            }
+          : {
+              subscriptions: [],
+              totalMonthly: 0,
+              totalYearly: 0,
+              potentialMonthlySavings: 0,
+              potentialYearlySavings: 0,
+              analyzedTransactions: identified,
+              dateRange: { from: "", to: "" },
+            };
 
       setSpendingData(spending);
-      setBaseReport(result);
       setAnalyzeStatus(
         ar ? "نفحص الاشتراكات المتكررة..." : "Scanning for recurring subscriptions..."
       );
+
+      // Silent Claude — UI stays on tx count (no file progress)
+      const aiResult = await analyzeFilesWithAI(files);
+
+      let result: Report;
+      let engine: ScanEngine;
+      const localCount = localReport.subscriptions.length;
+      const claudeCount = aiResult.success ? aiResult.report.subscriptions.length : 0;
+
+      if (aiResult.success && claudeCount > 0) {
+        result = mergeSubscriptionReports(aiResult.report, localReport);
+        engine = "claude";
+        failedFiles = [];
+        setFailedScanFiles([]);
+        const aiTx = result.analyzedTransactions || 0;
+        if (aiTx > 0) setTxCount(Math.max(identified, aiTx));
+      } else if (localCount > 0) {
+        if (!aiResult.success) {
+          console.warn("[scan] Claude failed, using local:", aiResult.error);
+        }
+        result = localReport;
+        engine = "local";
+      } else if (aiResult.success) {
+        console.warn("[scan] Claude returned 0, local also 0");
+        result = aiResult.report;
+        engine = "claude";
+        failedFiles = [];
+        setFailedScanFiles([]);
+      } else {
+        console.warn("[scan] Claude failed, local empty:", aiResult.error);
+        result = localReport;
+        engine = "local";
+      }
+
+      setBaseReport(result);
 
       const scanElapsed = Date.now() - scanStarted;
       await new Promise((r) => setTimeout(r, Math.max(0, 2500 - scanElapsed)));
@@ -418,7 +456,7 @@ export default function HomePage() {
       }
 
       if (failedFiles.length > 0) {
-        console.warn("[scan] Some files had weak local parse:", failedFiles);
+        console.warn("[scan] Weak local parse:", failedFiles);
       }
     } catch (err) {
       console.error("Scan failed:", err);
@@ -840,16 +878,26 @@ export default function HomePage() {
               </motion.div>
 
               {subs.length === 0 && (
-                <div className="mt-8 text-center">
+                <div className="mt-8 text-center space-y-2">
                   <p className="text-slate-600 text-[15px] leading-relaxed">
-                    {isClaudeScan()
-                      ? ar
-                        ? "فحصنا كل العمليات وما لقينا اشتراكات واضحة."
-                        : "We scanned every transaction and found no clear subscriptions."
-                      : ar
-                        ? "ما لقينا اشتراكات واضحة في هالملفات."
-                        : "No clear subscriptions in these files."}
+                    {ar
+                      ? "ما لقينا اشتراكات واضحة في هالملفات."
+                      : "No clear subscriptions in these files."}
                   </p>
+                  {txCount > 0 && (
+                    <p className="text-sm text-slate-400">
+                      {ar
+                        ? `قرأنا ${formatInt(txCount)} عملية · بدون نمط اشتراك واضح.`
+                        : `Read ${formatInt(txCount)} transactions · no clear subscription pattern.`}
+                    </p>
+                  )}
+                  {failedScanFiles.length > 0 && (
+                    <p className="text-sm text-slate-400">
+                      {ar
+                        ? "ارفع نفس الملفات كـ CSV من تطبيق البنك إذا قدرت."
+                        : "Re-download the same statements as CSV from your bank app if you can."}
+                    </p>
+                  )}
                 </div>
               )}
 

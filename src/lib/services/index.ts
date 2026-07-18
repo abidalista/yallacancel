@@ -12,6 +12,7 @@ export type { PDFParseResult } from "./pdf-parser.service";
 export {
   analyzeFileWithAI,
   analyzeFilesWithAI,
+  mergeSubscriptionReports,
 } from "./ai-analyzer.service";
 export type { AIAnalysisResult } from "./ai-analyzer.service";
 

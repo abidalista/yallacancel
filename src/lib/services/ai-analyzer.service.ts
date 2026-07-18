@@ -98,6 +98,16 @@ export async function analyzeFilesWithAI(
   return { success: true, report, parseMethod: "claude_ai" };
 }
 
+/** Merge local + Claude reports — union by name, keep higher monthlySar */
+export function mergeSubscriptionReports(
+  primary: AuditReport,
+  secondary: AuditReport | null | undefined
+): AuditReport {
+  if (!secondary || secondary.subscriptions.length === 0) return primary;
+  if (primary.subscriptions.length === 0) return secondary;
+  return mergeAuditReports([primary, secondary]);
+}
+
 function mergeAuditReports(reports: AuditReport[]): AuditReport {
   const byName = new Map<string, Subscription>();
 
