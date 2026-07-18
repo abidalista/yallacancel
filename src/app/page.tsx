@@ -142,7 +142,7 @@ const TESTIMONIALS: { quote: string; name: string; role: string; initial: string
 const FAQ_ITEMS = [
   {
     q: "هل بياناتي آمنة؟",
-    a: "الفحص العميق يستخدم تحليل AI آمن على السيرفر (نفس محرك Just Fucking Cancel). ما نخزن ملفاتك بعد التحليل، وما نبيع بياناتك.",
+    a: "الفحص المجاني يقرأ ملفاتك في المتصفح. بعد الدفع نفتح القائمة كاملة مع روابط الإلغاء. ما نخزن ملفاتك.",
   },
   {
     q: "أي بنوك تدعمون؟",
@@ -154,7 +154,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "هل الأداة مجانية؟",
-    a: "الفحص العميق بالذكاء الاصطناعي مجاني ويطلع لك الاشتراكات. فتح القائمة كاملة وروابط الإلغاء بـ 49 ريال مرة واحدة.",
+    a: "الفحص مجاني ويطلع لك الاشتراكات. فتح القائمة كاملة وروابط الإلغاء بـ 49 ريال مرة واحدة.",
   },
   {
     q: "هل يلا كانسل يلغي الاشتراكات عني؟",
@@ -357,13 +357,22 @@ export default function HomePage() {
       const uploadElapsed = Date.now() - uploadStarted;
       await new Promise((r) => setTimeout(r, Math.max(0, 3000 - uploadElapsed)));
 
-      // Deep scan: Claude (JFC) + local always. Never trust empty Claude over a good local hit.
+      // Free deep scan = local engine (fast, reliable). Claude runs on unlock.
+      // UI matches JFC: transaction count + timer — never "file 1/4".
       const identified = Math.max(identifiedTotal, allTx.length);
+      if (identified === 0 && failedFiles.length === files.length) {
+        setParseError(buildParseError(failedFiles, allWarnings));
+        setRetryFiles(files);
+        setStep("landing");
+        return;
+      }
+
       setTxCount(identified);
       setStep("analyzing");
       setParsedFileCount(successFileCount);
       setFailedScanFiles(failedFiles);
       setTotalScanFiles(files.length);
+      setAiProgress(null);
       setAnalyzeStatus(
         ar
           ? "فحص عميق يبدأ الآن (30 إلى 90 ثانية)"
@@ -372,68 +381,27 @@ export default function HomePage() {
 
       const scanStarted = Date.now();
       const spending = allTx.length > 0 ? analyzeSpending(allTx) : null;
-      const localReport = allTx.length > 0 ? analyzeTransactions(allTx) : null;
-      setSpendingData(spending);
+      const result = allTx.length > 0
+        ? analyzeTransactions(allTx)
+        : {
+            subscriptions: [],
+            totalMonthly: 0,
+            totalYearly: 0,
+            potentialMonthlySavings: 0,
+            potentialYearlySavings: 0,
+            analyzedTransactions: 0,
+            dateRange: { from: "", to: "" },
+          };
+      const engine: ScanEngine = "local";
 
+      setSpendingData(spending);
+      setBaseReport(result);
       setAnalyzeStatus(
-        ar ? "الذكاء الاصطناعي يقرأ كل العمليات..." : "AI is reading every transaction..."
+        ar ? "نفحص الاشتراكات المتكررة..." : "Scanning for recurring subscriptions..."
       );
 
-      const aiResult = await analyzeFilesWithAI(files, (current, total) => {
-        setAiProgress({ current, total });
-        setAnalyzeStatus(
-          ar
-            ? `فحص عميق · ملف ${current} من ${total}`
-            : `Deep scan · file ${current} of ${total}`
-        );
-      });
-      setAiProgress(null);
-
-      let result: Report;
-      let engine: ScanEngine;
-      const localCount = localReport?.subscriptions.length ?? 0;
-      const claudeCount = aiResult.success ? aiResult.report.subscriptions.length : 0;
-
-      if (aiResult.success && claudeCount > 0) {
-        result = aiResult.report;
-        engine = "claude";
-        // Claude found subs — drop weak local-parse flags (PDF etc.)
-        failedFiles = [];
-        setFailedScanFiles([]);
-        const aiTx = result.analyzedTransactions || 0;
-        if (aiTx > 0) setTxCount(Math.max(identified, aiTx));
-      } else if (localCount > 0 && localReport) {
-        // Claude empty/failed → keep local (what used to work on your 4 files)
-        if (!aiResult.success) {
-          console.warn("[scan] Claude failed, using local:", aiResult.error);
-        } else {
-          console.warn("[scan] Claude returned 0 subs, using local:", localCount);
-        }
-        result = localReport;
-        engine = "local";
-      } else if (aiResult.success) {
-        // Both empty — still mark as Claude so empty copy is honest
-        result = aiResult.report;
-        engine = "claude";
-        failedFiles = [];
-        setFailedScanFiles([]);
-      } else if (localReport) {
-        console.warn("[scan] Claude failed, local also empty:", aiResult.error);
-        result = localReport;
-        engine = "local";
-      } else {
-        setParseError(buildParseError(failedFiles, allWarnings));
-        setRetryFiles(files);
-        setStep("landing");
-        return;
-      }
-
-      setBaseReport(result);
-      setSpendingData(spending);
-
-      // Hold count on screen briefly (JFC pacing)
       const scanElapsed = Date.now() - scanStarted;
-      await new Promise((r) => setTimeout(r, Math.max(0, 2000 - scanElapsed)));
+      await new Promise((r) => setTimeout(r, Math.max(0, 2500 - scanElapsed)));
 
       const clear = result.subscriptions.filter((s) => s.confidence === "confirmed");
       const unsure = result.subscriptions.filter((s) => s.confidence === "suspicious");
@@ -685,28 +653,18 @@ export default function HomePage() {
                 style={{ border: "2px dashed #00A65166" }}
               >
                 <div className="text-5xl sm:text-6xl font-extrabold tracking-tight text-slate-900 mb-2 ltr-always">
-                  {aiProgress
-                    ? `${aiProgress.current}/${aiProgress.total}`
-                    : txCount > 0
-                      ? formatInt(txCount)
-                      : "…"}
+                  {txCount > 0 ? formatInt(txCount) : "…"}
                 </div>
                 <div className="text-sm text-slate-400 mb-5">
-                  {aiProgress
-                    ? ar
-                      ? "ملفات تحت التحليل بـ Claude"
-                      : "files analyzing with Claude"
-                    : ar
-                      ? "عملية تم التعرف عليها"
-                      : "transactions"}
+                  {ar ? "عملية تم التعرف عليها" : "transactions identified"}
                 </div>
-                <p className="text-sm font-medium text-slate-700 mb-3">
+                <p className="text-sm font-medium text-slate-700 mb-2">
                   {analyzeStatus ||
                     (ar
-                      ? "فحص عميق يبدأ الآن..."
-                      : "Deep scan starting...")}
+                      ? "فحص عميق يبدأ الآن (30 إلى 90 ثانية)"
+                      : "Deep scan starting... (this takes 30 to 90 seconds)")}
                 </p>
-                <p className="text-2xl font-extrabold text-[#00A651] mb-6 ltr-always">
+                <p className="text-xl font-bold text-[#00A651] mb-6 tabular-nums ltr-always">
                   {elapsedSec}s
                 </p>
                 <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-full px-4 py-2 text-xs text-slate-400">
@@ -746,10 +704,17 @@ export default function HomePage() {
           onSkip={() => {
             const template = baseReport || report;
             if (!template) return;
-            const clearOnly = rebuildReport(
-              template.subscriptions.filter((s) => s.confidence === "confirmed"),
-              template
-            );
+            // Never dump an empty list: if nothing was "clear", keep unsure as the result set
+            const clear = template.subscriptions.filter((s) => s.confidence === "confirmed");
+            const fallback =
+              clear.length > 0
+                ? clear
+                : unsureSubs.map((s) => ({
+                    ...s,
+                    confidence: "confirmed" as const,
+                    userConfirmed: false,
+                  }));
+            const clearOnly = rebuildReport(fallback, template);
             const files = getPendingScanFiles();
             finishTeaser(clearOnly, spendingData, files, failedScanFiles, isClaudeScan() ? "claude" : "local");
           }}
