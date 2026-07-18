@@ -53,15 +53,54 @@ export async function analyzeFileWithAI(file: File): Promise<AIAnalysisResult> {
   }
 }
 
+/** One skill-grade Claude call for all statement files (prompt-cached system). */
+export async function analyzeStatementsWithAI(
+  files: File[]
+): Promise<AIAnalysisResult> {
+  try {
+    const formData = new FormData();
+    for (const file of files) {
+      formData.append("files", file);
+    }
+
+    const res = await fetch("/api/analyze-statements", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      return { success: false, error: `API error ${res.status}: ${errText}` };
+    }
+
+    const data = await res.json();
+    if (data.error) {
+      return { success: false, error: String(data.error) };
+    }
+
+    const report = transformClaudeResponse(data);
+    return { success: true, report, parseMethod: "claude_ai" };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
 export async function analyzeFilesWithAI(
   files: File[],
   onProgress?: (current: number, total: number, fileName: string) => void
 ): Promise<AIAnalysisResult> {
+  // Prefer single combined skill-grade call (no per-file progress)
+  if (!onProgress) {
+    return analyzeStatementsWithAI(files);
+  }
+
   const reports: AuditReport[] = [];
   const errors: string[] = [];
   let completed = 0;
 
-  // Run 2 files at a time — faster than fully sequential, safer than all-at-once
   const concurrency = 2;
   for (let i = 0; i < files.length; i += concurrency) {
     const batch = files.slice(i, i + concurrency);
@@ -203,6 +242,14 @@ function transformClaudeResponse(data: Record<string, unknown>): AuditReport {
           ? String(sub.category)
           : undefined;
 
+    const verdictRaw = String(sub.verdict || "investigate").toLowerCase();
+    const status =
+      verdictRaw.includes("cancel")
+        ? ("cancel" as const)
+        : verdictRaw.includes("keep")
+          ? ("keep" as const)
+          : ("investigate" as const);
+
     subscriptions.push({
       id: `sub_${++idCounter}`,
       name,
@@ -216,7 +263,7 @@ function transformClaudeResponse(data: Record<string, unknown>): AuditReport {
       occurrences,
       lastCharge: String(sub.last_date || ""),
       firstCharge: String(sub.first_date || ""),
-      status: "investigate",
+      status,
       confidence,
       aiDescription: reason,
       rawDescription: String(sub.raw_description || name),
@@ -228,13 +275,14 @@ function transformClaudeResponse(data: Record<string, unknown>): AuditReport {
 
   const totalMonthly = subscriptions.reduce((sum, s) => sum + s.monthlySar, 0);
   const period = data.statement_period as Record<string, string> | undefined;
+  const savingsOnTable = Number(data.savings_on_the_table_yearly) || 0;
 
   return {
     subscriptions,
     totalMonthly: Math.round(totalMonthly * 100) / 100,
     totalYearly: Math.round(totalMonthly * 12 * 100) / 100,
-    potentialMonthlySavings: 0,
-    potentialYearlySavings: 0,
+    potentialMonthlySavings: Math.round((savingsOnTable / 12) * 100) / 100,
+    potentialYearlySavings: Math.round(savingsOnTable * 100) / 100,
     analyzedTransactions: Number(data.total_transactions_analyzed) || 0,
     dateRange: {
       from: period?.from || "",

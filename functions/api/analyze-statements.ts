@@ -1,6 +1,6 @@
 /**
- * Cloudflare Pages Function — single-file analyze (legacy + unlock fallback).
- * Prefer /api/analyze-statements for multi-file skill-grade scans.
+ * Cloudflare Pages Function — multi-file JFC skill-grade Claude audit.
+ * POST /api/analyze-statements  (FormData: files[])
  */
 
 const LLAMA_BASE = "https://api.cloud.llamaindex.ai";
@@ -123,6 +123,12 @@ async function extractPDFText(file: File, llamaKey: string): Promise<string> {
   throw new Error("LlamaParse timeout");
 }
 
+async function extractFileText(file: File, llamaKey: string): Promise<string> {
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  if (ext === "pdf") return extractPDFText(file, llamaKey);
+  return file.text();
+}
+
 async function analyzeWithClaude(rawText: string, anthropicKey: string): Promise<unknown> {
   let text = rawText;
   if (text.length > 180000) text = text.slice(0, 180000);
@@ -147,7 +153,7 @@ async function analyzeWithClaude(rawText: string, anthropicKey: string): Promise
       messages: [
         {
           role: "user",
-          content: `Analyze ALL transactions below. Count every row into total_transactions_analyzed.\n\nStatements:\n\n${text}`,
+          content: `Analyze ALL transactions below across every file section. Count every row you read into total_transactions_analyzed.\n\nStatements:\n\n${text}`,
         },
       ],
     }),
@@ -162,12 +168,16 @@ async function analyzeWithClaude(rawText: string, anthropicKey: string): Promise
   const out = data.content?.[0]?.text || "";
   const cleaned = out.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
   const parsed = JSON.parse(cleaned) as Record<string, unknown>;
-  parsed._meta = { model: CLAUDE_MODEL, provider: "anthropic", cache: data.usage || null };
+  parsed._meta = {
+    model: CLAUDE_MODEL,
+    provider: "anthropic",
+    cache: data.usage || null,
+  };
   return parsed;
 }
 
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT = 20;
+const RATE_LIMIT = 6;
 const RATE_WINDOW_MS = 10 * 60 * 1000;
 
 function isRateLimited(ip: string): boolean {
@@ -206,26 +216,65 @@ export async function onRequestPost(context: {
 
   try {
     const formData = await context.request.formData();
-    const file = formData.get("file");
-    if (!file || !(file instanceof File)) {
-      return Response.json({ error: "No file provided" }, { status: 400 });
+    const files = formData.getAll("files").filter((f): f is File => f instanceof File);
+    if (files.length === 0) {
+      const single = formData.get("file");
+      if (single instanceof File) files.push(single);
     }
 
-    const ext = file.name.split(".").pop()?.toLowerCase();
-    let rawText =
-      ext === "pdf"
-        ? await extractPDFText(file, llamaKey)
-        : await file.text();
-
-    if (!rawText || rawText.length < 50) {
-      return Response.json({ error: "Could not extract text from file" }, { status: 400 });
+    if (files.length === 0) {
+      return Response.json({ error: "No files provided" }, { status: 400 });
+    }
+    if (files.length > 8) {
+      return Response.json({ error: "Max 8 files per scan" }, { status: 400 });
     }
 
-    const result = await analyzeWithClaude(rawText, anthropicKey);
+    const chunks: string[] = [];
+    const errors: string[] = [];
+    const concurrency = 2;
+
+    for (let i = 0; i < files.length; i += concurrency) {
+      const batch = files.slice(i, i + concurrency);
+      const results = await Promise.all(
+        batch.map(async (file) => {
+          try {
+            const text = await extractFileText(file, llamaKey);
+            if (!text || text.length < 30) {
+              return { name: file.name, ok: false as const, error: "empty extract" };
+            }
+            return { name: file.name, ok: true as const, text };
+          } catch (err) {
+            return {
+              name: file.name,
+              ok: false as const,
+              error: err instanceof Error ? err.message : "extract failed",
+            };
+          }
+        })
+      );
+
+      for (const r of results) {
+        if (r.ok) chunks.push(`\n\n===== FILE: ${r.name} =====\n${r.text}`);
+        else errors.push(`${r.name}: ${r.error}`);
+      }
+    }
+
+    if (chunks.length === 0) {
+      return Response.json(
+        { error: errors.length ? `Could not read any files. ${errors.join("; ")}` : "Could not read any files" },
+        { status: 400 }
+      );
+    }
+
+    const result = (await analyzeWithClaude(chunks.join("\n"), anthropicKey)) as Record<
+      string,
+      unknown
+    >;
+    if (errors.length) result._file_errors = errors;
     return Response.json(result);
   } catch (error) {
     return Response.json(
-      { error: error instanceof Error ? error.message : "Parse failed" },
+      { error: error instanceof Error ? error.message : "Analyze failed" },
       { status: 500 }
     );
   }
