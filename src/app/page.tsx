@@ -227,16 +227,29 @@ export default function HomePage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  async function parseFile(file: File, bankOverride?: BankId): Promise<{ transactions: Transaction[]; warnings: string[] }> {
+  async function parseFile(
+    file: File,
+    bankOverride?: BankId
+  ): Promise<{ transactions: Transaction[]; warnings: string[]; identifiedCount: number }> {
     const ext = file.name.split(".").pop()?.toLowerCase();
     if (ext === "pdf") {
       const result = await parsePDFRobust(file);
-      return { transactions: result.transactions, warnings: result.warnings };
+      return {
+        transactions: result.transactions,
+        warnings: result.warnings,
+        identifiedCount: result.transactions.length,
+      };
     } else {
       const text = await file.text();
       const bankId = bankOverride || detectBank(text);
       const result = parseCSVRobust(text, bankId);
-      return { transactions: result.transactions, warnings: result.warnings };
+      // All data rows in the file (JFC-style "transactions identified")
+      const dataRows = Math.max(0, (result.rawLineCount || 0) - 1);
+      return {
+        transactions: result.transactions,
+        warnings: result.warnings,
+        identifiedCount: Math.max(dataRows, result.transactions.length),
+      };
     }
   }
 
@@ -307,12 +320,17 @@ export default function HomePage() {
       const failedFiles: string[] = [];
       let allWarnings: string[] = [];
       let successFileCount = 0;
+      let identifiedTotal = 0;
 
       // Parse while the uploading screen is showing
       for (const file of files) {
         try {
-          const { transactions, warnings } = await parseFile(file, bankOverride || undefined);
+          const { transactions, warnings, identifiedCount } = await parseFile(
+            file,
+            bankOverride || undefined
+          );
           allWarnings = allWarnings.concat(warnings);
+          identifiedTotal += identifiedCount;
           if (transactions.length === 0) {
             failedFiles.push(file.name);
           } else {
@@ -338,8 +356,8 @@ export default function HomePage() {
         return;
       }
 
-      // Deep scan screen — real identified transaction count
-      const identified = allTx.length;
+      // Deep scan screen — total rows identified across files (not just spend filter)
+      const identified = Math.max(identifiedTotal, allTx.length);
       setTxCount(identified);
       setStep("analyzing");
       setAnalyzeStatus(

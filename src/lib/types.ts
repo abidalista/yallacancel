@@ -20,6 +20,8 @@ export interface Transaction {
   currency?: string;
   category?: string;
   reference?: string;
+  /** rebate = card cashback line that implies an active sub (HITL) */
+  source?: "charge" | "rebate";
 }
 
 export type SubscriptionStatus = "cancel" | "keep" | "investigate";

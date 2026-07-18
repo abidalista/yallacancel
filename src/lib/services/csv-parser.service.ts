@@ -662,6 +662,15 @@ const CRYPTO_COM_SPEND_KINDS = new Set([
   "card_payment",
 ]);
 
+/** Card rebate lines that still prove an active subscription (JFC-style HITL) */
+const CRYPTO_SUB_HINT =
+  /\b(netflix|spotify|disney|youtube|apple|icloud|claude|anthropic|openai|chatgpt|adobe|amazon|prime|shahid|anghami|canva|notion|cursor|perplexity|midjourney|hulu|hbo|paramount|twitch|dropbox|grammarly|linkedin|microsoft|office|xbox|playstation|duolingo|headspace|calm)\b/i;
+
+function isCryptoRebateRow(kind: string, description: string): boolean {
+  if (/rebate|cashback|card_cashback|card\s*cashback/i.test(kind)) return true;
+  return /card\s*(cashback|rebate)|rebate\s*:|cashback\s*:/i.test(description);
+}
+
 function parseCryptoComCSV(
   lines: string[],
   delimiter: string
@@ -690,19 +699,23 @@ function parseCryptoComCSV(
     if (!description) continue;
 
     const kind = (fields[kindIdx]?.trim() || "").toLowerCase();
-    if (!kind || !CRYPTO_COM_SPEND_KINDS.has(kind)) continue;
+    const isSpend = !!kind && CRYPTO_COM_SPEND_KINDS.has(kind);
+    const isRebate = isCryptoRebateRow(kind, description) && CRYPTO_SUB_HINT.test(description);
+
+    if (!isSpend && !isRebate) continue;
 
     if (
-      /^(transfer|balance conversion|card top up|card cashback|cardholder cro|cro lockup|cro unlock|supercharger|pay rewards)/i.test(
+      !isRebate &&
+      (/^(transfer|balance conversion|card top up|card cashback|cardholder cro|cro lockup|cro unlock|supercharger|pay rewards)/i.test(
         description
       ) ||
-      /\s->\s/.test(description)
+        /\s->\s/.test(description))
     ) {
       continue;
     }
 
     let amount = 0;
-    let currency = "SAR";
+    let currency = "EUR";
 
     if (nativeAmountIdx !== -1 && nativeCurrencyIdx !== -1) {
       const nativeCurrency = fields[nativeCurrencyIdx]?.trim().toUpperCase();
@@ -711,9 +724,12 @@ function parseCryptoComCSV(
         const nativeSigned = parseFloat(
           normalizeDigits(nativeRaw).replace(/,/g, "")
         );
-        if (!isNaN(nativeSigned) && nativeSigned < 0) {
-          amount = Math.abs(nativeSigned);
-          currency = nativeCurrency;
+        if (!isNaN(nativeSigned) && nativeSigned !== 0) {
+          // Spends are usually negative; rebates/credits can be positive
+          if (isRebate || nativeSigned < 0) {
+            amount = Math.abs(nativeSigned);
+            currency = nativeCurrency;
+          }
         }
       }
     }
@@ -722,23 +738,29 @@ function parseCryptoComCSV(
       const signed = parseFloat(
         normalizeDigits(fields[amountIdx]).replace(/,/g, "")
       );
-      if (!isNaN(signed) && signed < 0) {
-        amount = Math.abs(signed);
-        currency = "USD";
+      if (!isNaN(signed) && signed !== 0) {
+        if (isRebate || signed < 0) {
+          amount = Math.abs(signed);
+          currency = "USD";
+        }
       }
     }
 
-    amount = Math.abs(amount);
     if (amount < 0.5) continue;
 
     const dateRaw = fields[dateIdx]?.trim();
     if (!dateRaw) continue;
 
+    const cleanDesc = isRebate
+      ? description.replace(/^(card\s*)?(cashback|rebate)\s*:?\s*/i, "Card Rebate: ").trim()
+      : description;
+
     transactions.push({
       date: parseDate(dateRaw),
-      description,
+      description: cleanDesc || description,
       amount,
       currency,
+      source: isRebate ? "rebate" : "charge",
     });
   }
 

@@ -320,8 +320,10 @@ function isNonSubscriptionDescription(description: string): boolean {
   const text = description.trim();
   if (!text) return true;
 
+  // Known merchants win — including "Card Rebate: Netflix"
   if (matchKnownSubscription(text)) return false;
 
+  // Pure cashback/reward lines with no known merchant
   if (matchesAny(text, HARD_NON_SUBSCRIPTION_PATTERNS)) return true;
   if (matchesAny(text, RETAIL_NON_SUBSCRIPTION_PATTERNS)) return true;
   if (matchesAny(text, FEE_ONLY_PATTERNS)) return true;
@@ -490,6 +492,9 @@ function pushSubscription(
     status: "investigate",
     confidence,
     rawDescription: txs[0].description,
+    aiDescription: txs.some((t) => t.source === "rebate")
+      ? "Subscription — rebate suggests it's active and being reimbursed"
+      : undefined,
     transactions: txs,
   });
 }
@@ -507,15 +512,30 @@ export function analyzeTransactions(
   for (const [key, txs] of groups) {
     const knownName = matchKnownSubscription(txs[0].description);
     const isKnownSub = knownName && DEFINITE_SUBSCRIPTIONS.has(knownName);
+    const fromRebate = txs.some((t) => t.source === "rebate");
 
-    if (txs.length >= 2) {
+    if (txs.length >= 2 || (fromRebate && txs.length >= 1)) {
       const consistent = hasConsistentAmount(
         txs,
-        isKnownSub ? 0.22 : 0.18
+        isKnownSub || fromRebate ? 0.35 : 0.18
       );
-      const frequency = detectFrequency(txs);
+      const frequency = detectFrequency(txs) ?? (fromRebate ? "monthly" : null);
 
-      if (isKnownSub) {
+      // Rebates → always HITL (JFC: "rebate suggests active subscription")
+      if (fromRebate && knownName) {
+        if (txs.length === 1 || consistent) {
+          pushSubscription(subscriptions, idCounter, {
+            key,
+            txs,
+            name: knownName,
+            frequency: frequency ?? "monthly",
+            confidence: "suspicious",
+          });
+        }
+        continue;
+      }
+
+      if (isKnownSub && txs.length >= 2) {
         pushSubscription(subscriptions, idCounter, {
           key,
           txs,
@@ -526,6 +546,7 @@ export function analyzeTransactions(
         continue;
       }
 
+      if (txs.length < 2) continue;
       if (!consistent) continue;
 
       const avgProbe = txs.reduce((sum, t) => sum + t.amount, 0) / txs.length;
@@ -549,7 +570,6 @@ export function analyzeTransactions(
         continue;
       }
 
-      // Same merchant + same amount 2+ times but fuzzy dates — still flag
       pushSubscription(subscriptions, idCounter, {
         key,
         txs,
