@@ -19,30 +19,34 @@ const FX = {
 };
 
 export function buildAnalysisPrompt(rawText: string): string {
-  return `You are a bank statement analyzer for Saudi users. Extract ALL recurring subscriptions.
+  return `You are the subscription detection engine for YallaCancel (same job as Just Fucking Cancel).
+Analyze EVERY transaction in the statement. Count all rows you read.
 
-CRITICAL CURRENCY RULES (do not break these):
-- Detect the statement currency from headers, symbols (£ $ €), column labels, and bank name (Revolut/Crypto.com are often USD/EUR/GBP; SNB/Saudi banks are usually SAR).
-- NEVER treat a foreign amount as SAR. Example: Claude Pro $20 must become about ${20 * FX.USD} SAR, NOT 20 SAR.
-- Convert using these rates: 1 USD = ${FX.USD} SAR, 1 EUR = ${FX.EUR} SAR, 1 GBP = ${FX.GBP} SAR, 1 AED = ${FX.AED} SAR, 1 KWD = ${FX.KWD} SAR, 1 BHD = ${FX.BHD} SAR, 1 QAR = ${FX.QAR} SAR, 1 CHF = ${FX.CHF} SAR. If already SAR, leave as-is.
-- For each subscription return BOTH original_amount + original_currency AND amount in SAR after conversion.
+CRITICAL CURRENCY RULES:
+- Detect currency from headers, symbols (£ $ €), columns, bank (Revolut/Crypto.com often USD/EUR/GBP; SNB/Saudi usually SAR).
+- NEVER treat a foreign amount as SAR. Example: Claude Pro $20 ≈ ${20 * FX.USD} SAR, NOT 20 SAR.
+- Rates: 1 USD=${FX.USD} SAR, 1 EUR=${FX.EUR} SAR, 1 GBP=${FX.GBP} SAR, 1 AED=${FX.AED} SAR, 1 KWD=${FX.KWD} SAR, 1 BHD=${FX.BHD} SAR, 1 QAR=${FX.QAR} SAR, 1 CHF=${FX.CHF} SAR.
+- Return BOTH original_amount + original_currency AND amount in SAR.
 
-For each subscription:
-- name: clean service name (Netflix, Spotify, Claude Pro, Apple, etc.)
-- original_amount: number as printed on the statement
-- original_currency: ISO code (SAR, USD, EUR, GBP, ...)
-- amount: number in SAR after conversion
-- currency: "SAR"
+DETECTION RULES (follow Just Fucking Cancel skill logic):
+- Find recurring charges: same merchant, similar amounts, weekly/monthly/quarterly/yearly.
+- Flag subscription-like charges (streaming, SaaS, memberships, gyms, AI tools).
+- Known services even if they appear ONCE (Netflix, Spotify, Claude, Apple, etc.).
+- CARD REBATES / CASHBACK that name a service (e.g. "Card Rebate: Spotify", "Card Cashback Netflix") ARE subscription signals — include them with confidence "suspicious" and note that rebate suggests an active sub being reimbursed. Use the rebate amount as the subscription amount when the charge itself is missing.
+- Exclude ONLY: salary/payroll, pure bank transfers (internal/incoming/outgoing with no merchant), ATM, one-time grocery/gas/restaurant with no membership signal.
+- Do NOT blanket-exclude all cashback — only exclude reward lines with no identifiable service.
+
+For each subscription return:
+- name: clean service name
+- original_amount, original_currency, amount (SAR), currency: "SAR"
 - frequency: weekly | monthly | quarterly | yearly
-- occurrences: how many times it appears
-- first_date / last_date: YYYY-MM-DD
+- occurrences, first_date, last_date (YYYY-MM-DD)
 - raw_description: bank descriptor
+- confidence: "confirmed" | "suspicious" (use suspicious for rebates, fuzzy merchants, one-offs)
+- reason: short why (e.g. "Card rebate suggests active Spotify")
 - category: streaming | music | software | gaming | fitness | food_delivery | shopping | cloud_storage | vpn | education | finance | telecom | insurance | other
 
-Include: recurring subscriptions/memberships. Known services even if they appear once.
-Exclude: transfers, salary, allowance, cashback, ATM, one-time retail/grocery/gas.
-
-Handle SNB, Al Rajhi, Revolut, Crypto.com, and mixed multi-currency statements.
+Handle SNB, Al Rajhi, Revolut, Crypto.com, mixed multi-currency.
 
 Return JSON only (no markdown):
 {

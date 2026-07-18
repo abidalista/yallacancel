@@ -473,19 +473,35 @@ export default function HomePage() {
       setAiProgress(null);
 
       if (aiResult.success) {
-        setReport(aiResult.report);
+        const aiReport = aiResult.report;
+        const clear = aiReport.subscriptions.filter((s) => s.confidence === "confirmed");
+        const unsure = aiReport.subscriptions.filter((s) => s.confidence === "suspicious");
+        setBaseReport(aiReport);
         setSpendingData(null);
         setReportTier("full");
-        saveReportData(aiResult.report, null);
-      } else {
-        console.warn("[unlock] AI failed, showing local full report:", aiResult.error);
-        const teaser = getTeaserReport();
-        const spending = getTeaserSpending();
-        if (teaser) setReport(teaser);
-        if (spending) setSpendingData(spending);
-        setReportTier("full");
-        if (teaser) saveReportData(teaser, spending);
+        setIsUnlocked(true);
+
+        if (unsure.length > 0) {
+          setClearCount(clear.length);
+          setUnsureSubs(unsure);
+          setReport(rebuildReport(clear, aiReport));
+          setStep("confirm");
+        } else {
+          setReport(aiReport);
+          saveReportData(aiReport, null);
+          setStep("results");
+        }
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
       }
+
+      console.warn("[unlock] AI failed, showing local full report:", aiResult.error);
+      const teaser = getTeaserReport();
+      const spending = getTeaserSpending();
+      if (teaser) setReport(teaser);
+      if (spending) setSpendingData(spending);
+      setReportTier("full");
+      if (teaser) saveReportData(teaser, spending);
     } catch (err) {
       console.error("[unlock] AI error:", err);
       setReportTier("full");

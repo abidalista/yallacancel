@@ -181,6 +181,18 @@ function transformClaudeResponse(data: Record<string, unknown>): AuditReport {
         : toSar(monthlyNative, currency) ||
           (rawSar > 0 ? calculateMonthly(rawSar, frequency) : toSar(monthlyNative, currency));
 
+    const confidenceRaw = String(sub.confidence || "confirmed").toLowerCase();
+    const confidence =
+      confidenceRaw.includes("suspect") || confidenceRaw.includes("unsure")
+        ? ("suspicious" as const)
+        : ("confirmed" as const);
+    const reason =
+      sub.reason != null
+        ? String(sub.reason)
+        : sub.category
+          ? String(sub.category)
+          : undefined;
+
     subscriptions.push({
       id: `sub_${++idCounter}`,
       name,
@@ -195,8 +207,8 @@ function transformClaudeResponse(data: Record<string, unknown>): AuditReport {
       lastCharge: String(sub.last_date || ""),
       firstCharge: String(sub.first_date || ""),
       status: "investigate",
-      confidence: "confirmed",
-      aiDescription: sub.category ? String(sub.category) : undefined,
+      confidence,
+      aiDescription: reason,
       rawDescription: String(sub.raw_description || name),
       transactions: buildFakeTransactions(sub, nativeCharge, currency),
     });
