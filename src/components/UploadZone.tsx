@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, X, FileText } from "lucide-react";
+import { X, FileText } from "lucide-react";
 import { formatBytes, truncateFilename } from "@/lib/format";
 import Ltr from "@/components/Ltr";
 
@@ -19,20 +19,19 @@ interface SelectedFile {
 interface UploadZoneProps {
   locale: "ar" | "en";
   onScan: (files: File[]) => void;
-  onTestClick: () => void;
 }
 
-export default function UploadZone({
-  locale,
-  onScan,
-  onTestClick,
-}: UploadZoneProps) {
+export default function UploadZone({ locale, onScan }: UploadZoneProps) {
   const [dragging, setDragging] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
   const [fileError, setFileError] = useState<string | null>(null);
   const [fileTip, setFileTip] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const ar = locale === "ar";
+
+  function openPicker() {
+    fileInputRef.current?.click();
+  }
 
   function addFiles(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return;
@@ -90,7 +89,6 @@ export default function UploadZone({
         return prev;
       }
 
-      // Real rejects (bad type/size) stay as errors; over-limit is a soft tip only
       if (rejected.length > 0) {
         setFileError(rejected.join("\n"));
       } else {
@@ -142,37 +140,39 @@ export default function UploadZone({
       transition={{ duration: 0.5 }}
       className="w-full max-w-[560px] mx-auto"
     >
+      {/* Whole box = file picker (JFC style) */}
       <div
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openPicker();
+          }
+        }}
         onDragOver={(e) => {
           e.preventDefault();
           setDragging(true);
         }}
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
-        className="cursor-pointer flex flex-col items-center justify-center py-10 px-6 rounded-2xl hover:bg-[#F5FAF8] transition-colors"
+        onClick={openPicker}
+        className="cursor-pointer select-none flex flex-col items-center justify-center py-14 px-6 rounded-xl transition-colors"
         style={{
           border: dragging ? "2px dashed #00A651" : "2px dashed #C5DDD9",
           background: dragging ? "#E8F7EE" : "white",
-          transition: "border-color 0.2s, background 0.2s",
         }}
       >
-        <div
-          className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
-          style={{ background: "#E8F7EE" }}
-        >
-          <Upload size={22} strokeWidth={1.5} style={{ color: "#00A651" }} />
-        </div>
-        <p className="font-bold text-base mb-1" style={{ color: "#1A3A35" }}>
-          {ar ? "ارفع كشوفات آخر 2 إلى 3 أشهر" : "Drop your last 2 to 3 months of statements"}
+        <p className="font-bold text-lg text-center mb-2" style={{ color: "#1A3A35" }}>
+          {ar ? "ارفع كشوفات آخر شهرين أو 3 شهور" : "Drop your last 2-3 months of statements"}
         </p>
         <p className="text-sm text-center" style={{ color: "#8AADA8" }}>
           {ar ? (
             <>
-              PDF او CSV من اي بنك · حتى 5 ملفات · أقل من <Ltr>90</Ltr> ثانية
+              PDF أو CSV من أي بنك · أقل من <Ltr>90</Ltr> ثانية
             </>
           ) : (
-            <>PDF or CSV from any bank · up to 5 files · under 90 seconds</>
+            <>CSV or PDF from any bank · Takes under 90 seconds</>
           )}
         </p>
         <input
@@ -182,8 +182,15 @@ export default function UploadZone({
           multiple
           className="hidden"
           onChange={(e) => addFiles(e.target.files)}
+          onClick={(e) => e.stopPropagation()}
         />
       </div>
+
+      <p className="text-xs text-center mt-3" style={{ color: "#8AADA8" }}>
+        {ar
+          ? "ملفاتك تتحلل وتنحذف فوراً. ما نخزن شي."
+          : "Your files are analyzed and immediately discarded. Nothing is stored."}
+      </p>
 
       {fileError && (
         <p className="text-xs text-red-500 text-center mt-2 whitespace-pre-line">{fileError}</p>
@@ -234,14 +241,13 @@ export default function UploadZone({
                     <Ltr className="flex-shrink-0 text-[#8AADA8]">({formatBytes(f.size)})</Ltr>
                   </span>
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       removeFile(i);
                     }}
                     className="p-1 rounded-full transition-colors flex-shrink-0"
                     style={{ color: "#8AADA8", cursor: "pointer" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = "#1A3A35")}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = "#8AADA8")}
                   >
                     <X size={14} strokeWidth={1.5} />
                   </button>
@@ -255,7 +261,7 @@ export default function UploadZone({
                 : "Tip: Upload the last 2 or 3 months max. Longer periods surface old cancelled subscriptions."}
             </p>
 
-            <button onClick={handleScan} className="btn-primary w-full">
+            <button type="button" onClick={handleScan} className="btn-primary w-full">
               {ar ? "افحص الاشتراكات" : "Scan for subscriptions"}
             </button>
             <button
@@ -264,7 +270,7 @@ export default function UploadZone({
               onClick={(e) => {
                 e.stopPropagation();
                 if (selectedFiles.length >= MAX_FILES) return;
-                fileInputRef.current?.click();
+                openPicker();
               }}
               className="btn-ghost w-full mt-2 text-sm disabled:opacity-40"
             >
@@ -279,40 +285,6 @@ export default function UploadZone({
           </motion.div>
         )}
       </AnimatePresence>
-
-      {selectedFiles.length === 0 && (
-        <div className="mt-5 text-center">
-          <span className="text-xs font-medium" style={{ color: "#8AADA8" }}>
-            {ar ? "او" : "or"}
-          </span>
-          <button
-            onClick={onTestClick}
-            className="font-bold text-sm py-3 px-7 rounded-full mx-auto block mt-3 transition-all hover:-translate-y-0.5"
-            style={{
-              background: "#00A651",
-              color: "white",
-              cursor: "pointer",
-              boxShadow: "0 2px 8px rgba(0,166,81,0.25)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "#009147";
-              e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,166,81,0.35)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "#00A651";
-              e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,166,81,0.25)";
-            }}
-          >
-            {ar ? "جرب بمثال جاهز" : "Try with sample data"}
-          </button>
-        </div>
-      )}
-
-      <p className="text-xs text-center mt-3" style={{ color: "#8AADA8" }}>
-        {ar
-          ? "ملفاتك تتحلل وتنحذف فوراً. ما نخزن شي · الخصوصية أولاً."
-          : "Your files are analyzed and immediately discarded. Nothing is stored."}
-      </p>
     </motion.div>
   );
 }
