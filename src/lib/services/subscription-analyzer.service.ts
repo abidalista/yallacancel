@@ -205,6 +205,12 @@ const HARD_NON_SUBSCRIPTION_PATTERNS: RegExp[] = [
   /\bتحويل\s+راتب\b/,
   /\blocal\s+transfer\b/i,
   /\binternational\s+transfer\b/i,
+  /\binternal\s+transfer\b/i,
+  /\bincoming\s+internal\s+transfer\b/i,
+  /\bincoming\s+transfer\b/i,
+  /\boutgoing\s+transfer\b/i,
+  /\binward\s+transfer\b/i,
+  /\boutward\s+transfer\b/i,
   /\bwire\s+transfer\b/i,
   /\bfunds\s+transfer\b/i,
   /\baccount\s+transfer\b/i,
@@ -214,6 +220,15 @@ const HARD_NON_SUBSCRIPTION_PATTERNS: RegExp[] = [
   /\bown\s+account\s+transfer\b/i,
   /\bbetween\s+accounts\b/i,
   /\baccount\s+to\s+account\b/i,
+  /\bsnb\s+payment\s+systems\b/i,
+  /\bpayment\s+systems\s+incoming\b/i,
+  /\bpayment\s+systems\s+outgoing\b/i,
+  /\bincoming\s+payment\b/i,
+  /\bips\s+transfer\b/i,
+  /\bswift\s+transfer\b/i,
+  /\bتحويل\s+داخلي\b/,
+  /\bتحويل\s+وارد\b/,
+  /\bتحويل\s+صادر\b/,
   /\bتحويل\s+محلي\b/,
   /\bتحويل\s+دولي\b/,
   /\bحوال[ةه]\s+محلية\b/,
@@ -486,6 +501,8 @@ export function analyzeTransactions(
   const groups = groupTransactionsByMerchant(candidates);
   const subscriptions: Subscription[] = [];
   const idCounter = { value: 0 };
+  /** Unknown merchants above this SAR/mo are almost never consumer subs (transfers, rent, salary) */
+  const MAX_UNKNOWN_MONTHLY_SAR = 2500;
 
   for (const [key, txs] of groups) {
     const knownName = matchKnownSubscription(txs[0].description);
@@ -511,6 +528,16 @@ export function analyzeTransactions(
 
       if (!consistent) continue;
 
+      const avgProbe = txs.reduce((sum, t) => sum + t.amount, 0) / txs.length;
+      const curProbe = majorityCurrency(txs);
+      const monthlyProbe = calculateMonthlyEquivalent(
+        avgProbe,
+        frequency ?? "monthly"
+      );
+      if (toSar(monthlyProbe, curProbe) > MAX_UNKNOWN_MONTHLY_SAR) {
+        continue;
+      }
+
       if (frequency) {
         pushSubscription(subscriptions, idCounter, {
           key,
@@ -531,7 +558,6 @@ export function analyzeTransactions(
         confidence: "suspicious",
       });
     } else if (isKnownSub && txs.length === 1) {
-      const tx = txs[0];
       pushSubscription(subscriptions, idCounter, {
         key,
         txs,
