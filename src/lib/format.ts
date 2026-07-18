@@ -65,6 +65,12 @@ const CURRENCY_SYMBOL: Record<string, string> = {
   SAR: "",
 };
 
+/** Headline yearly total in SAR (JFC: "You're spending $1,240/year") */
+export function formatHeadlineYearly(yearlySar: number, ar: boolean): string {
+  const amount = formatMoney(yearlySar);
+  return ar ? `${amount} ريال/سنة` : `${amount} SAR/year`;
+}
+
 /** JFC-style native yearly display: $316/yr · €210/yr · 672 ريال/سنة */
 export function formatNativeYearly(
   yearly: number,
@@ -76,9 +82,12 @@ export function formatNativeYearly(
   if (cur === "SAR") {
     return ar ? `${amount} ريال/سنة` : `${amount} SAR/yr`;
   }
-  const sym = CURRENCY_SYMBOL[cur] ?? `${cur} `;
-  if (sym.endsWith(" ")) return `${sym}${amount}/yr`;
-  return `${sym}${amount}/yr`;
+  const sym = CURRENCY_SYMBOL[cur];
+  if (sym) {
+    if (sym.endsWith(" ")) return `${sym}${amount}/yr`;
+    return `${sym}${amount}/yr`;
+  }
+  return `${amount} ${cur}/yr`;
 }
 
 /** Native monthly for HITL cards */
@@ -121,12 +130,12 @@ export function fileCountLabel(count: number, ar: boolean): string {
 
 export function subscriptionCountLabel(count: number, ar: boolean): string {
   if (ar) {
-    if (count === 1) return "اشتراك متكرر واحد";
-    if (count === 2) return "اشتراكين متكررين";
-    if (count >= 3 && count <= 10) return `${count} اشتراكات متكررة`;
-    return `${count} اشتراك متكرر`;
+    if (count === 1) return "اشتراك واحد";
+    if (count === 2) return "اشتراكين";
+    if (count >= 3 && count <= 10) return `${count} اشتراكات`;
+    return `${count} اشتراك`;
   }
-  return count === 1 ? "1 recurring subscription" : `${count} recurring subscriptions`;
+  return count === 1 ? "1 subscription" : `${count} subscriptions`;
 }
 
 export function truncateFilename(name: string, max = 32): string {

@@ -22,13 +22,15 @@ function resolveNativeAmount(
 ): { amount: number; currency: string } {
   const n = name.toLowerCase();
   const cur = currency.toUpperCase();
-  const looksUsdMonthly = amount >= 17 && amount <= 23;
-  if (
-    cur === "SAR" &&
-    looksUsdMonthly &&
-    /claude|anthropic|chatgpt|openai|cursor|perplexity|midjourney/.test(n)
-  ) {
+  const isAiTool = /claude|anthropic|chatgpt|openai|cursor|perplexity|midjourney/.test(n);
+
+  // Raw USD left as SAR (~$20)
+  if (cur === "SAR" && isAiTool && amount >= 17 && amount <= 23) {
     return { amount, currency: "USD" };
+  }
+  // Already wrongly converted USD→SAR (~$20 × 3.75)
+  if (cur === "SAR" && isAiTool && amount >= 65 && amount <= 90) {
+    return { amount: Math.round((amount / 3.75) * 100) / 100, currency: "USD" };
   }
   return { amount, currency: cur || "SAR" };
 }

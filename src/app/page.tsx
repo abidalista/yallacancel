@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Shield, Zap, Link2, BarChart3, FileText, ArrowRight,
+  Shield, Zap, Link2, BarChart3, FileText,
   Lock, ChevronDown, ChevronUp, Clock, CheckCircle2,
   RotateCcw, Upload, Eye,
 } from "lucide-react";
@@ -24,7 +24,7 @@ import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, Subscription, Transaction, BankId } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
 import BrandLogo from "@/components/BrandLogo";
-import { formatInt, formatSubCost, formatNativeYearly, formatPriceOnce, fileCountLabel, subscriptionCountLabel, truncateFilename } from "@/lib/format";
+import { formatInt, formatHeadlineYearly, formatNativeYearly, formatPriceOnce, fileCountLabel, subscriptionCountLabel, truncateFilename } from "@/lib/format";
 import Ltr from "@/components/Ltr";
 import {
   storeScanSession,
@@ -775,36 +775,36 @@ export default function HomePage() {
         />
       )}
 
-      {/* ── RESULTS ── */}
+      {/* ── RESULTS (JFC layout · mint + Arabic) ── */}
       {step === "results" && report && (() => {
         const subs = report.subscriptions;
         const FREE_VISIBLE = 3;
         const showFull = isUnlocked || reportTier === "full";
         const visible = showFull ? subs : subs.slice(0, FREE_VISIBLE);
         const hidden = showFull ? [] : subs.slice(FREE_VISIBLE);
-        const hiddenMonthly = hidden.reduce((sum, sub) => sum + sub.monthlySar, 0);
+        const hiddenYearlySar = hidden.reduce((sum, sub) => sum + sub.monthlySar * 12, 0);
 
         return (
           <div className="min-h-screen bg-white pt-24 pb-16 px-6">
             <div className="max-w-[640px] mx-auto">
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-6">
-                <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-2">
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="mb-2">
+                <h1 className="text-3xl sm:text-[2.5rem] font-extrabold tracking-tight text-slate-900 leading-tight mb-1">
                   {subs.length === 0 ? (
                     ar ? "ما لقينا اشتراكات واضحة" : "No clear subscriptions found"
                   ) : ar ? (
-                    <>تصرف {formatSubCost(report.totalMonthly, true)}</>
+                    <>تصرف {formatHeadlineYearly(report.totalYearly, true)}</>
                   ) : (
-                    <>You&apos;re spending {formatSubCost(report.totalMonthly, false)}</>
+                    <>You&apos;re spending {formatHeadlineYearly(report.totalYearly, false)}</>
                   )}
                 </h1>
                 {subs.length > 0 && (
-                  <p className="text-[15px] text-slate-500 leading-relaxed">
+                  <p className="text-[15px] text-slate-500">
                     {ar
                       ? `عبر ${subscriptionCountLabel(subs.length, true)}`
                       : `across ${subscriptionCountLabel(subs.length, false)}`}
                   </p>
                 )}
-                <div className="mt-4 border-t border-dashed border-[#00A651]/40" />
+                <div className="mt-5 border-t border-dashed border-[#00A651]/50" />
 
                 {failedScanFiles.length > 0 && !showFull && (
                   <div className="mt-4 rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 text-sm text-amber-900">
@@ -834,47 +834,57 @@ export default function HomePage() {
               </motion.div>
 
               {!showFull && subs.length === 0 && (
-                <div className="border border-slate-200 rounded-2xl p-6 mb-6 text-center">
+                <div className="border border-slate-200 rounded-xl p-6 mb-6 mt-6 text-center">
                   <p className="text-slate-600 mb-3">
                     {ar
-                      ? "المعاينة السريعة ما لقت اشتراكات واضحة. التحليل AI قد يلقى اشتراكات مخفية في PDF أو ملفات Revolut و Crypto.com."
-                      : "The quick scan found no clear subscriptions. Full AI analysis may find hidden charges in PDFs, Revolut, or Crypto.com exports."}
+                      ? "المعاينة السريعة ما لقت اشتراكات واضحة. التحليل AI قد يلقى اشتراكات مخفية."
+                      : "The quick scan found no clear subscriptions. Full AI analysis may find hidden charges."}
                   </p>
                   <button onClick={() => setShowPaywall(true)} className="btn-primary">
-                    {ar ? `افتح الكل · ${formatPriceOnce(true)}` : `Unlock · ${formatPriceOnce(false)}`}
+                    {ar ? `افتح — ${formatPriceOnce(true)}` : `Unlock — ${formatPriceOnce(false)}`}
                   </button>
                 </div>
               )}
 
-              {/* Subscription list — JFC-style */}
               {subs.length > 0 && (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="border border-slate-200 rounded-2xl overflow-hidden mb-6 bg-white"
+                transition={{ duration: 0.4, delay: 0.05 }}
+                className="border border-slate-200 rounded-xl overflow-hidden mb-8 mt-6 bg-white"
               >
                 {visible.map((sub, i) => {
                   const info = getCancelInfo(sub.name);
+                  const cancelLabel = (
+                    <>
+                      {ar ? "الغي" : "Cancel"}{" "}
+                      <span aria-hidden>{ar ? "←" : "→"}</span>
+                    </>
+                  );
                   return (
-                    <div key={sub.id} className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 last:border-b-0">
-                      <Ltr className="text-sm text-slate-400 w-6 flex-shrink-0 tabular-nums">{i + 1}.</Ltr>
-                      <span className="font-bold text-sm flex-1 text-slate-800 isolate" dir="auto">{sub.name}</span>
-                      <span className="font-bold text-sm text-slate-700 whitespace-nowrap">
-                        <Ltr>{formatNativeYearly(sub.yearlyEquivalent, sub.currency, ar)}</Ltr>
+                    <div
+                      key={sub.id}
+                      className="grid grid-cols-[1.5rem_1fr_auto_auto] items-center gap-x-3 px-4 py-3.5 border-b border-slate-100 last:border-b-0"
+                    >
+                      <Ltr className="text-sm text-slate-400 tabular-nums">{i + 1}.</Ltr>
+                      <span className="font-semibold text-[15px] text-slate-900 truncate" dir="auto">
+                        {sub.name}
                       </span>
+                      <Ltr className="font-semibold text-[15px] text-slate-900 tabular-nums whitespace-nowrap">
+                        {formatNativeYearly(sub.yearlyEquivalent, sub.currency, ar)}
+                      </Ltr>
                       {info?.cancelUrl ? (
                         <a
                           href={info.cancelUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[#00A651] font-bold text-sm no-underline hover:underline flex-shrink-0"
+                          className="text-[#00A651] font-semibold text-sm no-underline hover:underline whitespace-nowrap"
                         >
-                          {ar ? "الغي" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
+                          {cancelLabel}
                         </a>
                       ) : (
-                        <span className="text-[#00A651] font-bold text-sm flex-shrink-0">
-                          {ar ? "الغي" : "Cancel"} <ArrowRight size={12} strokeWidth={1.5} className="inline" />
+                        <span className="text-[#00A651] font-semibold text-sm whitespace-nowrap">
+                          {cancelLabel}
                         </span>
                       )}
                     </div>
@@ -882,53 +892,58 @@ export default function HomePage() {
                 })}
 
                 {hidden.map((sub, i) => (
-                  <div key={sub.id} className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 last:border-b-0">
-                    <Ltr className="text-sm text-slate-400 w-6 flex-shrink-0 tabular-nums">{FREE_VISIBLE + i + 1}.</Ltr>
-                    <span className="font-bold text-sm flex-1 blur-sm select-none text-slate-800 isolate" dir="auto">{sub.name}</span>
-                    <span className="font-bold text-sm text-slate-700 whitespace-nowrap">
-                      <Ltr>{formatNativeYearly(sub.yearlyEquivalent, sub.currency, ar)}</Ltr>
+                  <div
+                    key={sub.id}
+                    className="grid grid-cols-[1.5rem_1fr_auto_auto] items-center gap-x-3 px-4 py-3.5 border-b border-slate-100 last:border-b-0"
+                  >
+                    <Ltr className="text-sm text-slate-400 tabular-nums">{FREE_VISIBLE + i + 1}.</Ltr>
+                    <span className="font-semibold text-[15px] text-slate-900 blur-[6px] select-none truncate bg-slate-200 rounded-sm text-transparent">
+                      {sub.name}
                     </span>
-                    <Lock size={14} strokeWidth={1.5} className="text-slate-300 flex-shrink-0" />
+                    <Ltr className="font-semibold text-[15px] text-slate-900 tabular-nums whitespace-nowrap">
+                      {formatNativeYearly(sub.yearlyEquivalent, sub.currency, ar)}
+                    </Ltr>
+                    <Lock size={14} strokeWidth={1.5} className="text-slate-300 justify-self-end" />
                   </div>
                 ))}
 
                 {hidden.length > 0 && (
-                  <div className="px-5 py-3 bg-slate-50 text-center text-sm text-slate-500 flex items-center justify-center gap-2 flex-wrap">
+                  <div className="px-4 py-3 bg-slate-50 text-sm text-slate-500 flex items-center justify-center gap-2">
                     <span>
                       + {hidden.length} {ar ? "إضافية" : "more"} (
-                      <Ltr>{formatSubCost(hiddenMonthly, ar)}</Ltr>)
+                      <Ltr>{formatHeadlineYearly(hiddenYearlySar, ar)}</Ltr>)
                     </span>
                   </div>
                 )}
               </motion.div>
               )}
 
-              {/* Paywall CTA — JFC pitch */}
-              {!showFull && (
+              {!showFull && subs.length > 0 && (
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
+                  transition={{ duration: 0.4, delay: 0.1 }}
                   className="text-center"
                 >
-                  <p className="font-bold text-slate-900 text-base mb-4">
+                  <p className="text-[15px] text-slate-900 mb-4">
                     {ar
-                      ? `روابط إلغاء مباشرة لكل ${subs.length} اشتراك`
-                      : `Direct cancel links for all ${subs.length} subscriptions`}
+                      ? subs.length === 1
+                        ? "روابط إلغاء مباشرة للاشتراك."
+                        : `روابط إلغاء مباشرة لجميع الـ ${subs.length} اشتراكات.`
+                      : `Direct cancel links for all ${subs.length} subscriptions.`}
                   </p>
                   <button
                     onClick={() => setShowPaywall(true)}
                     className="btn-primary w-full text-base py-4"
                   >
-                    {ar ? `افتح الكل · ${formatPriceOnce(true)}` : `Unlock · ${formatPriceOnce(false)}`}
+                    {ar ? `افتح — ${formatPriceOnce(true)}` : `Unlock — ${formatPriceOnce(false)}`}
                   </button>
                   <p className="text-xs text-slate-400 mt-3">
-                    {ar ? "دفعة واحدة · بدون حساب" : "One-time. No account needed."}
+                    {ar ? "دفعة واحدة. بدون حساب." : "One-time. No account needed."}
                   </p>
                 </motion.div>
               )}
 
-              {/* Start over */}
               <div className="text-center mt-10">
                 <button onClick={handleStartOver} className="btn-ghost">
                   <RotateCcw size={14} strokeWidth={1.5} />
