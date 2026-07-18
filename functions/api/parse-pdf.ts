@@ -135,6 +135,21 @@ async function analyzeWithClaude(rawText: string, anthropicKey: string): Promise
   return parsed;
 }
 
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT = 8; // files per window — free Claude path
+const RATE_WINDOW_MS = 10 * 60 * 1000;
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return false;
+  }
+  entry.count++;
+  return entry.count > RATE_LIMIT;
+}
+
 export async function onRequestPost(context: {
   request: Request;
   env: Record<string, string>;
@@ -144,6 +159,18 @@ export async function onRequestPost(context: {
 
   if (!anthropicKey) {
     return Response.json({ error: "ANTHROPIC_API_KEY not configured" }, { status: 500 });
+  }
+
+  const ip =
+    context.request.headers.get("cf-connecting-ip") ||
+    context.request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    "unknown";
+
+  if (isRateLimited(ip)) {
+    return Response.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429 }
+    );
   }
 
   try {

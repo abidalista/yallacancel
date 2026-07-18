@@ -32,6 +32,8 @@ import {
   clearScanSession,
   getTeaserReport,
   getTeaserSpending,
+  isClaudeScan,
+  type ScanEngine,
 } from "@/lib/scan-session";
 import {
   savePaymentReceipt,
@@ -217,8 +219,14 @@ export default function HomePage() {
     };
   }
 
-  function finishTeaser(finalReport: Report, spending: SpendingData | null, files: File[], failed: string[]) {
-    storeScanSession(files, finalReport, spending, failed);
+  function finishTeaser(
+    finalReport: Report,
+    spending: SpendingData | null,
+    files: File[],
+    failed: string[],
+    engine: ScanEngine = "local"
+  ) {
+    storeScanSession(files, finalReport, spending, failed, engine);
     setReport(finalReport);
     setSpendingData(spending);
     setReportTier("teaser");
@@ -317,7 +325,7 @@ export default function HomePage() {
 
     try {
       let allTx: Transaction[] = [];
-      const failedFiles: string[] = [];
+      let failedFiles: string[] = [];
       let allWarnings: string[] = [];
       let successFileCount = 0;
       let identifiedTotal = 0;
@@ -349,17 +357,13 @@ export default function HomePage() {
       const uploadElapsed = Date.now() - uploadStarted;
       await new Promise((r) => setTimeout(r, Math.max(0, 3000 - uploadElapsed)));
 
-      if (allTx.length === 0) {
-        setParseError(buildParseError(failedFiles, allWarnings));
-        setRetryFiles(files);
-        setStep("landing");
-        return;
-      }
-
-      // Deep scan screen — total rows identified across files (not just spend filter)
+      // Deep scan = Claude (JFC engine). Local parse is for tx-count UX + fallback only.
       const identified = Math.max(identifiedTotal, allTx.length);
       setTxCount(identified);
       setStep("analyzing");
+      setParsedFileCount(successFileCount);
+      setFailedScanFiles(failedFiles);
+      setTotalScanFiles(files.length);
       setAnalyzeStatus(
         ar
           ? "فحص عميق يبدأ الآن (30 إلى 90 ثانية)"
@@ -367,28 +371,56 @@ export default function HomePage() {
       );
 
       const scanStarted = Date.now();
-      const result = analyzeTransactions(allTx);
-      const spending = analyzeSpending(allTx);
-      // Keep count = raw identified txs (not subscription count)
-      setTxCount(identified);
-      setParsedFileCount(successFileCount);
-      setFailedScanFiles(failedFiles);
-      setTotalScanFiles(files.length);
-      setBaseReport(result);
+      const spending = allTx.length > 0 ? analyzeSpending(allTx) : null;
       setSpendingData(spending);
 
       setAnalyzeStatus(
-        ar ? "نفحص الاشتراكات المتكررة..." : "Scanning for recurring subscriptions..."
+        ar ? "الذكاء الاصطناعي يقرأ كل العمليات..." : "AI is reading every transaction..."
       );
 
-      // Hold the count on screen ~2s before next step
+      const aiResult = await analyzeFilesWithAI(files, (current, total) => {
+        setAiProgress({ current, total });
+        setAnalyzeStatus(
+          ar
+            ? `فحص عميق · ملف ${current} من ${total}`
+            : `Deep scan · file ${current} of ${total}`
+        );
+      });
+      setAiProgress(null);
+
+      let result: Report;
+      let engine: ScanEngine;
+
+      if (aiResult.success) {
+        result = aiResult.report;
+        engine = "claude";
+        // Claude read the files — drop local-parse "failed" flags
+        failedFiles = [];
+        setFailedScanFiles([]);
+        const aiTx = result.analyzedTransactions || 0;
+        if (aiTx > 0) setTxCount(Math.max(identified, aiTx));
+      } else if (allTx.length > 0) {
+        console.warn("[scan] Claude failed, local fallback:", aiResult.error);
+        result = analyzeTransactions(allTx);
+        engine = "local";
+      } else {
+        setParseError(buildParseError(failedFiles, allWarnings));
+        setRetryFiles(files);
+        setStep("landing");
+        return;
+      }
+
+      setBaseReport(result);
+      setSpendingData(spending);
+
+      // Hold count on screen briefly (JFC pacing)
       const scanElapsed = Date.now() - scanStarted;
       await new Promise((r) => setTimeout(r, Math.max(0, 2000 - scanElapsed)));
 
       const clear = result.subscriptions.filter((s) => s.confidence === "confirmed");
       const unsure = result.subscriptions.filter((s) => s.confidence === "suspicious");
 
-      storeScanSession(files, result, spending, failedFiles);
+      storeScanSession(files, result, spending, failedFiles, engine);
 
       if (unsure.length > 0) {
         setClearCount(clear.length);
@@ -396,11 +428,11 @@ export default function HomePage() {
         setReport(rebuildReport(clear, result));
         setStep("confirm");
       } else {
-        finishTeaser(result, spending, files, failedFiles);
+        finishTeaser(result, spending, files, failedFiles, engine);
       }
 
       if (failedFiles.length > 0) {
-        console.warn("[scan] Some files had no transactions:", failedFiles);
+        console.warn("[scan] Some files had weak local parse:", failedFiles);
       }
     } catch (err) {
       console.error("Scan failed:", err);
@@ -423,13 +455,6 @@ export default function HomePage() {
 
   async function handlePaymentSuccess(receiptId: string) {
     setShowPaywall(false);
-    setAnalyzeStatus(
-      ar ? "الذكاء الاصطناعي يحلل كل ملفاتك..." : "AI is analyzing all your files..."
-    );
-    setStep("analyzing");
-    setTxCount(0);
-    setAiProgress(null);
-    window.scrollTo({ top: 0, behavior: "smooth" });
 
     const valid = await verifyPaymentReceipt(receiptId);
     if (!valid) {
@@ -452,16 +477,36 @@ export default function HomePage() {
 
     savePaymentReceipt(receiptId);
     setIsUnlocked(true);
+    setReportTier("full");
+
+    // True parity: Claude already ran on free deep scan — pay = unblur only
+    if (isClaudeScan()) {
+      const full = getTeaserReport() || baseReport || report;
+      if (full) {
+        setReport(full);
+        saveReportData(full, spendingData);
+      }
+      setStep("results");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    setAnalyzeStatus(
+      ar ? "الذكاء الاصطناعي يحلل كل ملفاتك..." : "AI is analyzing all your files..."
+    );
+    setStep("analyzing");
+    setTxCount(0);
+    setAiProgress(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
 
     const files = getPendingScanFiles();
     if (files.length === 0) {
-      setReportTier("full");
       setStep("results");
       return;
     }
 
     try {
-      const aiResult = await analyzeFilesWithAI(files, (current, total, fileName) => {
+      const aiResult = await analyzeFilesWithAI(files, (current, total) => {
         setAiProgress({ current, total });
         setAnalyzeStatus(
           ar
@@ -478,8 +523,7 @@ export default function HomePage() {
         const unsure = aiReport.subscriptions.filter((s) => s.confidence === "suspicious");
         setBaseReport(aiReport);
         setSpendingData(null);
-        setReportTier("full");
-        setIsUnlocked(true);
+        storeScanSession(files, aiReport, null, [], "claude");
 
         if (unsure.length > 0) {
           setClearCount(clear.length);
@@ -500,11 +544,9 @@ export default function HomePage() {
       const spending = getTeaserSpending();
       if (teaser) setReport(teaser);
       if (spending) setSpendingData(spending);
-      setReportTier("full");
       if (teaser) saveReportData(teaser, spending);
     } catch (err) {
       console.error("[unlock] AI error:", err);
-      setReportTier("full");
     }
 
     setStep("results");
@@ -681,7 +723,7 @@ export default function HomePage() {
               template
             );
             const files = getPendingScanFiles();
-            finishTeaser(merged, spendingData, files, failedScanFiles);
+            finishTeaser(merged, spendingData, files, failedScanFiles, isClaudeScan() ? "claude" : "local");
           }}
           onSkip={() => {
             const template = baseReport || report;
@@ -691,7 +733,7 @@ export default function HomePage() {
               template
             );
             const files = getPendingScanFiles();
-            finishTeaser(clearOnly, spendingData, files, failedScanFiles);
+            finishTeaser(clearOnly, spendingData, files, failedScanFiles, isClaudeScan() ? "claude" : "local");
           }}
         />
       )}
