@@ -152,3 +152,11 @@ Status key:
 ## Decision log
 - 2026-07-18: Boss chose full JFC flow copy. Keep Whop. Keep our colors/Arabic.
 - Shipped: upload copy + ideal months warning, uploading screen, deep-scan timer + tx count, HITL confirm-unsure, free Cancel links, paywall reframed around cancel links.
+- 2026-07-18: Logged **Claude Code skill report** as future paid upgrade inspiration (not building yet).
+
+---
+
+## Future: Claude Code skill report quality (later)
+
+→ Moved to **`docs/BACKLOG.md`** section “Later — Just Cancel Claude Code skill”.  
+Do not build until Boss pulls it into **Now**.
