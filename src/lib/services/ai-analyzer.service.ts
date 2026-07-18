@@ -8,7 +8,6 @@ import {
   AuditReport,
   SubscriptionFrequency,
 } from "../types";
-import { getCancelInfo } from "../cancel-db";
 
 export interface ClaudeAnalysisResult {
   success: true;
@@ -22,6 +21,19 @@ export interface ClaudeAnalysisError {
 }
 
 export type AIAnalysisResult = ClaudeAnalysisResult | ClaudeAnalysisError;
+
+/** Fallback rates if Claude forgets to convert */
+const FX_TO_SAR: Record<string, number> = {
+  SAR: 1,
+  USD: 3.75,
+  EUR: 4.1,
+  GBP: 4.8,
+  AED: 1.02,
+  KWD: 12.2,
+  BHD: 9.95,
+  QAR: 1.03,
+  CHF: 4.25,
+};
 
 export async function analyzeFileWithAI(file: File): Promise<AIAnalysisResult> {
   try {
@@ -59,15 +71,31 @@ export async function analyzeFilesWithAI(
 ): Promise<AIAnalysisResult> {
   const reports: AuditReport[] = [];
   const errors: string[] = [];
+  let completed = 0;
 
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    onProgress?.(i + 1, files.length, file.name);
-    const result = await analyzeFileWithAI(file);
-    if (result.success) {
-      reports.push(result.report);
-    } else {
-      errors.push(`${file.name}: ${result.error}`);
+  // Run 2 files at a time — faster than fully sequential, safer than all-at-once
+  const concurrency = 2;
+  for (let i = 0; i < files.length; i += concurrency) {
+    const batch = files.slice(i, i + concurrency);
+    const results = await Promise.all(
+      batch.map(async (file, batchIdx) => {
+        onProgress?.(
+          Math.min(i + batchIdx + 1, files.length),
+          files.length,
+          file.name
+        );
+        return { file, result: await analyzeFileWithAI(file) };
+      })
+    );
+
+    for (const { file, result } of results) {
+      completed += 1;
+      onProgress?.(completed, files.length, file.name);
+      if (result.success) {
+        reports.push(result.report);
+      } else {
+        errors.push(`${file.name}: ${result.error}`);
+      }
     }
   }
 
@@ -129,6 +157,30 @@ function mergeAuditReports(reports: AuditReport[]): AuditReport {
   };
 }
 
+function toSarAmount(
+  amount: number,
+  originalAmount: number | undefined,
+  originalCurrency: string | undefined
+): number {
+  const cur = (originalCurrency || "SAR").toUpperCase();
+  const rate = FX_TO_SAR[cur] ?? 1;
+
+  if (originalAmount != null && Number.isFinite(originalAmount) && cur !== "SAR") {
+    return originalAmount * rate;
+  }
+
+  if (
+    originalAmount != null &&
+    Number.isFinite(originalAmount) &&
+    cur !== "SAR" &&
+    Math.abs(amount - originalAmount) < 0.02
+  ) {
+    return originalAmount * rate;
+  }
+
+  return amount;
+}
+
 function transformClaudeResponse(data: Record<string, unknown>): AuditReport {
   const subs = (data.subscriptions || []) as Array<Record<string, unknown>>;
   const subscriptions: Subscription[] = [];
@@ -136,7 +188,12 @@ function transformClaudeResponse(data: Record<string, unknown>): AuditReport {
 
   for (const sub of subs) {
     const name = String(sub.name || "Unknown");
-    const amount = Number(sub.amount) || 0;
+    const originalAmount =
+      sub.original_amount != null ? Number(sub.original_amount) : undefined;
+    const originalCurrency =
+      sub.original_currency != null ? String(sub.original_currency) : undefined;
+    const rawAmount = Number(sub.amount) || 0;
+    const amount = toSarAmount(rawAmount, originalAmount, originalCurrency);
     const frequency = normalizeFrequency(String(sub.frequency || "monthly"));
     const occurrences = Number(sub.occurrences) || 1;
     const monthlyEquivalent = calculateMonthly(amount, frequency);
@@ -156,7 +213,7 @@ function transformClaudeResponse(data: Record<string, unknown>): AuditReport {
       confidence: "confirmed",
       aiDescription: sub.category ? String(sub.category) : undefined,
       rawDescription: String(sub.raw_description || name),
-      transactions: buildFakeTransactions(sub),
+      transactions: buildFakeTransactions(sub, amount),
     });
   }
 
@@ -200,17 +257,19 @@ function calculateMonthly(amount: number, frequency: SubscriptionFrequency): num
   }
 }
 
-function buildFakeTransactions(sub: Record<string, unknown>): Transaction[] {
+function buildFakeTransactions(
+  sub: Record<string, unknown>,
+  amountSar: number
+): Transaction[] {
   const txs: Transaction[] = [];
   const occurrences = Number(sub.occurrences) || 1;
-  const amount = Number(sub.amount) || 0;
   const name = String(sub.raw_description || sub.name || "");
 
   for (let i = 0; i < Math.min(occurrences, 6); i++) {
     txs.push({
       date: i === 0 ? String(sub.last_date || "") : String(sub.first_date || ""),
       description: name,
-      amount,
+      amount: amountSar,
     });
   }
 

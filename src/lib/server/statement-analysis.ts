@@ -1,11 +1,64 @@
 /**
  * Server-side statement analysis (LlamaParse + Claude).
- * Used by /api/parse-pdf.
+ * Used by /api/parse-pdf (local Next.js).
  */
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const LLAMA_API_KEY = process.env.LLAMA_CLOUD_API_KEY;
 const LLAMA_BASE = "https://api.cloud.llamaindex.ai";
+
+const FX = {
+  USD: 3.75,
+  EUR: 4.1,
+  GBP: 4.8,
+  AED: 1.02,
+  KWD: 12.2,
+  BHD: 9.95,
+  QAR: 1.03,
+  CHF: 4.25,
+};
+
+export function buildAnalysisPrompt(rawText: string): string {
+  return `You are a bank statement analyzer for Saudi users. Extract ALL recurring subscriptions.
+
+CRITICAL CURRENCY RULES (do not break these):
+- Detect the statement currency from headers, symbols (£ $ €), column labels, and bank name (Revolut/Crypto.com are often USD/EUR/GBP; SNB/Saudi banks are usually SAR).
+- NEVER treat a foreign amount as SAR. Example: Claude Pro $20 must become about ${20 * FX.USD} SAR, NOT 20 SAR.
+- Convert using these rates: 1 USD = ${FX.USD} SAR, 1 EUR = ${FX.EUR} SAR, 1 GBP = ${FX.GBP} SAR, 1 AED = ${FX.AED} SAR, 1 KWD = ${FX.KWD} SAR, 1 BHD = ${FX.BHD} SAR, 1 QAR = ${FX.QAR} SAR, 1 CHF = ${FX.CHF} SAR. If already SAR, leave as-is.
+- For each subscription return BOTH original_amount + original_currency AND amount in SAR after conversion.
+
+For each subscription:
+- name: clean service name (Netflix, Spotify, Claude Pro, Apple, etc.)
+- original_amount: number as printed on the statement
+- original_currency: ISO code (SAR, USD, EUR, GBP, ...)
+- amount: number in SAR after conversion
+- currency: "SAR"
+- frequency: weekly | monthly | quarterly | yearly
+- occurrences: how many times it appears
+- first_date / last_date: YYYY-MM-DD
+- raw_description: bank descriptor
+- category: streaming | music | software | gaming | fitness | food_delivery | shopping | cloud_storage | vpn | education | finance | telecom | insurance | other
+
+Include: recurring subscriptions/memberships. Known services even if they appear once.
+Exclude: transfers, salary, allowance, cashback, ATM, one-time retail/grocery/gas.
+
+Handle SNB, Al Rajhi, Revolut, Crypto.com, and mixed multi-currency statements.
+
+Return JSON only (no markdown):
+{
+  "subscriptions": [...],
+  "total_monthly": number (SAR),
+  "total_yearly": number (SAR),
+  "currency": "SAR",
+  "statement_period": { "from": "YYYY-MM-DD", "to": "YYYY-MM-DD" },
+  "total_transactions_analyzed": number,
+  "statement_currency_detected": "SAR|USD|EUR|GBP|MIXED"
+}
+
+Statement:
+
+${rawText}`;
+}
 
 export async function extractPDFText(file: File): Promise<string> {
   if (!LLAMA_API_KEY) throw new Error("LLAMA_CLOUD_API_KEY not set");
@@ -29,8 +82,8 @@ export async function extractPDFText(file: File): Promise<string> {
 
   const { id: jobId } = await uploadRes.json();
 
-  for (let i = 0; i < 90; i++) {
-    await new Promise((r) => setTimeout(r, 3000));
+  for (let i = 0; i < 60; i++) {
+    await new Promise((r) => setTimeout(r, 2000));
 
     const res = await fetch(
       `${LLAMA_BASE}/api/v1/parsing/job/${jobId}/result/markdown`,
@@ -55,42 +108,6 @@ export async function extractPDFText(file: File): Promise<string> {
 export async function analyzeStatementText(rawText: string): Promise<unknown> {
   if (!ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY not set");
 
-  const prompt = `You are a bank statement analyzer. Given the raw text of a bank statement, extract ALL recurring subscriptions and charges.
-
-For each subscription found, return:
-- name: the service name (clean, recognizable name like "Netflix", "Spotify", "Apple", not the raw bank descriptor)
-- amount: the charge amount as a number in SAR
-- currency: "SAR"
-- frequency: "weekly", "monthly", "quarterly", or "yearly"
-- occurrences: how many times this charge appears in the statement
-- first_date: first charge date (YYYY-MM-DD format)
-- last_date: last charge date (YYYY-MM-DD format)
-- raw_description: the original bank statement description
-- category: one of "streaming", "music", "software", "gaming", "fitness", "food_delivery", "shopping", "cloud_storage", "vpn", "education", "finance", "telecom", "insurance", "other"
-
-Rules:
-- Only include RECURRING charges (subscriptions, memberships, recurring payments)
-- Do NOT include one-time purchases, ATM withdrawals, transfers between accounts, salary deposits, employer allowance, cashback, or regular spending at stores/restaurants/gas
-- Group charges from the same service together even if the bank description varies slightly
-- Handle SNB, Revolut, Crypto.com, and international card descriptors
-- If a charge appears only once but is clearly a known subscription service (Netflix, Spotify, Shahid, etc.), still include it
-- Convert all amounts to SAR using approximate current exchange rates
-- Return valid JSON only, no markdown, no explanation
-
-Return format:
-{
-  "subscriptions": [...],
-  "total_monthly": number,
-  "total_yearly": number,
-  "currency": "SAR",
-  "statement_period": { "from": "YYYY-MM-DD", "to": "YYYY-MM-DD" },
-  "total_transactions_analyzed": number
-}
-
-Here is the bank statement:
-
-${rawText}`;
-
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -101,7 +118,7 @@ ${rawText}`;
     body: JSON.stringify({
       model: "claude-sonnet-4-20250514",
       max_tokens: 8192,
-      messages: [{ role: "user", content: prompt }],
+      messages: [{ role: "user", content: buildAnalysisPrompt(rawText) }],
     }),
   });
 
@@ -115,7 +132,12 @@ ${rawText}`;
   const cleaned = text.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
 
   try {
-    return JSON.parse(cleaned);
+    const parsed = JSON.parse(cleaned) as Record<string, unknown>;
+    parsed._meta = {
+      model: "claude-sonnet-4-20250514",
+      provider: "anthropic",
+    };
+    return parsed;
   } catch {
     throw new Error("Claude returned invalid JSON");
   }

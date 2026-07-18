@@ -179,6 +179,7 @@ export default function HomePage() {
   const [parsedFileCount, setParsedFileCount] = useState(0);
   const [failedScanFiles, setFailedScanFiles] = useState<string[]>([]);
   const [totalScanFiles, setTotalScanFiles] = useState(0);
+  const [aiProgress, setAiProgress] = useState<{ current: number; total: number } | null>(null);
   const heroRef = useRef<HTMLElement>(null);
 
 
@@ -350,6 +351,7 @@ export default function HomePage() {
     );
     setStep("analyzing");
     setTxCount(0);
+    setAiProgress(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
 
     const valid = await verifyPaymentReceipt(receiptId);
@@ -383,12 +385,15 @@ export default function HomePage() {
 
     try {
       const aiResult = await analyzeFilesWithAI(files, (current, total, fileName) => {
+        setAiProgress({ current, total });
         setAnalyzeStatus(
           ar
-            ? `تحليل AI: ${fileName} (${current} من ${total})`
-            : `AI analysis: ${fileName} (${current} of ${total})`
+            ? `تحليل AI · ملف ${current} من ${total}`
+            : `AI analysis · file ${current} of ${total}`
         );
       });
+
+      setAiProgress(null);
 
       if (aiResult.success) {
         setReport(aiResult.report);
@@ -561,6 +566,7 @@ export default function HomePage() {
     setParsedFileCount(0);
     setFailedScanFiles([]);
     setTotalScanFiles(0);
+    setAiProgress(null);
     setReportTier("teaser");
     setIsUnlocked(false);
     clearScanSession();
@@ -609,10 +615,18 @@ export default function HomePage() {
                 className="text-center mb-8"
               >
                 <div className="text-5xl sm:text-6xl font-extrabold tracking-tight text-slate-900 mb-2 ltr-always">
-                  {formatInt(txCount)}
+                  {aiProgress
+                    ? `${aiProgress.current}/${aiProgress.total}`
+                    : formatInt(txCount)}
                 </div>
                 <div className="text-sm text-slate-400 mb-4">
-                  {ar ? "عملية" : "transactions"}
+                  {aiProgress
+                    ? ar
+                      ? "ملفات تحت التحليل بـ Claude"
+                      : "files analyzing with Claude"
+                    : ar
+                      ? "عملية"
+                      : "transactions"}
                 </div>
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <Loader2 size={14} strokeWidth={1.5} className="text-[#00A651] animate-spin" />
@@ -620,7 +634,7 @@ export default function HomePage() {
                 </div>
                 <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-full px-4 py-2 text-xs text-slate-400">
                   <Clock size={12} strokeWidth={1.5} />
-                  {ar ? "تقريباً خلصنا · لا تطلع من الصفحة" : "Almost there to stay on this page"}
+                  {ar ? "خذ وقتك · لا تطلع من الصفحة (ملفات PDF تأخذ أطول)" : "Stay on this page · PDFs take longer"}
                 </div>
               </motion.div>
 
