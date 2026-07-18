@@ -30,12 +30,14 @@ export default function UploadZone({
   const [dragging, setDragging] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [fileTip, setFileTip] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const ar = locale === "ar";
 
   function addFiles(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return;
     setFileError(null);
+    setFileTip(null);
 
     const newFiles: SelectedFile[] = [];
     const rejected: string[] = [];
@@ -65,19 +67,16 @@ export default function UploadZone({
       const room = MAX_FILES - prev.length;
       if (room <= 0) {
         setFileError(
-          ar ? "الحد الاقصى 5 ملفات" : "Maximum 5 files"
+          ar ? "الحد الاقصى 5 ملفات · احذف ملف عشان تضيف غيره" : "Maximum 5 files · remove one to add another"
         );
         return prev;
       }
 
       let accepted = newFiles;
+      let truncated = false;
       if (newFiles.length > room) {
         accepted = newFiles.slice(0, room);
-        rejected.push(
-          ar
-            ? `ما قدرنا نضيف الكل · الحد الاقصى ${MAX_FILES} ملفات`
-            : `Couldn't add all files · max ${MAX_FILES} files`
-        );
+        truncated = true;
       }
 
       const prevTotal = prev.reduce((sum, f) => sum + f.size, 0);
@@ -90,7 +89,21 @@ export default function UploadZone({
         );
         return prev;
       }
-      if (rejected.length > 0) setFileError(rejected.join("\n"));
+
+      // Real rejects (bad type/size) stay as errors; over-limit is a soft tip only
+      if (rejected.length > 0) {
+        setFileError(rejected.join("\n"));
+      } else {
+        setFileError(null);
+      }
+      if (truncated) {
+        setFileTip(
+          ar
+            ? `أخذنا أول ${accepted.length} ملفات فقط · الحد ${MAX_FILES}`
+            : `Added the first ${accepted.length} files only · max ${MAX_FILES}`
+        );
+      }
+
       return [...prev, ...accepted];
     });
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -98,7 +111,15 @@ export default function UploadZone({
 
   function removeFile(index: number) {
     setFileError(null);
+    setFileTip(null);
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function clearAllFiles() {
+    setFileError(null);
+    setFileTip(null);
+    setSelectedFiles([]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   function handleDrop(e: React.DragEvent) {
@@ -167,6 +188,11 @@ export default function UploadZone({
       {fileError && (
         <p className="text-xs text-red-500 text-center mt-2 whitespace-pre-line">{fileError}</p>
       )}
+      {fileTip && !fileError && (
+        <p className="text-xs text-center mt-2" style={{ color: "#C2410C" }}>
+          {fileTip}
+        </p>
+      )}
 
       <AnimatePresence>
         {selectedFiles.length > 0 && (
@@ -176,12 +202,24 @@ export default function UploadZone({
             exit={{ opacity: 0, height: 0 }}
             className="mt-4 rounded-xl bg-slate-100 px-5 pt-4 pb-5 overflow-hidden"
           >
-            <p className="text-sm font-bold mb-3" style={{ color: "#1A3A35" }}>
-              {ar
-                ? `${selectedFiles.length} ملف محدد`
-                : `${selectedFiles.length} file(s) selected`}{" "}
-              <Ltr className="font-normal text-[#8AADA8]">({formatBytes(totalSize)})</Ltr>
-            </p>
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <p className="text-sm font-bold" style={{ color: "#1A3A35" }}>
+                {ar
+                  ? `${selectedFiles.length} ملف محدد`
+                  : `${selectedFiles.length} file(s) selected`}{" "}
+                <Ltr className="font-normal text-[#8AADA8]">({formatBytes(totalSize)})</Ltr>
+              </p>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  clearAllFiles();
+                }}
+                className="text-xs font-bold text-slate-400 hover:text-slate-700"
+              >
+                {ar ? "مسح الكل" : "Clear all"}
+              </button>
+            </div>
             <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
               {selectedFiles.map((f, i) => (
                 <div key={`${f.name}-${i}`} className="flex items-center justify-between gap-2">
