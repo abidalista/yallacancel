@@ -300,13 +300,7 @@ export default function HomePage() {
     setAnalyzeStatus(ar ? "جاري رفع الملفات..." : "Uploading files...");
     window.scrollTo({ top: 0, behavior: "smooth" });
 
-    await new Promise((r) => setTimeout(r, 700));
-    setStep("analyzing");
-    setAnalyzeStatus(
-      ar
-        ? "فحص عميق يبدأ الآن (30 إلى 90 ثانية)"
-        : "Deep scan starting... (this takes 30 to 90 seconds)"
-    );
+    const uploadStarted = Date.now();
 
     try {
       let allTx: Transaction[] = [];
@@ -314,6 +308,7 @@ export default function HomePage() {
       let allWarnings: string[] = [];
       let successFileCount = 0;
 
+      // Parse while the uploading screen is showing
       for (const file of files) {
         try {
           const { transactions, warnings } = await parseFile(file, bankOverride || undefined);
@@ -324,7 +319,6 @@ export default function HomePage() {
             allTx = allTx.concat(transactions);
             successFileCount += 1;
             setParsedFileCount(successFileCount);
-            setTxCount(allTx.length);
           }
         } catch (err) {
           console.error(`Failed to parse ${file.name}:`, err);
@@ -333,6 +327,10 @@ export default function HomePage() {
         }
       }
 
+      // Hold "Uploading files..." at least ~3s (JFC pacing)
+      const uploadElapsed = Date.now() - uploadStarted;
+      await new Promise((r) => setTimeout(r, Math.max(0, 3000 - uploadElapsed)));
+
       if (allTx.length === 0) {
         setParseError(buildParseError(failedFiles, allWarnings));
         setRetryFiles(files);
@@ -340,19 +338,34 @@ export default function HomePage() {
         return;
       }
 
-      setTxCount(allTx.length);
+      // Deep scan screen — real identified transaction count
+      const identified = allTx.length;
+      setTxCount(identified);
+      setStep("analyzing");
       setAnalyzeStatus(
-        ar ? "نفحص الاشتراكات المتكررة..." : "Scanning for recurring subscriptions..."
+        ar
+          ? "فحص عميق يبدأ الآن (30 إلى 90 ثانية)"
+          : "Deep scan starting... (this takes 30 to 90 seconds)"
       );
-      await new Promise((r) => setTimeout(r, 600));
 
+      const scanStarted = Date.now();
       const result = analyzeTransactions(allTx);
       const spending = analyzeSpending(allTx);
+      // Keep count = raw identified txs (not subscription count)
+      setTxCount(identified);
       setParsedFileCount(successFileCount);
       setFailedScanFiles(failedFiles);
       setTotalScanFiles(files.length);
       setBaseReport(result);
       setSpendingData(spending);
+
+      setAnalyzeStatus(
+        ar ? "نفحص الاشتراكات المتكررة..." : "Scanning for recurring subscriptions..."
+      );
+
+      // Hold the count on screen ~2s before next step
+      const scanElapsed = Date.now() - scanStarted;
+      await new Promise((r) => setTimeout(r, Math.max(0, 2000 - scanElapsed)));
 
       const clear = result.subscriptions.filter((s) => s.confidence === "confirmed");
       const unsure = result.subscriptions.filter((s) => s.confidence === "suspicious");
@@ -580,7 +593,9 @@ export default function HomePage() {
                 <div className="text-5xl sm:text-6xl font-extrabold tracking-tight text-slate-900 mb-2 ltr-always">
                   {aiProgress
                     ? `${aiProgress.current}/${aiProgress.total}`
-                    : formatInt(txCount)}
+                    : txCount > 0
+                      ? formatInt(txCount)
+                      : "…"}
                 </div>
                 <div className="text-sm text-slate-400 mb-5">
                   {aiProgress
@@ -588,14 +603,14 @@ export default function HomePage() {
                       ? "ملفات تحت التحليل بـ Claude"
                       : "files analyzing with Claude"
                     : ar
-                      ? "عملية"
+                      ? "عملية تم التعرف عليها"
                       : "transactions"}
                 </div>
                 <p className="text-sm font-medium text-slate-700 mb-3">
                   {analyzeStatus ||
                     (ar
-                      ? "فحص عميق يبدأ الآن (30 إلى 90 ثانية)"
-                      : "Deep scan starting... (this takes 30 to 90 seconds)")}
+                      ? "فحص عميق يبدأ الآن..."
+                      : "Deep scan starting...")}
                 </p>
                 <p className="text-2xl font-extrabold text-[#00A651] mb-6 ltr-always">
                   {elapsedSec}s
