@@ -133,9 +133,7 @@ export default function ConfirmUnsure({
             {ar ? "شوف المجموع ←" : "See your total →"}
           </button>
           <button type="button" className="btn-ghost flex-shrink-0 px-5" onClick={onSkip}>
-            {ar
-              ? `تخطّى · استخدم ${clearCount} الواضحة`
-              : `Skip, use ${clearCount} found`}
+            {ar ? "تخطّى · روح للنتيجة" : "Skip · go to results"}
           </button>
         </div>
       </div>
