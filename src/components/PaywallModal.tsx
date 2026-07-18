@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Zap, FolderOpen, FileDown, Link2, BookOpen, Loader2, Mail, Sparkles } from "lucide-react";
 import { WhopCheckoutEmbed } from "@whop/checkout/react";
-import { PRICE_LABEL } from "@/lib/format";
+import { PRICE_LABEL, normalizeAccessCode } from "@/lib/format";
 import Ltr from "@/components/Ltr";
 
 interface PaywallModalProps {
@@ -45,7 +45,7 @@ export default function PaywallModal({
   const planId = process.env.NEXT_PUBLIC_WHOP_PLAN_ID || "plan_3E0V8cxU8VYXI";
 
   function submitAccessCode() {
-    const code = accessCode.trim();
+    const code = normalizeAccessCode(accessCode);
     if (!code) {
       setCodeError(true);
       return;

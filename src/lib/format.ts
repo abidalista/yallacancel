@@ -100,6 +100,14 @@ export function truncateFilename(name: string, max = 32): string {
   return `${name.slice(0, max - 3)}...`;
 }
 
+/** Normalize founder codes: "yc abi" / "YC-ABI" → "ycabi" */
+export function normalizeAccessCode(code: string): string {
+  return code.trim().toLowerCase().replace(/[\s_-]+/g, "");
+}
+
 export function isFounderReceipt(receiptId: string, token?: string): boolean {
-  return !!token && receiptId === `founder_${token}`;
+  if (!token || !receiptId.startsWith("founder_")) return false;
+  const entered = normalizeAccessCode(receiptId.slice("founder_".length));
+  const expected = normalizeAccessCode(token);
+  return !!expected && entered === expected;
 }

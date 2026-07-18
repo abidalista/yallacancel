@@ -1,3 +1,14 @@
+function normalizeAccessCode(code: string): string {
+  return code.trim().toLowerCase().replace(/[\s_-]+/g, "");
+}
+
+function isFounderReceipt(receiptId: string, token?: string): boolean {
+  if (!token || !receiptId.startsWith("founder_")) return false;
+  const entered = normalizeAccessCode(receiptId.slice("founder_".length));
+  const expected = normalizeAccessCode(token);
+  return !!expected && entered === expected;
+}
+
 export async function onRequestPost(context: {
   request: Request;
   env: Record<string, string>;
@@ -10,7 +21,7 @@ export async function onRequestPost(context: {
     }
 
     const founderToken = context.env.FOUNDER_ACCESS_TOKEN;
-    if (founderToken && receiptId === `founder_${founderToken}`) {
+    if (isFounderReceipt(receiptId, founderToken)) {
       return Response.json({ valid: true });
     }
 
