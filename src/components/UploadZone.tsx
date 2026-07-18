@@ -259,9 +259,13 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
             </div>
 
             <p className="text-xs font-medium text-center mb-4" style={{ color: "#C2410C" }}>
-              {ar
-                ? "نصيحة: ارفع كشوفات آخر شهرين أو 3 شهور كحد أقصى. الفترات الأطول بتطلّع اشتراكات قديمة وملغية"
-                : "Tip: Upload the last 2 or 3 months max. Longer periods surface old cancelled subscriptions."}
+              {selectedFiles.length === 1
+                ? ar
+                  ? "أضف شهر إضافي عشان نأكد الاشتراكات المتكررة"
+                  : "Add 1 more month to confirm recurring charges"
+                : ar
+                  ? "نصيحة: ارفع كشوفات آخر شهرين أو 3 شهور كحد أقصى. الفترات الأطول بتطلّع اشتراكات قديمة وملغية"
+                  : "Tip: Upload the last 2 or 3 months max. Longer periods surface old cancelled subscriptions."}
             </p>
 
             <button type="button" onClick={handleScan} className="btn-primary w-full">
