@@ -79,7 +79,7 @@ function LogoPill({ logo }: { logo: ScatteredLogo }) {
 
 export default function HeroScatteredLogos() {
   return (
-    <div className="pointer-events-none absolute inset-0 z-0 hidden xl:block opacity-70" aria-hidden>
+    <div className="pointer-events-none absolute inset-0 z-0 hidden lg:block opacity-70" aria-hidden>
       {LOGOS.slice(0, 8).map((logo) => (
         <LogoPill key={logo.name} logo={logo} />
       ))}

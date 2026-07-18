@@ -1018,13 +1018,16 @@ export default function HomePage() {
                 </motion.div>
               )}
 
-              {/* Bank logos — below first fold */}
-              <div className="mt-6 flex flex-wrap justify-center gap-3">
+              {/* Supported banks — text pills only (no broken logo assets) */}
+              <div className="mt-6 flex flex-wrap justify-center gap-2">
                 {BANKS.map((bank) => (
-                  <div key={bank.name} className="flex items-center gap-2 bg-white border border-[#E5EFED] rounded-full px-2.5 py-1">
-                    <BrandLogo domain={bank.domain} alt={bank.name} className="w-4 h-4 rounded-sm object-contain" />
-                    <span className="text-[11px] font-medium" style={{ color: "#4A6862" }}>{bank.name}</span>
-                  </div>
+                  <span
+                    key={bank.name}
+                    className="inline-flex items-center bg-white border border-[#E5EFED] rounded-full px-3 py-1 text-[11px] font-medium"
+                    style={{ color: "#4A6862" }}
+                  >
+                    {bank.name}
+                  </span>
                 ))}
               </div>
             </div>
