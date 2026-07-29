@@ -383,61 +383,87 @@ export default function HomePage() {
         ar ? "نفحص الاشتراكات المتكررة..." : "Scanning for recurring subscriptions..."
       );
 
+      const hasPdf = files.some((f) => /\.pdf$/i.test(f.name));
+      const localCount = localReport?.subscriptions.length ?? 0;
       const scanStarted = Date.now();
-      const aiResult = await analyzeStatementsWithAI(files);
 
+      // CSV-only with local hits → instant (skip 60–90s server wait)
       let result: Report;
       let engine: ScanEngine;
       let scanFailedFiles = failedFiles;
 
-      if (aiResult.success) {
-        if (aiResult.fileErrors?.length) {
-          scanFailedFiles = aiResult.fileErrors.map(
-            (e) => e.split(":")[0]?.trim() || e
-          );
-        }
-        const claudeCount = aiResult.report.subscriptions.length;
-        const localCount = localReport?.subscriptions.length ?? 0;
-
-        if (claudeCount > 0 && localCount > 0) {
-          result = mergeSubscriptionReports(aiResult.report, localReport!);
-        } else if (claudeCount > 0) {
-          result = aiResult.report;
-        } else if (localReport && localCount > 0) {
-          result = localReport;
-        } else {
-          result = aiResult.report;
-        }
-
-        engine = claudeCount > 0 ? "claude" : "local";
-        if (aiResult.report.analyzedTransactions > 0) {
-          setTxCount(aiResult.report.analyzedTransactions);
-        } else if (identified > 0) {
-          setTxCount(identified);
-        }
-      } else if (localReport) {
-        console.warn("[scan] Server failed, local fallback:", aiResult.error);
+      if (!hasPdf && localReport && localCount > 0) {
         result = localReport;
         engine = "local";
-        setTxCount(identified);
       } else {
-        console.error("[scan] Server and local both failed:", aiResult.error);
-        setParseError({
-          type: "file_error",
-          message: "Could not analyze files",
-          messageAr: "ما قدرنا نحلل الملفات",
-          details: aiResult.error || "Try CSV or PDF again.",
-          detailsAr: "جرب مرة ثانية — CSV أو PDF من تطبيق البنك.",
-          suggestions: ["Use CSV if PDF fails", "Try again in a minute"],
-          suggestionsAr: ["جرّب CSV لو PDF ما انقرأ", "جرب بعد دقيقة"],
-          showBankSelector: false,
-          showPasteInput: true,
-          failedFiles,
-          warnings: ["server_and_local_failed"],
-        });
-        setRetryFiles(files);
-        setStep("landing");
-        return;
+        // Mixed batch: CSV already parsed locally — only PDFs need LlamaParse + Claude
+        const serverFiles =
+          hasPdf && localCount > 0
+            ? files.filter((f) => /\.pdf$/i.test(f.name))
+            : files;
+
+        const aiResult = await analyzeStatementsWithAI(serverFiles);
+
+        if (aiResult.success) {
+          if (aiResult.fileErrors?.length) {
+            scanFailedFiles = aiResult.fileErrors.map(
+              (e) => e.split(":")[0]?.trim() || e
+            );
+          }
+          const claudeCount = aiResult.report.subscriptions.length;
+
+          if (claudeCount > 0 && localCount > 0) {
+            result = mergeSubscriptionReports(aiResult.report, localReport!);
+            engine = "claude";
+          } else if (claudeCount > 0) {
+            result = aiResult.report;
+            engine = "claude";
+          } else if (localReport && localCount > 0) {
+            result = localReport;
+            engine = "local";
+          } else if (localReport) {
+            result = localReport;
+            engine = "local";
+          } else {
+            result = aiResult.report;
+            engine = "claude";
+          }
+
+          if (aiResult.report.analyzedTransactions > 0) {
+            setTxCount(aiResult.report.analyzedTransactions);
+          } else if (identified > 0) {
+            setTxCount(identified);
+          }
+        } else if (localReport) {
+          console.warn("[scan] Server failed, local fallback:", aiResult.error);
+          result = localReport;
+          engine = "local";
+          setTxCount(identified);
+        } else {
+          console.error("[scan] Server and local both failed:", aiResult.error);
+          setParseError({
+            type: "file_error",
+            message: "Could not analyze files",
+            messageAr: "ما قدرنا نحلل الملفات",
+            details:
+              aiResult.error?.includes("404") || aiResult.error?.includes("not_found")
+                ? "AI scan is temporarily unavailable. Try again in a minute."
+                : aiResult.error || "Try CSV or PDF again.",
+            detailsAr:
+              aiResult.error?.includes("404") || aiResult.error?.includes("not_found")
+                ? "الفحص بالذكاء الاصطناعي مو متاح حالياً. جرب بعد دقيقة."
+                : "جرب مرة ثانية — CSV أو PDF من تطبيق البنك.",
+            suggestions: ["Use CSV if PDF fails", "Try again in a minute"],
+            suggestionsAr: ["جرّب CSV لو PDF ما انقرأ", "جرب بعد دقيقة"],
+            showBankSelector: false,
+            showPasteInput: true,
+            failedFiles,
+            warnings: ["server_and_local_failed"],
+          });
+          setRetryFiles(files);
+          setStep("landing");
+          return;
+        }
       }
 
       setBaseReport(result);

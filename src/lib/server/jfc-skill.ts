@@ -14,7 +14,7 @@ export const FX = {
   CHF: 4.25,
 } as const;
 
-export const CLAUDE_MODEL = "claude-sonnet-4-20250514";
+export const CLAUDE_MODEL = "claude-sonnet-4-6";
 
 /** Static skill instructions — cache this block (ephemeral / 1h). */
 export const JFC_SKILL_SYSTEM = `You are the Just Fucking Cancel subscription audit engine, running inside YallaCancel (Arabic-first Saudi product, mint brand — analysis logic is identical to JFC).
