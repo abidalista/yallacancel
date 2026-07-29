@@ -16,6 +16,7 @@ import ConfirmUnsure from "@/components/ConfirmUnsure";
 import {
   parseCSVRobust, detectBank,
   parsePDFRobust,
+  analyzeTransactions,
   analyzeSpending,
   analyzeStatementsWithAI,
 } from "@/lib/services";
@@ -141,7 +142,7 @@ const TESTIMONIALS: { quote: string; name: string; role: string; initial: string
 const FAQ_ITEMS = [
   {
     q: "هل بياناتي آمنة؟",
-    a: "الفحص العميق يستخدم Claude (نفس منطق Just Fucking Cancel) على السيرفر مع تخزين مؤقت للتعليمات. ما نخزن ملفاتك بعد التحليل.",
+    a: "المعاينة المجانية تتم في متصفحك. التقرير الكامل بعد الدفع يستخدم Claude على السيرفر. ما نخزن ملفاتك.",
   },
   {
     q: "أي بنوك تدعمون؟",
@@ -356,56 +357,52 @@ export default function HomePage() {
       const uploadElapsed = Date.now() - uploadStarted;
       await new Promise((r) => setTimeout(r, Math.max(0, 3000 - uploadElapsed)));
 
-      // Skill-grade Claude ONLY (cached JFC system prompt). One combined call.
-      // UI: centered seconds counter — no file 1/4, no tx count on this screen.
-      setTxCount(Math.max(identifiedTotal, allTx.length));
-      setStep("analyzing");
-      setParsedFileCount(successFileCount);
-      setFailedScanFiles([]);
-      setTotalScanFiles(files.length);
-      setAiProgress(null);
-      setAnalyzeStatus(ar ? "فحص عميق يبدأ الآن..." : "Deep scan starting...");
-
-      const spending = allTx.length > 0 ? analyzeSpending(allTx) : null;
-      setSpendingData(spending);
-      setAnalyzeStatus(
-        ar ? "نفحص الاشتراكات المتكررة..." : "Scanning for recurring subscriptions..."
-      );
-
-      const aiResult = await analyzeStatementsWithAI(files);
-
-      if (!aiResult.success) {
-        console.error("[scan] Claude skill audit failed:", aiResult.error);
-        setParseError({
-          type: "file_error",
-          message: "AI scan failed",
-          messageAr: "فحص الذكاء الاصطناعي فشل",
-          details: aiResult.error || "Please try again.",
-          detailsAr: "حاول مرة ثانية. تأكد إن الملفات CSV أو PDF واضحة.",
-          suggestions: ["Try again", "Prefer CSV exports from your bank"],
-          suggestionsAr: ["جرب مرة ثانية", "CSV أوضح من PDF عادة"],
-          showBankSelector: false,
-          showPasteInput: true,
-          failedFiles: failedFiles,
-          warnings: ["claude_failed"],
-        });
+      // Free scan = local (reliable, no API cost). Claude runs after pay.
+      const identified = Math.max(identifiedTotal, allTx.length);
+      if (identified === 0 && failedFiles.length === files.length) {
+        setParseError(buildParseError(failedFiles, allWarnings));
         setRetryFiles(files);
         setStep("landing");
         return;
       }
 
-      const result = aiResult.report;
-      const engine: ScanEngine = "claude";
+      setTxCount(identified);
+      setStep("analyzing");
+      setParsedFileCount(successFileCount);
+      setFailedScanFiles(failedFiles);
+      setTotalScanFiles(files.length);
+      setAiProgress(null);
+      setAnalyzeStatus(ar ? "فحص عميق يبدأ الآن..." : "Deep scan starting...");
 
-      if (result.analyzedTransactions > 0) {
-        setTxCount(result.analyzedTransactions);
-      }
+      const scanStarted = Date.now();
+      const spending = allTx.length > 0 ? analyzeSpending(allTx) : null;
+      const result =
+        allTx.length > 0
+          ? {
+              ...analyzeTransactions(allTx),
+              analyzedTransactions: identified,
+            }
+          : {
+              subscriptions: [],
+              totalMonthly: 0,
+              totalYearly: 0,
+              potentialMonthlySavings: 0,
+              potentialYearlySavings: 0,
+              analyzedTransactions: identified,
+              dateRange: { from: "", to: "" },
+            };
+      const engine: ScanEngine = "local";
 
+      setSpendingData(spending);
       setBaseReport(result);
-      storeScanSession(files, result, spending, [], engine);
+      setAnalyzeStatus(
+        ar ? "نفحص الاشتراكات المتكررة..." : "Scanning for recurring subscriptions..."
+      );
 
-      // Brief hold so the counter is readable
-      await new Promise((r) => setTimeout(r, 800));
+      const scanElapsed = Date.now() - scanStarted;
+      await new Promise((r) => setTimeout(r, Math.max(0, 2500 - scanElapsed)));
+
+      storeScanSession(files, result, spending, failedFiles, engine);
 
       const clear = result.subscriptions.filter((s) => s.confidence === "confirmed");
       const unsure = result.subscriptions.filter((s) => s.confidence === "suspicious");
@@ -416,7 +413,7 @@ export default function HomePage() {
         setReport(rebuildReport(clear, result));
         setStep("confirm");
       } else {
-        finishTeaser(result, spending, files, [], engine);
+        finishTeaser(result, spending, files, failedFiles, engine);
       }
     } catch (err) {
       console.error("Scan failed:", err);
@@ -463,7 +460,7 @@ export default function HomePage() {
     setIsUnlocked(true);
     setReportTier("full");
 
-    // Claude already ran on free scan — pay = unblur only
+    // Free scan was local — pay = unblur + Claude upgrade
     if (isClaudeScan()) {
       const full = getTeaserReport() || baseReport || report;
       if (full) {
