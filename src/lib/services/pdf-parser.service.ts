@@ -12,6 +12,8 @@ export interface PDFParseResult {
   lineCount: number;
   parseMethod: "structured" | "fallback" | "aggressive";
   warnings: string[];
+  /** Full text extracted in-browser — sent to server to skip slow LlamaParse */
+  rawText?: string;
 }
 
 // ── Arabic-Indic numeral conversion ──
@@ -424,5 +426,6 @@ export async function parsePDFRobust(file: File): Promise<PDFParseResult> {
     lineCount: allLines.length,
     parseMethod: method,
     warnings,
+    rawText: allLines.join("\n"),
   };
 }

@@ -25,6 +25,20 @@ export interface ClaudeAnalysisError {
 
 export type AIAnalysisResult = ClaudeAnalysisResult | ClaudeAnalysisError;
 
+/** Swap PDFs for in-browser extracted text — avoids LlamaParse timeout on Cloudflare (~30s limit) */
+export function buildServerUploadFiles(
+  files: File[],
+  pdfTexts: Record<string, string>
+): File[] {
+  return files.map((file) => {
+    if (!/\.pdf$/i.test(file.name)) return file;
+    const text = pdfTexts[file.name]?.trim();
+    if (!text || text.length < 50) return file;
+    const txtName = file.name.replace(/\.pdf$/i, ".extracted.txt");
+    return new File([text], txtName, { type: "text/plain" });
+  });
+}
+
 export async function analyzeFileWithAI(file: File): Promise<AIAnalysisResult> {
   try {
     const formData = new FormData();

@@ -14,6 +14,7 @@ export {
   analyzeFilesWithAI,
   analyzeStatementsWithAI,
   mergeSubscriptionReports,
+  buildServerUploadFiles,
 } from "./ai-analyzer.service";
 export type { AIAnalysisResult } from "./ai-analyzer.service";
 

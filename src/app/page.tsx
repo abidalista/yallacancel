@@ -20,6 +20,7 @@ import {
   analyzeSpending,
   analyzeStatementsWithAI,
   mergeSubscriptionReports,
+  buildServerUploadFiles,
 } from "@/lib/services";
 import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, Subscription, Transaction, BankId } from "@/lib/types";
@@ -239,7 +240,12 @@ export default function HomePage() {
   async function parseFile(
     file: File,
     bankOverride?: BankId
-  ): Promise<{ transactions: Transaction[]; warnings: string[]; identifiedCount: number }> {
+  ): Promise<{
+    transactions: Transaction[];
+    warnings: string[];
+    identifiedCount: number;
+    rawText?: string;
+  }> {
     const ext = file.name.split(".").pop()?.toLowerCase();
     if (ext === "pdf") {
       const result = await parsePDFRobust(file);
@@ -247,6 +253,7 @@ export default function HomePage() {
         transactions: result.transactions,
         warnings: result.warnings,
         identifiedCount: result.transactions.length,
+        rawText: result.rawText,
       };
     } else {
       const text = await file.text();
@@ -330,14 +337,16 @@ export default function HomePage() {
       let allWarnings: string[] = [];
       let successFileCount = 0;
       let identifiedTotal = 0;
+      const pdfTexts: Record<string, string> = {};
 
       // Parse while the uploading screen is showing
       for (const file of files) {
         try {
-          const { transactions, warnings, identifiedCount } = await parseFile(
+          const { transactions, warnings, identifiedCount, rawText } = await parseFile(
             file,
             bankOverride || undefined
           );
+          if (rawText) pdfTexts[file.name] = rawText;
           allWarnings = allWarnings.concat(warnings);
           identifiedTotal += identifiedCount;
           if (transactions.length === 0) {
@@ -396,12 +405,7 @@ export default function HomePage() {
         result = localReport;
         engine = "local";
       } else {
-        // Mixed batch: CSV already parsed locally — only PDFs need LlamaParse + Claude
-        const serverFiles =
-          hasPdf && localCount > 0
-            ? files.filter((f) => /\.pdf$/i.test(f.name))
-            : files;
-
+        const serverFiles = buildServerUploadFiles(files, pdfTexts);
         const aiResult = await analyzeStatementsWithAI(serverFiles);
 
         if (aiResult.success) {
