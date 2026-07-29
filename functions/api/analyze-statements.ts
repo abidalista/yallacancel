@@ -41,7 +41,9 @@ Your job: read EVERY bank/card transaction the user provides and produce a skill
 - Klarna / BNPL: "To Klarna Bank AB", "Klarna Bank AB", or generic Klarna transfers — these are pay-later for one-off purchases (food, shopping, court bookings). NOT a subscription unless the SAME merchant name appears with the SAME amount at least 2× on ~monthly cadence (e.g. Urban Sports Club €29.90 monthly)
 - Pay-per-use: Playtomic (padel court bookings), Bolt/Wolt food rides, CityFit day passes — variable amounts, exclude unless fixed recurring membership
 - Gym/fitness: need 2+ charges at similar monthly amounts before calling it a subscription; a single €97 Klarna payment is NOT automatically monthly
-- Do NOT invent merchants (WeWork, etc.) unless that exact name appears on a charge line
+- Do NOT invent merchants unless that exact name appears on a charge line
+- Coworking (WeWork, Regus): single charge = day pass, NOT a subscription — exclude unless 2+ similar monthly charges
+- If occurrences = 1 and it's not a known streaming/SaaS brand (Netflix, Spotify, etc.), exclude from subscriptions list
 
 ## Currency (CRITICAL)
 - Detect currency from headers, symbols (£ $ €), columns, bank (Revolut / Crypto.com often USD/EUR/GBP; SNB / Al Rajhi usually SAR)

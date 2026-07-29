@@ -202,6 +202,33 @@ function mergeAuditReports(reports: AuditReport[]): AuditReport {
   };
 }
 
+/** Known monthly services — OK to keep even with 1 charge in a short window */
+const KNOWN_MONTHLY_BRANDS =
+  /netflix|spotify|apple|icloud|chatgpt|claude|anthropic|openai|youtube premium|disney|hbo|amazon prime|microsoft|office 365|adobe|linkedin|shahid|anghami|canva|notion|cursor|grammarly|perplexity|midjourney|lovable|clueso/i;
+
+/** Pay-per-use / day-pass — drop if only charged once */
+const PAY_PER_USE_MERCHANTS =
+  /playtomic|wework|we work|bolt|wolt|cityfit|etsy|namecheap/i;
+
+function shouldDropOneOffSub(
+  name: string,
+  rawDescription: string,
+  occurrences: number,
+  category: string
+): boolean {
+  if (occurrences >= 2) return false;
+  const hay = `${name} ${rawDescription}`.toLowerCase();
+  if (KNOWN_MONTHLY_BRANDS.test(hay)) return false;
+  if (PAY_PER_USE_MERCHANTS.test(hay)) return true;
+  if (
+    occurrences === 1 &&
+    /fitness|coworking|food_delivery|shopping/.test(category.toLowerCase())
+  ) {
+    return true;
+  }
+  return false;
+}
+
 function transformClaudeResponse(data: Record<string, unknown>): AuditReport {
   const subs = (data.subscriptions || []) as Array<Record<string, unknown>>;
   const subscriptions: Subscription[] = [];
@@ -209,6 +236,13 @@ function transformClaudeResponse(data: Record<string, unknown>): AuditReport {
 
   for (const sub of subs) {
     const name = String(sub.name || "Unknown");
+    const rawDescription = String(sub.raw_description || name);
+    const category = String(sub.category || "");
+    const occurrences = Number(sub.occurrences) || 1;
+
+    if (shouldDropOneOffSub(name, rawDescription, occurrences, category)) {
+      continue;
+    }
     const originalAmount =
       sub.original_amount != null ? Number(sub.original_amount) : undefined;
     const originalCurrency = (
@@ -216,7 +250,6 @@ function transformClaudeResponse(data: Record<string, unknown>): AuditReport {
     ).toUpperCase();
     const rawSar = Number(sub.amount) || 0;
     const frequency = normalizeFrequency(String(sub.frequency || "monthly"));
-    const occurrences = Number(sub.occurrences) || 1;
 
     const nativeCharge =
       originalAmount != null && Number.isFinite(originalAmount)
@@ -272,7 +305,7 @@ function transformClaudeResponse(data: Record<string, unknown>): AuditReport {
       status,
       confidence,
       aiDescription: reason,
-      rawDescription: String(sub.raw_description || name),
+      rawDescription,
       transactions: buildFakeTransactions(sub, nativeCharge, currency),
     });
   }
