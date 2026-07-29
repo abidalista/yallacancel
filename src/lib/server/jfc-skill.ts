@@ -31,6 +31,8 @@ Your job: read EVERY bank/card transaction the user provides and produce a skill
 
 ## What to exclude
 - Salary / payroll / employer allowance
+- Stripe Technology Europe / merchant payouts and other money IN (not subscriptions you pay)
+- Billing or home address lines (street + postal code) — not merchant names
 - Pure bank transfers (internal / incoming / outgoing) with no merchant
 - ATM / cash withdrawal
 - One-time grocery / gas / restaurant with no membership signal

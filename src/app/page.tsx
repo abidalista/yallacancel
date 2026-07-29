@@ -19,6 +19,7 @@ import {
   analyzeTransactions,
   analyzeSpending,
   analyzeStatementsWithAI,
+  mergeSubscriptionReports,
 } from "@/lib/services";
 import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, Subscription, Transaction, BankId } from "@/lib/types";
@@ -142,7 +143,7 @@ const TESTIMONIALS: { quote: string; name: string; role: string; initial: string
 const FAQ_ITEMS = [
   {
     q: "هل بياناتي آمنة؟",
-    a: "المعاينة المجانية تتم في متصفحك. التقرير الكامل بعد الدفع يستخدم Claude على السيرفر. ما نخزن ملفاتك.",
+    a: "نقرأ CSV و PDF على السيرفر (Claude + LlamaParse). ما نخزن ملفاتك بعد التحليل.",
   },
   {
     q: "أي بنوك تدعمون؟",
@@ -357,16 +358,18 @@ export default function HomePage() {
       const uploadElapsed = Date.now() - uploadStarted;
       await new Promise((r) => setTimeout(r, Math.max(0, 3000 - uploadElapsed)));
 
-      // Free scan = local (reliable, no API cost). Claude runs after pay.
+      // CSV + PDF: server reads all files (LlamaParse for PDF, Claude audit).
+      // Local parse = fallback if server fails or returns empty.
       const identified = Math.max(identifiedTotal, allTx.length);
-      if (identified === 0 && failedFiles.length === files.length) {
-        setParseError(buildParseError(failedFiles, allWarnings));
-        setRetryFiles(files);
-        setStep("landing");
-        return;
-      }
+      const localReport =
+        allTx.length > 0
+          ? {
+              ...analyzeTransactions(allTx),
+              analyzedTransactions: identified,
+            }
+          : null;
 
-      setTxCount(identified);
+      setTxCount(identified || files.length);
       setStep("analyzing");
       setParsedFileCount(successFileCount);
       setFailedScanFiles(failedFiles);
@@ -374,35 +377,76 @@ export default function HomePage() {
       setAiProgress(null);
       setAnalyzeStatus(ar ? "فحص عميق يبدأ الآن..." : "Deep scan starting...");
 
-      const scanStarted = Date.now();
       const spending = allTx.length > 0 ? analyzeSpending(allTx) : null;
-      const result =
-        allTx.length > 0
-          ? {
-              ...analyzeTransactions(allTx),
-              analyzedTransactions: identified,
-            }
-          : {
-              subscriptions: [],
-              totalMonthly: 0,
-              totalYearly: 0,
-              potentialMonthlySavings: 0,
-              potentialYearlySavings: 0,
-              analyzedTransactions: identified,
-              dateRange: { from: "", to: "" },
-            };
-      const engine: ScanEngine = "local";
-
       setSpendingData(spending);
-      setBaseReport(result);
       setAnalyzeStatus(
         ar ? "نفحص الاشتراكات المتكررة..." : "Scanning for recurring subscriptions..."
       );
 
+      const scanStarted = Date.now();
+      const aiResult = await analyzeStatementsWithAI(files);
+
+      let result: Report;
+      let engine: ScanEngine;
+      let scanFailedFiles = failedFiles;
+
+      if (aiResult.success) {
+        if (aiResult.fileErrors?.length) {
+          scanFailedFiles = aiResult.fileErrors.map(
+            (e) => e.split(":")[0]?.trim() || e
+          );
+        }
+        const claudeCount = aiResult.report.subscriptions.length;
+        const localCount = localReport?.subscriptions.length ?? 0;
+
+        if (claudeCount > 0 && localCount > 0) {
+          result = mergeSubscriptionReports(aiResult.report, localReport!);
+        } else if (claudeCount > 0) {
+          result = aiResult.report;
+        } else if (localReport && localCount > 0) {
+          result = localReport;
+        } else {
+          result = aiResult.report;
+        }
+
+        engine = claudeCount > 0 ? "claude" : "local";
+        if (aiResult.report.analyzedTransactions > 0) {
+          setTxCount(aiResult.report.analyzedTransactions);
+        } else if (identified > 0) {
+          setTxCount(identified);
+        }
+      } else if (localReport) {
+        console.warn("[scan] Server failed, local fallback:", aiResult.error);
+        result = localReport;
+        engine = "local";
+        setTxCount(identified);
+      } else {
+        console.error("[scan] Server and local both failed:", aiResult.error);
+        setParseError({
+          type: "file_error",
+          message: "Could not analyze files",
+          messageAr: "ما قدرنا نحلل الملفات",
+          details: aiResult.error || "Try CSV or PDF again.",
+          detailsAr: "جرب مرة ثانية — CSV أو PDF من تطبيق البنك.",
+          suggestions: ["Use CSV if PDF fails", "Try again in a minute"],
+          suggestionsAr: ["جرّب CSV لو PDF ما انقرأ", "جرب بعد دقيقة"],
+          showBankSelector: false,
+          showPasteInput: true,
+          failedFiles,
+          warnings: ["server_and_local_failed"],
+        });
+        setRetryFiles(files);
+        setStep("landing");
+        return;
+      }
+
+      setBaseReport(result);
+
       const scanElapsed = Date.now() - scanStarted;
       await new Promise((r) => setTimeout(r, Math.max(0, 2500 - scanElapsed)));
 
-      storeScanSession(files, result, spending, failedFiles, engine);
+      setFailedScanFiles(scanFailedFiles);
+      storeScanSession(files, result, spending, scanFailedFiles, engine);
 
       const clear = result.subscriptions.filter((s) => s.confidence === "confirmed");
       const unsure = result.subscriptions.filter((s) => s.confidence === "suspicious");
@@ -413,7 +457,7 @@ export default function HomePage() {
         setReport(rebuildReport(clear, result));
         setStep("confirm");
       } else {
-        finishTeaser(result, spending, files, failedFiles, engine);
+        finishTeaser(result, spending, files, scanFailedFiles, engine);
       }
     } catch (err) {
       console.error("Scan failed:", err);

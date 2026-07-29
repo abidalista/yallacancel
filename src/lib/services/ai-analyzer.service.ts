@@ -14,6 +14,8 @@ export interface ClaudeAnalysisResult {
   success: true;
   report: AuditReport;
   parseMethod: "claude_ai";
+  /** Filenames that could not be read server-side (partial scan) */
+  fileErrors?: string[];
 }
 
 export interface ClaudeAnalysisError {
@@ -78,8 +80,12 @@ export async function analyzeStatementsWithAI(
       return { success: false, error: String(data.error) };
     }
 
+    const fileErrors = Array.isArray(data._file_errors)
+      ? (data._file_errors as string[])
+      : undefined;
+
     const report = transformClaudeResponse(data);
-    return { success: true, report, parseMethod: "claude_ai" };
+    return { success: true, report, parseMethod: "claude_ai", fileErrors };
   } catch (err) {
     return {
       success: false,
