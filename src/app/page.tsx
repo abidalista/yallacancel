@@ -847,9 +847,9 @@ export default function HomePage() {
                   {subs.length === 0 ? (
                     ar ? "ما لقينا اشتراكات واضحة" : "No clear subscriptions found"
                   ) : ar ? (
-                    <>تصرف {formatHeadlineYearly(report.totalYearly, true)}</>
+                    <>تصرف <Ltr>{formatHeadlineYearly(report.totalYearly, true)}</Ltr></>
                   ) : (
-                    <>You&apos;re spending {formatHeadlineYearly(report.totalYearly, false)}</>
+                    <>You&apos;re spending <Ltr>{formatHeadlineYearly(report.totalYearly, false)}</Ltr></>
                   )}
                 </h1>
                 {subs.length > 0 && (

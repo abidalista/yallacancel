@@ -65,10 +65,10 @@ const CURRENCY_SYMBOL: Record<string, string> = {
   SAR: "",
 };
 
-/** Headline yearly total in SAR (JFC: "You're spending $1,240/year") */
-export function formatHeadlineYearly(yearlySar: number, ar: boolean): string {
+/** Headline yearly total — always Western digits + English unit (amount then unit) */
+export function formatHeadlineYearly(yearlySar: number, _ar?: boolean): string {
   const amount = formatMoney(yearlySar);
-  return ar ? `${amount} ريال/سنة` : `${amount} SAR/year`;
+  return `${amount} SAR/year`;
 }
 
 /** JFC-style native yearly display: $316/yr · €210/yr · 672 ريال/سنة */

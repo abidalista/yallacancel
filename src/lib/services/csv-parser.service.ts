@@ -713,14 +713,16 @@ function parseCryptoComCSV(
     if (!description) continue;
 
     const kind = (fields[kindIdx]?.trim() || "").toLowerCase();
-    const isSpend = !!kind && CRYPTO_COM_SPEND_KINDS.has(kind);
+    const isSpend =
+      (!!kind && CRYPTO_COM_SPEND_KINDS.has(kind)) ||
+      !kind; // card export often omits Transaction Kind
     const isRebate = isCryptoRebateRow(kind, description) && CRYPTO_SUB_HINT.test(description);
 
     if (!isSpend && !isRebate) continue;
 
     if (
       !isRebate &&
-      (/^(transfer|balance conversion|card top up|card cashback|cardholder cro|cro lockup|cro unlock|supercharger|pay rewards)/i.test(
+      (/^(transfer|balance conversion|card top up|card cashback|cardholder cro|cro lockup|cro unlock|supercharger|pay rewards|eur deposit|usd deposit)/i.test(
         description
       ) ||
         /\s->\s/.test(description))
