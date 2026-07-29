@@ -259,6 +259,18 @@ const HARD_NON_SUBSCRIPTION_PATTERNS: RegExp[] = [
   /\bloan\s+repayment\b/i,
   /\bقرض\b/,
   /\brepayment\s+of\s+loan\b/i,
+  // Income / payouts — not subscriptions you pay
+  /\bstripe\s+technology\s+europe\b/i,
+  /\bstripe\s+payments?\s+(europe|uk|u\.?s\.?)\b/i,
+  /\bpayment\s+from\b/i,
+  /\breceived\s+from\b/i,
+  /\bpayout\b/i,
+  /\bmerchant\s+payout\b/i,
+  /\btransfer\s+from\b/i,
+  /\bincoming\s+payment\b/i,
+  /\bsalary\b/i,
+  /\bwise\s+payments\b/i,
+  /\bpaypal\s+europe\b/i,
 ];
 
 /** Everyday retail — recurring but not subscriptions */
@@ -316,12 +328,32 @@ function matchesAny(text: string, patterns: RegExp[]): boolean {
   return patterns.some((pattern) => pattern.test(text));
 }
 
+/** Billing / home address lines repeated on card txs — not a merchant */
+function looksLikeStreetAddress(description: string): boolean {
+  const t = description.trim();
+  if (t.length < 8) return false;
+  // 13437 Berlin, 12345 Riyadh, etc.
+  if (/\b\d{4,5}\s+[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s\-]{2,}/.test(t)) return true;
+  if (/,\s*\d{4,5}\s+[A-Za-zÀ-ÿ]/.test(t)) return true;
+  // 292 Eichborndamm or 12 Main Street
+  if (/^\d+[a-z]?\s+[A-Za-zÀ-ÿ][\w\s\-]{2,50},?\s*\d{4,5}/i.test(t)) return true;
+  if (
+    /\b(str\.|straße|strasse|street|st\.|road|rd\.|avenue|ave\.|damm|platz|weg)\b/i.test(t) &&
+    /\b\d{4,5}\b/.test(t)
+  ) {
+    return true;
+  }
+  return false;
+}
+
 function isNonSubscriptionDescription(description: string): boolean {
   const text = description.trim();
   if (!text) return true;
 
   // Known merchants win — including "Card Rebate: Netflix"
   if (matchKnownSubscription(text)) return false;
+
+  if (looksLikeStreetAddress(text)) return true;
 
   // Pure cashback/reward lines with no known merchant
   if (matchesAny(text, HARD_NON_SUBSCRIPTION_PATTERNS)) return true;
@@ -548,6 +580,9 @@ export function analyzeTransactions(
 
       if (txs.length < 2) continue;
       if (!consistent) continue;
+
+      const displayName = knownName || txs[0].description;
+      if (!knownName && looksLikeStreetAddress(displayName)) continue;
 
       const avgProbe = txs.reduce((sum, t) => sum + t.amount, 0) / txs.length;
       const curProbe = majorityCurrency(txs);

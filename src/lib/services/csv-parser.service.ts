@@ -303,6 +303,16 @@ function parseAmount(value: string): number {
   return isNaN(num) ? 0 : Math.abs(num);
 }
 
+/** Signed parse — negative = spend (Revolut-style), positive = credit/income */
+function parseSignedAmount(value: string): number | null {
+  const cleaned = normalizeDigits(value)
+    .replace(/[^\d.,+\-]/g, "")
+    .replace(/,/g, "")
+    .trim();
+  const num = parseFloat(cleaned);
+  return isNaN(num) ? null : num;
+}
+
 function parseCSVLine(line: string, delimiter: string = ","): string[] {
   const result: string[] = [];
   let current = "";
@@ -386,7 +396,11 @@ function parseCSVWithHeaders(
     if (debitIdx !== -1 && fields[debitIdx]?.trim()) {
       amount = parseAmount(fields[debitIdx]);
     } else if (amountIdx !== -1 && fields[amountIdx]?.trim()) {
-      amount = parseAmount(fields[amountIdx]);
+      const signed = parseSignedAmount(fields[amountIdx]);
+      if (signed === null || signed === 0) continue;
+      // Single Amount column: positive = money in (payout/salary) — not a subscription charge
+      if (signed > 0) continue;
+      amount = Math.abs(signed);
     }
 
     if (amount === 0) continue;
