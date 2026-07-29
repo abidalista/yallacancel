@@ -1,0 +1,29 @@
+name: Shutdown Cloudflare Pages
+
+on:
+  workflow_dispatch:
+
+jobs:
+  delete-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete yallacancel Pages project
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          echo "Deleting Pages project yallacancel..."
+          RESP=$(curl -sS -w "\n%{http_code}" -X DELETE \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/yallacancel" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            -H "Content-Type: application/json")
+          BODY=$(echo "$RESP" | sed '$d')
+          CODE=$(echo "$RESP" | tail -n1)
+          echo "HTTP $CODE"
+          echo "$BODY"
+          if [ "$CODE" != "200" ] && [ "$CODE" != "404" ]; then
+            echo "Delete failed"
+            exit 1
+          fi
+          echo "Done."
