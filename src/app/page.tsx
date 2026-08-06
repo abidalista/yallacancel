@@ -27,7 +27,7 @@ import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, Subscription, Transaction, BankId } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
 import BrandLogo from "@/components/BrandLogo";
-import { formatInt, formatHeadlineYearly, formatPriceOnce, fileCountLabel, subscriptionCountLabel, truncateFilename, SUPPORT_EMAIL } from "@/lib/format";
+import { formatInt, formatHeadlineYearly, formatPriceOnce, fileCountLabel, subscriptionCountLabel, truncateFilename } from "@/lib/format";
 import Ltr from "@/components/Ltr";
 import {
   storeScanSession,
@@ -165,7 +165,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "كيف أتواصل معكم؟",
-    a: `راسلنا على ${SUPPORT_EMAIL} · نرد عادة خلال يوم عمل.`,
+    a: "اضغط «تواصل معنا» في أسفل الصفحة — يفتح بريدك مباشرة. نرد عادة خلال يوم عمل.",
   },
 ];
 
@@ -523,8 +523,8 @@ export default function HomePage() {
         type: "file_error",
         message: "Payment could not be verified",
         messageAr: "ما قدرنا نتحقق من الدفع",
-        details: `Please try again or email ${SUPPORT_EMAIL}.`,
-        detailsAr: `جرب مرة ثانية أو راسلنا على ${SUPPORT_EMAIL}.`,
+        details: "Please try again or use Contact support below.",
+        detailsAr: "جرب مرة ثانية أو اضغط «تواصل معنا» تحت.",
         suggestions: [],
         suggestionsAr: [],
         showBankSelector: false,

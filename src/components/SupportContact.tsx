@@ -1,8 +1,7 @@
 "use client";
 
 import { Mail } from "lucide-react";
-import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/format";
-import Ltr from "@/components/Ltr";
+import { SUPPORT_MAILTO } from "@/lib/format";
 
 interface SupportContactProps {
   locale: "ar" | "en";
@@ -18,21 +17,26 @@ export default function SupportContact({
 }: SupportContactProps) {
   const ar = locale === "ar";
 
+  const label =
+    variant === "footer"
+      ? ar
+        ? "تواصل معنا"
+        : "Contact support"
+      : ar
+        ? "مشكلة؟ راسلنا"
+        : "Problem? Email us";
+
   if (variant === "footer") {
     return (
       <a
         href={SUPPORT_MAILTO}
-        className={`text-sm no-underline transition-colors ${className}`}
+        className={`text-sm no-underline transition-colors hover:underline ${className}`}
         style={{ color: "#8AADA8" }}
       >
-        {ar ? "تواصل معنا" : "Contact support"}
-        {" · "}
-        <Ltr className="underline-offset-2 hover:underline">{SUPPORT_EMAIL}</Ltr>
+        {label}
       </a>
     );
   }
-
-  const label = ar ? "مشكلة؟ راسلنا" : "Problem? Email us";
 
   return (
     <a
@@ -44,11 +48,7 @@ export default function SupportContact({
       } ${className}`}
     >
       <Mail size={14} strokeWidth={1.5} className="flex-shrink-0" />
-      <span>
-        {label}
-        {": "}
-        <Ltr className="font-medium">{SUPPORT_EMAIL}</Ltr>
-      </span>
+      <span>{label}</span>
     </a>
   );
 }

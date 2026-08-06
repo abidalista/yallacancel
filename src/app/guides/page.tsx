@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import BrandLogo from "@/components/BrandLogo";
-import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/format";
+import { SUPPORT_MAILTO } from "@/lib/format";
 
 type Difficulty = "easy" | "medium" | "hard";
 
@@ -433,7 +433,7 @@ export default function GuidesPage() {
             className="text-xs text-white/50 hover:text-white/80 no-underline transition-colors"
             dir="ltr"
           >
-            تواصل معنا · {SUPPORT_EMAIL}
+            تواصل معنا
           </a>
         </p>
         <p className="text-xs text-white/30 mt-3">&copy; {new Date().getFullYear()} YallaCancel</p>
