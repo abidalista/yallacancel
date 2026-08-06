@@ -5,6 +5,10 @@ const intFormatter = new Intl.NumberFormat("en-US", {
 
 export const PRICE_LABEL = "49 SAR";
 
+/** Support inbox — landing + post-payment help */
+export const SUPPORT_EMAIL = "theamsh@gmail.com";
+export const SUPPORT_MAILTO = `mailto:${SUPPORT_EMAIL}`;
+
 export function formatInt(n: number): string {
   return intFormatter.format(Math.round(n));
 }

@@ -13,6 +13,7 @@ import AddToHomeScreen from "@/components/AddToHomeScreen";
 import UploadZone from "@/components/UploadZone";
 import PaywallModal from "@/components/PaywallModal";
 import ConfirmUnsure from "@/components/ConfirmUnsure";
+import SupportContact from "@/components/SupportContact";
 import {
   parseCSVRobust, detectBank,
   parsePDFRobust,
@@ -26,7 +27,7 @@ import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, Subscription, Transaction, BankId } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
 import BrandLogo from "@/components/BrandLogo";
-import { formatInt, formatHeadlineYearly, formatPriceOnce, fileCountLabel, subscriptionCountLabel, truncateFilename } from "@/lib/format";
+import { formatInt, formatHeadlineYearly, formatPriceOnce, fileCountLabel, subscriptionCountLabel, truncateFilename, SUPPORT_EMAIL } from "@/lib/format";
 import Ltr from "@/components/Ltr";
 import {
   storeScanSession,
@@ -161,6 +162,10 @@ const FAQ_ITEMS = [
   {
     q: "هل يلا كانسل يلغي الاشتراكات عني؟",
     a: "حالياً نوفر لك تقرير تفصيلي مع روابط إلغاء مباشرة. الإلغاء نفسه تسويه بنفسك عبر الرابط · عادة يأخذ أقل من دقيقة لكل اشتراك.",
+  },
+  {
+    q: "كيف أتواصل معكم؟",
+    a: `راسلنا على ${SUPPORT_EMAIL} · نرد عادة خلال يوم عمل.`,
   },
 ];
 
@@ -518,18 +523,19 @@ export default function HomePage() {
         type: "file_error",
         message: "Payment could not be verified",
         messageAr: "ما قدرنا نتحقق من الدفع",
-        details: "Please try again or contact support.",
-        detailsAr: "جرب مرة ثانية أو تواصل معنا.",
+        details: `Please try again or email ${SUPPORT_EMAIL}.`,
+        detailsAr: `جرب مرة ثانية أو راسلنا على ${SUPPORT_EMAIL}.`,
         suggestions: [],
         suggestionsAr: [],
         showBankSelector: false,
         showPasteInput: false,
         failedFiles: [],
-        warnings: [],
+        warnings: ["payment_verify_failed"],
       });
       return;
     }
 
+    setParseError(null);
     savePaymentReceipt(receiptId);
     setIsUnlocked(true);
     setReportTier("full");
@@ -842,6 +848,18 @@ export default function HomePage() {
         return (
           <div className="min-h-screen bg-white pt-24 pb-20 px-6">
             <div className="max-w-[560px] mx-auto">
+              {parseError?.warnings.includes("payment_verify_failed") && (
+                <div className="mb-8 rounded-xl border border-red-100 bg-red-50 p-4 text-center">
+                  <p className="font-bold text-red-700 mb-1">
+                    {ar ? parseError.messageAr : parseError.message}
+                  </p>
+                  <p className="text-sm text-red-600 mb-3">
+                    {ar ? parseError.detailsAr : parseError.details}
+                  </p>
+                  <SupportContact locale={locale} variant="muted" />
+                </div>
+              )}
+
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -961,6 +979,12 @@ export default function HomePage() {
                     {ar ? "دفعة واحدة. بدون حساب." : "One-time. No account needed."}
                   </p>
                 </motion.div>
+              )}
+
+              {showFull && (
+                <div className="mt-10 text-center">
+                  <SupportContact locale={locale} variant="muted" />
+                </div>
               )}
 
               <div className="text-center mt-12">
@@ -1480,13 +1504,14 @@ export default function HomePage() {
               <p className="text-lg font-bold mb-4" style={{ color: "#C5DDD9" }}>
                 {ar ? "اكتشف. الغي. وفّر." : "Find it. Cancel it. Save."}
               </p>
-              <div className="flex justify-center gap-6 mb-6">
+              <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mb-6">
                 <a href="#pricing" className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}>
                   {ar ? "الأسعار" : "Pricing"}
                 </a>
                 <a href="/guides" className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}>
                   {ar ? "أدلة الإلغاء" : "Cancel Guides"}
                 </a>
+                <SupportContact locale={locale} variant="footer" />
               </div>
               <p className="text-xs mb-1" style={{ color: "#8AADA8" }}>
                 {ar ? `${AR_PRICE} مرة واحدة، بدون اشتراك، ضمان استرداد كامل` : "49 SAR one-time · No subscription · Full refund guarantee"}
