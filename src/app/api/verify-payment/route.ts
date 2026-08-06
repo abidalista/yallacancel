@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isFounderReceipt } from "@/lib/format";
+import {
+  WHOP_PAYMENTS_API,
+  isWhopPaymentPending,
+  isWhopPaymentSuccessful,
+} from "@/lib/server/whop-payment";
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,6 +29,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ valid: true });
     }
 
+    // Real Whop receipts always start with pay_
+    if (!receiptId.startsWith("pay_")) {
+      return NextResponse.json({ valid: false }, { status: 400 });
+    }
+
     const apiKey = process.env.WHOP_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
@@ -33,20 +43,32 @@ export async function POST(request: NextRequest) {
     }
 
     const res = await fetch(
-      `https://api.whop.com/api/v5/payments/${receiptId}`,
+      `${WHOP_PAYMENTS_API}/${encodeURIComponent(receiptId)}`,
       {
         headers: { Authorization: `Bearer ${apiKey}` },
       }
     );
+
+    if (res.status === 404) {
+      // Payment not readable yet right after checkout
+      return NextResponse.json({ valid: false, pending: true }, { status: 202 });
+    }
 
     if (!res.ok) {
       return NextResponse.json({ valid: false });
     }
 
     const payment = await res.json();
-    return NextResponse.json({
-      valid: payment.status === "paid" || payment.status === "succeeded",
-    });
+
+    if (isWhopPaymentSuccessful(payment)) {
+      return NextResponse.json({ valid: true });
+    }
+
+    if (isWhopPaymentPending(payment)) {
+      return NextResponse.json({ valid: false, pending: true }, { status: 202 });
+    }
+
+    return NextResponse.json({ valid: false });
   } catch {
     return NextResponse.json({ valid: false }, { status: 500 });
   }
