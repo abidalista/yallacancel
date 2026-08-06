@@ -40,10 +40,18 @@ export default function PaywallModal({
   const [showCode, setShowCode] = useState(false);
   const [accessCode, setAccessCode] = useState("");
   const [codeError, setCodeError] = useState(false);
+  const [receiptMissing, setReceiptMissing] = useState(false);
   const planId = process.env.NEXT_PUBLIC_WHOP_PLAN_ID || "plan_3E0V8cxU8VYXI";
 
   function submitAccessCode() {
-    const code = normalizeAccessCode(accessCode);
+    const raw = accessCode.trim();
+    // Recovery: paste Whop receipt id (pay_…) from dashboard email / support
+    if (/^pay_[A-Za-z0-9]+$/.test(raw)) {
+      setCodeError(false);
+      onPaymentSuccess(raw);
+      return;
+    }
+    const code = normalizeAccessCode(raw);
     if (!code) {
       setCodeError(true);
       return;
@@ -143,6 +151,13 @@ export default function PaywallModal({
                   </button>
                 ) : (
                   <div className="space-y-2 pt-1">
+                    {receiptMissing && (
+                      <p className="text-xs text-amber-700 text-center bg-amber-50 rounded-lg px-2 py-2">
+                        {ar
+                          ? "الدفع تم · الصق رقم الإيصال pay_ من إيميل Whop"
+                          : "Payment went through · paste your pay_ receipt from Whop email"}
+                      </p>
+                    )}
                     <input
                       type="text"
                       value={accessCode}
@@ -151,7 +166,7 @@ export default function PaywallModal({
                         setCodeError(false);
                       }}
                       onKeyDown={(e) => e.key === "Enter" && submitAccessCode()}
-                      placeholder={ar ? "اكتب الكود هنا" : "Enter access code"}
+                      placeholder={ar ? "كود أو pay_…" : "Code or pay_… receipt"}
                       className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-[#00A651]"
                       dir="ltr"
                       autoComplete="off"
@@ -196,8 +211,20 @@ export default function PaywallModal({
                 planId={planId}
                 theme="light"
                 skipRedirect
+                returnUrl={
+                  typeof window !== "undefined"
+                    ? `${window.location.origin}${window.location.pathname}?whop_return=1`
+                    : undefined
+                }
                 onComplete={(_planId, receiptId) => {
-                  onPaymentSuccess(receiptId || "whop_paid");
+                  // receipt_id is pay_… — never invent a fake id (verify would fail)
+                  if (!receiptId || !receiptId.startsWith("pay_")) {
+                    setReceiptMissing(true);
+                    setShowCheckout(false);
+                    setShowCode(true);
+                    return;
+                  }
+                  onPaymentSuccess(receiptId);
                 }}
                 fallback={
                   <div className="flex items-center justify-center py-16">

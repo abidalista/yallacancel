@@ -203,6 +203,27 @@ export default function HomePage() {
     }
   }, []);
 
+  // Whop 3DS / mada return: ?status=success&payment_id=pay_…
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const paymentId = params.get("payment_id");
+    const status = params.get("status");
+    if (!paymentId || !paymentId.startsWith("pay_")) return;
+    if (status && status !== "success") return;
+
+    // Clean URL so refresh does not re-fire unlock
+    const url = new URL(window.location.href);
+    url.searchParams.delete("payment_id");
+    url.searchParams.delete("status");
+    url.searchParams.delete("state_id");
+    url.searchParams.delete("whop_return");
+    window.history.replaceState({}, "", url.pathname + url.search);
+
+    void handlePaymentSuccess(paymentId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on return from Whop
+  }, []);
+
   useEffect(() => {
     if (step !== "analyzing" && step !== "uploading") return;
     setElapsedSec(0);
