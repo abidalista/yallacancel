@@ -864,8 +864,8 @@ export default function HomePage() {
                 {subs.length > 0 && (
                   <p className="text-[15px] text-slate-500 mb-0">
                     {ar
-                      ? `عبر ${subscriptionCountLabel(subs.length, true)}`
-                      : `across ${subscriptionCountLabel(subs.length, false)}`}
+                      ? `عبر ${showFull ? "" : "ما يصل إلى "}${subscriptionCountLabel(subs.length, true)}`
+                      : `across ${showFull ? "" : "up to "}${subscriptionCountLabel(subs.length, false)}`}
                   </p>
                 )}
                 <div className="mt-5 border-t border-dashed border-[#00A651]/55" />
@@ -952,8 +952,8 @@ export default function HomePage() {
                 >
                   <p className="text-[15px] text-slate-900 mb-5">
                     {ar
-                      ? `روابط إلغاء مباشرة لجميع الـ ${subs.length} اشتراكات.`
-                      : `Direct cancel links for all ${subs.length} subscriptions.`}
+                      ? `روابط إلغاء مباشرة لما يصل إلى ${subs.length} اشتراك — تقرير مؤكد بالذكاء الاصطناعي.`
+                      : `Direct cancel links for up to ${subs.length} subscriptions — AI-verified full report.`}
                   </p>
                   <button
                     type="button"
