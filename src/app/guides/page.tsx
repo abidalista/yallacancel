@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import BrandLogo from "@/components/BrandLogo";
+import { SUPPORT_MAILTO } from "@/lib/format";
 
 type Difficulty = "easy" | "medium" | "hard";
 
@@ -426,6 +427,15 @@ export default function GuidesPage() {
         <a href="/" className="no-underline" style={{ direction: "ltr", unicodeBidi: "bidi-override" }}>
           <span className="nav-logo nav-logo-light text-lg justify-center">yalla<span className="accent">cancel</span></span>
         </a>
+        <p className="mt-3">
+          <a
+            href={SUPPORT_MAILTO}
+            className="text-xs text-white/50 hover:text-white/80 no-underline transition-colors"
+            dir="ltr"
+          >
+            تواصل معنا
+          </a>
+        </p>
         <p className="text-xs text-white/30 mt-3">&copy; {new Date().getFullYear()} YallaCancel</p>
       </footer>
     </div>

@@ -13,6 +13,7 @@ import AddToHomeScreen from "@/components/AddToHomeScreen";
 import UploadZone from "@/components/UploadZone";
 import PaywallModal from "@/components/PaywallModal";
 import ConfirmUnsure from "@/components/ConfirmUnsure";
+import SupportContact from "@/components/SupportContact";
 import {
   parseCSVRobust, detectBank,
   parsePDFRobust,
@@ -161,6 +162,10 @@ const FAQ_ITEMS = [
   {
     q: "هل يلا كانسل يلغي الاشتراكات عني؟",
     a: "حالياً نوفر لك تقرير تفصيلي مع روابط إلغاء مباشرة. الإلغاء نفسه تسويه بنفسك عبر الرابط · عادة يأخذ أقل من دقيقة لكل اشتراك.",
+  },
+  {
+    q: "كيف أتواصل معكم؟",
+    a: "اضغط «تواصل معنا» في أسفل الصفحة — يفتح بريدك مباشرة. نرد عادة خلال يوم عمل.",
   },
 ];
 
@@ -518,18 +523,19 @@ export default function HomePage() {
         type: "file_error",
         message: "Payment could not be verified",
         messageAr: "ما قدرنا نتحقق من الدفع",
-        details: "Please try again or contact support.",
-        detailsAr: "جرب مرة ثانية أو تواصل معنا.",
+        details: "Please try again or use Contact support below.",
+        detailsAr: "جرب مرة ثانية أو اضغط «تواصل معنا» تحت.",
         suggestions: [],
         suggestionsAr: [],
         showBankSelector: false,
         showPasteInput: false,
         failedFiles: [],
-        warnings: [],
+        warnings: ["payment_verify_failed"],
       });
       return;
     }
 
+    setParseError(null);
     savePaymentReceipt(receiptId);
     setIsUnlocked(true);
     setReportTier("full");
@@ -842,6 +848,18 @@ export default function HomePage() {
         return (
           <div className="min-h-screen bg-white pt-24 pb-20 px-6">
             <div className="max-w-[560px] mx-auto">
+              {parseError?.warnings.includes("payment_verify_failed") && (
+                <div className="mb-8 rounded-xl border border-red-100 bg-red-50 p-4 text-center">
+                  <p className="font-bold text-red-700 mb-1">
+                    {ar ? parseError.messageAr : parseError.message}
+                  </p>
+                  <p className="text-sm text-red-600 mb-3">
+                    {ar ? parseError.detailsAr : parseError.details}
+                  </p>
+                  <SupportContact locale={locale} variant="muted" />
+                </div>
+              )}
+
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -961,6 +979,12 @@ export default function HomePage() {
                     {ar ? "دفعة واحدة. بدون حساب." : "One-time. No account needed."}
                   </p>
                 </motion.div>
+              )}
+
+              {showFull && (
+                <div className="mt-10 text-center">
+                  <SupportContact locale={locale} variant="muted" />
+                </div>
               )}
 
               <div className="text-center mt-12">
@@ -1424,26 +1448,6 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Sources · external citation links */}
-          <section className="bg-[#EDF5F3] py-12 px-6">
-            <div className="max-w-[700px] mx-auto text-center">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
-                {ar ? "مصادر ومراجع" : "Sources & References"}
-              </p>
-              <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-slate-400">
-                <a href="https://www.sama.gov.sa" target="_blank" rel="noopener noreferrer" className="hover:text-[#00A651] transition-colors no-underline">
-                  {ar ? "البنك المركزي السعودي (ساما)" : "Saudi Central Bank (SAMA)"}
-                </a>
-                <a href="https://www.mcit.gov.sa" target="_blank" rel="noopener noreferrer" className="hover:text-[#00A651] transition-colors no-underline">
-                  {ar ? "وزارة الاتصالات وتقنية المعلومات" : "MCIT Saudi Arabia"}
-                </a>
-                <a href="https://www.vision2030.gov.sa" target="_blank" rel="noopener noreferrer" className="hover:text-[#00A651] transition-colors no-underline">
-                  {ar ? "رؤية السعودية 2030" : "Saudi Vision 2030"}
-                </a>
-              </div>
-            </div>
-          </section>
-
           {/* CTA Banner */}
           <section className="bg-gradient-to-br from-[#1A3A35] to-[#0F2A26] py-14 px-6 text-center">
             <div className="max-w-[600px] mx-auto">
@@ -1480,13 +1484,14 @@ export default function HomePage() {
               <p className="text-lg font-bold mb-4" style={{ color: "#C5DDD9" }}>
                 {ar ? "اكتشف. الغي. وفّر." : "Find it. Cancel it. Save."}
               </p>
-              <div className="flex justify-center gap-6 mb-6">
+              <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mb-6">
                 <a href="#pricing" className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}>
                   {ar ? "الأسعار" : "Pricing"}
                 </a>
                 <a href="/guides" className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}>
                   {ar ? "أدلة الإلغاء" : "Cancel Guides"}
                 </a>
+                <SupportContact locale={locale} variant="footer" />
               </div>
               <p className="text-xs mb-1" style={{ color: "#8AADA8" }}>
                 {ar ? `${AR_PRICE} مرة واحدة، بدون اشتراك، ضمان استرداد كامل` : "49 SAR one-time · No subscription · Full refund guarantee"}
