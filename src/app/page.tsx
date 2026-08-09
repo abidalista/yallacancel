@@ -20,7 +20,6 @@ import {
   analyzeTransactions,
   analyzeSpending,
   analyzeStatementsWithAI,
-  mergeSubscriptionReports,
   buildServerUploadFiles,
 } from "@/lib/services";
 import type { SpendingBreakdown as SpendingData } from "@/lib/services";
@@ -35,7 +34,7 @@ import {
   clearScanSession,
   getTeaserReport,
   getTeaserSpending,
-  isClaudeScan,
+  getScanEngine,
   type ScanEngine,
 } from "@/lib/scan-session";
 import {
@@ -397,69 +396,64 @@ export default function HomePage() {
         ar ? "نفحص الاشتراكات المتكررة..." : "Scanning for recurring subscriptions..."
       );
 
-      const hasPdf = files.some((f) => /\.pdf$/i.test(f.name));
       const localCount = localReport?.subscriptions.length ?? 0;
       const scanStarted = Date.now();
 
-      // CSV-only with local hits → instant (skip 60–90s server wait)
+      // In-browser extracted text (PDF → .txt) reused for the paid Sonnet pass,
+      // so paying customers don't trigger a second slow LlamaParse extraction.
+      const serverFiles = buildServerUploadFiles(files, pdfTexts);
+
+      // Free teaser = local parser. Paid report upgrades to full Claude (Sonnet).
+      // Only when the local teaser is weak (< 3 subs) do we spend on a cheap
+      // Haiku pass so the free preview still looks accurate and converts.
+      const TEASER_MIN_SUBS = 3;
+
       let result: Report;
       let engine: ScanEngine;
       let scanFailedFiles = failedFiles;
 
-      if (!hasPdf && localReport && localCount > 0) {
+      if (localReport && localCount >= TEASER_MIN_SUBS) {
         result = localReport;
         engine = "local";
       } else {
-        const serverFiles = buildServerUploadFiles(files, pdfTexts);
-        const aiResult = await analyzeStatementsWithAI(serverFiles);
+        // Weak local teaser → cheap Haiku assist (never Sonnet before payment)
+        const aiResult = await analyzeStatementsWithAI(serverFiles, "teaser");
 
-        if (aiResult.success) {
+        if (aiResult.success && aiResult.report.subscriptions.length > 0) {
           if (aiResult.fileErrors?.length) {
             scanFailedFiles = aiResult.fileErrors.map(
               (e) => e.split(":")[0]?.trim() || e
             );
           }
-          const claudeCount = aiResult.report.subscriptions.length;
-
-          if (claudeCount > 0 && localCount > 0) {
-            result = mergeSubscriptionReports(aiResult.report, localReport!);
-            engine = "claude";
-          } else if (claudeCount > 0) {
-            result = aiResult.report;
-            engine = "claude";
-          } else if (localReport && localCount > 0) {
-            result = localReport;
-            engine = "local";
-          } else if (localReport) {
-            result = localReport;
-            engine = "local";
-          } else {
-            result = aiResult.report;
-            engine = "claude";
-          }
+          // Trust the Haiku audit (skill-grade, currency-aware). We deliberately
+          // do NOT merge the local PDF parse here: its currency detection is
+          // unreliable and merging caused duplicate/mis-priced rows.
+          result = aiResult.report;
+          engine = "haiku";
 
           if (aiResult.report.analyzedTransactions > 0) {
             setTxCount(aiResult.report.analyzedTransactions);
           } else if (identified > 0) {
             setTxCount(identified);
           }
-        } else if (localReport) {
-          console.warn("[scan] Server failed, local fallback:", aiResult.error);
+        } else if (localReport && localCount > 0) {
+          // Haiku empty/failed but local found something → use local
           result = localReport;
           engine = "local";
           setTxCount(identified);
         } else {
-          console.error("[scan] Server and local both failed:", aiResult.error);
+          const aiErr = aiResult.success ? "no_subscriptions" : aiResult.error;
+          console.error("[scan] Local empty and Haiku teaser failed:", aiErr);
           setParseError({
             type: "file_error",
             message: "Could not analyze files",
             messageAr: "ما قدرنا نحلل الملفات",
             details:
-              aiResult.error?.includes("404") || aiResult.error?.includes("not_found")
+              aiErr?.includes("404") || aiErr?.includes("not_found")
                 ? "AI scan is temporarily unavailable. Try again in a minute."
-                : aiResult.error || "Try CSV or PDF again.",
+                : "Try CSV or PDF again.",
             detailsAr:
-              aiResult.error?.includes("404") || aiResult.error?.includes("not_found")
+              aiErr?.includes("404") || aiErr?.includes("not_found")
                 ? "الفحص بالذكاء الاصطناعي مو متاح حالياً. جرب بعد دقيقة."
                 : "جرب مرة ثانية — CSV أو PDF من تطبيق البنك.",
             suggestions: ["Use CSV if PDF fails", "Try again in a minute"],
@@ -467,7 +461,7 @@ export default function HomePage() {
             showBankSelector: false,
             showPasteInput: true,
             failedFiles,
-            warnings: ["server_and_local_failed"],
+            warnings: ["local_and_teaser_failed"],
           });
           setRetryFiles(files);
           setStep("landing");
@@ -481,7 +475,7 @@ export default function HomePage() {
       await new Promise((r) => setTimeout(r, Math.max(0, 2500 - scanElapsed)));
 
       setFailedScanFiles(scanFailedFiles);
-      storeScanSession(files, result, spending, scanFailedFiles, engine);
+      storeScanSession(serverFiles, result, spending, scanFailedFiles, engine);
 
       const clear = result.subscriptions.filter((s) => s.confidence === "confirmed");
       const unsure = result.subscriptions.filter((s) => s.confidence === "suspicious");
@@ -492,7 +486,7 @@ export default function HomePage() {
         setReport(rebuildReport(clear, result));
         setStep("confirm");
       } else {
-        finishTeaser(result, spending, files, scanFailedFiles, engine);
+        finishTeaser(result, spending, serverFiles, scanFailedFiles, engine);
       }
     } catch (err) {
       console.error("Scan failed:", err);
@@ -540,66 +534,59 @@ export default function HomePage() {
     setIsUnlocked(true);
     setReportTier("full");
 
-    // Free scan was local — pay = unblur + Claude upgrade
-    if (isClaudeScan()) {
-      const full = getTeaserReport() || baseReport || report;
-      if (full) {
-        setReport(full);
-        saveReportData(full, spendingData);
-      }
-      setStep("results");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-
-    // Rare fallback if session lost Claude flag
-    setAnalyzeStatus(ar ? "فحص عميق يبدأ الآن..." : "Deep scan starting...");
-    setStep("analyzing");
-    setAiProgress(null);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-
+    // Payment unlocks the FULL, high-quality Claude (Sonnet) report. The free
+    // teaser was local (or a cheap Haiku assist); now we run the real thing.
     const files = getPendingScanFiles();
-    if (files.length === 0) {
-      setStep("results");
-      return;
-    }
 
-    try {
-      const aiResult = await analyzeStatementsWithAI(files);
+    if (files.length > 0) {
+      setAnalyzeStatus(ar ? "نجهّز تقريرك الكامل..." : "Building your full report...");
+      setStep("analyzing");
       setAiProgress(null);
+      window.scrollTo({ top: 0, behavior: "smooth" });
 
-      if (aiResult.success) {
-        const aiReport = aiResult.report;
-        const clear = aiReport.subscriptions.filter((s) => s.confidence === "confirmed");
-        const unsure = aiReport.subscriptions.filter((s) => s.confidence === "suspicious");
-        setBaseReport(aiReport);
-        setSpendingData(null);
-        storeScanSession(files, aiReport, null, [], "claude");
+      try {
+        const aiResult = await analyzeStatementsWithAI(files, "full");
+        setAiProgress(null);
 
-        if (unsure.length > 0) {
-          setClearCount(clear.length);
-          setUnsureSubs(unsure);
-          setReport(rebuildReport(clear, aiReport));
-          setStep("confirm");
-        } else {
-          setReport(aiReport);
-          saveReportData(aiReport, null);
-          setStep("results");
+        if (aiResult.success && aiResult.report.subscriptions.length > 0) {
+          const aiReport = aiResult.report;
+          const clear = aiReport.subscriptions.filter((s) => s.confidence === "confirmed");
+          const unsure = aiReport.subscriptions.filter((s) => s.confidence === "suspicious");
+          setBaseReport(aiReport);
+          setSpendingData(null);
+          storeScanSession(files, aiReport, null, [], "claude");
+
+          if (unsure.length > 0) {
+            setClearCount(clear.length);
+            setUnsureSubs(unsure);
+            setReport(rebuildReport(clear, aiReport));
+            setStep("confirm");
+          } else {
+            setReport(aiReport);
+            saveReportData(aiReport, null);
+            setStep("results");
+          }
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
         }
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        return;
-      }
 
-      console.warn("[unlock] AI failed, showing local full report:", aiResult.error);
-      const teaser = getTeaserReport();
-      const spending = getTeaserSpending();
-      if (teaser) setReport(teaser);
-      if (spending) setSpendingData(spending);
-      if (teaser) saveReportData(teaser, spending);
-    } catch (err) {
-      console.error("[unlock] AI error:", err);
+        console.warn(
+          "[unlock] Full Sonnet failed/empty, showing existing report:",
+          aiResult.success ? "no_subscriptions" : aiResult.error
+        );
+      } catch (err) {
+        console.error("[unlock] Full report error:", err);
+      }
     }
 
+    // Fallback: just unblur whatever teaser we already have
+    const teaser = getTeaserReport() || baseReport || report;
+    const spending = getTeaserSpending() ?? spendingData;
+    if (teaser) {
+      setReport(teaser);
+      setSpendingData(spending);
+      saveReportData(teaser, spending);
+    }
     setStep("results");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -756,7 +743,7 @@ export default function HomePage() {
               template
             );
             const files = getPendingScanFiles();
-            finishTeaser(merged, spendingData, files, failedScanFiles, isClaudeScan() ? "claude" : "local");
+            finishTeaser(merged, spendingData, files, failedScanFiles, getScanEngine());
           }}
           onSkip={() => {
             const template = baseReport || report;
@@ -773,7 +760,7 @@ export default function HomePage() {
                   }));
             const clearOnly = rebuildReport(fallback, template);
             const files = getPendingScanFiles();
-            finishTeaser(clearOnly, spendingData, files, failedScanFiles, isClaudeScan() ? "claude" : "local");
+            finishTeaser(clearOnly, spendingData, files, failedScanFiles, getScanEngine());
           }}
         />
       )}
@@ -877,8 +864,8 @@ export default function HomePage() {
                 {subs.length > 0 && (
                   <p className="text-[15px] text-slate-500 mb-0">
                     {ar
-                      ? `عبر ${subscriptionCountLabel(subs.length, true)}`
-                      : `across ${subscriptionCountLabel(subs.length, false)}`}
+                      ? `عبر ${showFull ? "" : "ما يصل إلى "}${subscriptionCountLabel(subs.length, true)}`
+                      : `across ${showFull ? "" : "up to "}${subscriptionCountLabel(subs.length, false)}`}
                   </p>
                 )}
                 <div className="mt-5 border-t border-dashed border-[#00A651]/55" />
@@ -965,8 +952,8 @@ export default function HomePage() {
                 >
                   <p className="text-[15px] text-slate-900 mb-5">
                     {ar
-                      ? `روابط إلغاء مباشرة لجميع الـ ${subs.length} اشتراكات.`
-                      : `Direct cancel links for all ${subs.length} subscriptions.`}
+                      ? `روابط إلغاء مباشرة لما يصل إلى ${subs.length} اشتراك — تقرير مؤكد بالذكاء الاصطناعي.`
+                      : `Direct cancel links for up to ${subs.length} subscriptions — AI-verified full report.`}
                   </p>
                   <button
                     type="button"

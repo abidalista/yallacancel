@@ -11,35 +11,63 @@ import {
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const LLAMA_API_KEY = process.env.LLAMA_CLOUD_API_KEY;
-const LLAMA_BASE = "https://api.cloud.llamaindex.ai";
+
+/**
+ * LlamaCloud is region-partitioned (a US key is rejected by the EU host and
+ * vice-versa). Try an explicit override first, then US, then EU, so the key
+ * works regardless of which region it was issued in.
+ */
+const LLAMA_BASES = Array.from(
+  new Set(
+    [
+      process.env.LLAMA_CLOUD_BASE_URL,
+      "https://api.cloud.llamaindex.ai",
+      "https://api.cloud.eu.llamaindex.ai",
+    ].filter((b): b is string => Boolean(b))
+  )
+);
+
+/** Upload to the first region that accepts the key; return that region + job id. */
+async function llamaUpload(file: File): Promise<{ base: string; jobId: string }> {
+  let lastErr = "no region attempted";
+  for (const base of LLAMA_BASES) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch(`${base}/api/v1/parsing/upload`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LLAMA_API_KEY}`,
+        Accept: "application/json",
+      },
+      body: formData,
+    });
+
+    if (res.status === 401 || res.status === 403) {
+      // Wrong region for this key — try the next host.
+      lastErr = `${res.status} ${await res.text()}`;
+      continue;
+    }
+    if (!res.ok) {
+      throw new Error(`LlamaParse upload failed: ${res.status} ${await res.text()}`);
+    }
+
+    const { id } = await res.json();
+    return { base, jobId: id };
+  }
+  throw new Error(`LlamaParse upload failed (all regions): ${lastErr}`);
+}
 
 export async function extractPDFText(file: File): Promise<string> {
   if (!LLAMA_API_KEY) throw new Error("LLAMA_CLOUD_API_KEY not set");
 
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const uploadRes = await fetch(`${LLAMA_BASE}/api/v1/parsing/upload`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${LLAMA_API_KEY}`,
-      Accept: "application/json",
-    },
-    body: formData,
-  });
-
-  if (!uploadRes.ok) {
-    const err = await uploadRes.text();
-    throw new Error(`LlamaParse upload failed: ${uploadRes.status} ${err}`);
-  }
-
-  const { id: jobId } = await uploadRes.json();
+  const { base, jobId } = await llamaUpload(file);
 
   for (let i = 0; i < 60; i++) {
     await new Promise((r) => setTimeout(r, 2000));
 
     const res = await fetch(
-      `${LLAMA_BASE}/api/v1/parsing/job/${jobId}/result/markdown`,
+      `${base}/api/v1/parsing/job/${jobId}/result/markdown`,
       {
         headers: {
           Authorization: `Bearer ${LLAMA_API_KEY}`,
@@ -65,7 +93,10 @@ export async function extractFileText(file: File): Promise<string> {
 }
 
 /** Skill-grade Claude call with cached system prompt */
-export async function analyzeStatementText(rawText: string): Promise<unknown> {
+export async function analyzeStatementText(
+  rawText: string,
+  model: string = CLAUDE_MODEL
+): Promise<unknown> {
   if (!ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY not set");
 
   let text = rawText;
@@ -81,7 +112,7 @@ export async function analyzeStatementText(rawText: string): Promise<unknown> {
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: CLAUDE_MODEL,
+      model,
       max_tokens: 16384,
       system: [
         {
@@ -106,12 +137,20 @@ export async function analyzeStatementText(rawText: string): Promise<unknown> {
 
   const data = await res.json();
   const out = data.content?.[0]?.text || "";
-  const cleaned = out.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+  let cleaned = out.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+
+  // Some models (esp. Haiku) prepend/append prose around the JSON. Extract the
+  // outermost {...} object so a stray sentence doesn't break the whole scan.
+  const firstBrace = cleaned.indexOf("{");
+  const lastBrace = cleaned.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    cleaned = cleaned.slice(firstBrace, lastBrace + 1);
+  }
 
   try {
     const parsed = JSON.parse(cleaned) as Record<string, unknown>;
     parsed._meta = {
-      model: CLAUDE_MODEL,
+      model,
       provider: "anthropic",
       cache: data.usage || null,
     };
@@ -121,16 +160,22 @@ export async function analyzeStatementText(rawText: string): Promise<unknown> {
   }
 }
 
-export async function analyzeStatementFile(file: File): Promise<unknown> {
+export async function analyzeStatementFile(
+  file: File,
+  model: string = CLAUDE_MODEL
+): Promise<unknown> {
   const rawText = await extractFileText(file);
   if (!rawText || rawText.length < 50) {
     throw new Error("Could not extract text from file");
   }
-  return analyzeStatementText(rawText);
+  return analyzeStatementText(rawText, model);
 }
 
 /** Combine multiple statement files → one skill-grade Claude audit */
-export async function analyzeStatementFiles(files: File[]): Promise<unknown> {
+export async function analyzeStatementFiles(
+  files: File[],
+  model: string = CLAUDE_MODEL
+): Promise<unknown> {
   if (files.length === 0) throw new Error("No files provided");
 
   const chunks: string[] = [];
@@ -176,7 +221,7 @@ export async function analyzeStatementFiles(files: File[]): Promise<unknown> {
   }
 
   const combined = chunks.join("\n");
-  const result = (await analyzeStatementText(combined)) as Record<string, unknown>;
+  const result = (await analyzeStatementText(combined, model)) as Record<string, unknown>;
   if (errors.length) {
     result._file_errors = errors;
   }

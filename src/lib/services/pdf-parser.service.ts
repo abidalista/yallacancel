@@ -46,14 +46,41 @@ function findDate(str: string): string | null {
 
 // ── Amount patterns ──
 
+/**
+ * Locale-aware number normalization (US "1,234.56", EU "1.234,56"/"6,99").
+ * If both separators are present the LAST one is the decimal; a lone comma with
+ * ≤2 trailing digits is a decimal comma, otherwise a thousands separator.
+ */
+function normalizeAmountString(token: string): string {
+  let s = token.replace(/[^\d.,+\-]/g, "");
+  if (!s) return "";
+  const hasComma = s.includes(",");
+  const hasDot = s.includes(".");
+  if (hasComma && hasDot) {
+    if (s.lastIndexOf(",") > s.lastIndexOf(".")) {
+      s = s.replace(/\./g, "").replace(",", ".");
+    } else {
+      s = s.replace(/,/g, "");
+    }
+  } else if (hasComma) {
+    const after = s.slice(s.lastIndexOf(",") + 1);
+    if (s.indexOf(",") === s.lastIndexOf(",") && after.length <= 2) {
+      s = s.replace(",", ".");
+    } else {
+      s = s.replace(/,/g, "");
+    }
+  }
+  return s;
+}
+
 function findAmounts(str: string): number[] {
   const normalized = normalizeDigits(str);
   const results: number[] = [];
-  const re = /(-?[\d,]+(?:\.\d{1,2})?)/g;
+  // Capture number tokens that may use either US or EU grouping/decimals.
+  const re = /-?\d[\d.,]*\d|-?\d/g;
   let match;
   while ((match = re.exec(normalized)) !== null) {
-    const raw = match[1].replace(/,/g, "");
-    const num = parseFloat(raw);
+    const num = parseFloat(normalizeAmountString(match[0]));
     if (!isNaN(num) && Math.abs(num) >= 0.5 && Math.abs(num) < 10_000_000) {
       results.push(Math.abs(num));
     }

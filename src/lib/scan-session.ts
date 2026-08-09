@@ -1,7 +1,7 @@
 import type { AuditReport } from "./types";
 import type { SpendingBreakdown } from "./services";
 
-export type ScanEngine = "local" | "claude";
+export type ScanEngine = "local" | "haiku" | "claude";
 
 let pendingFiles: File[] = [];
 let teaserReport: AuditReport | null = null;
