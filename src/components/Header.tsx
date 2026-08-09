@@ -1,6 +1,7 @@
 "use client";
 
 import { Globe } from "lucide-react";
+import { SUPPORT_MAILTO } from "@/lib/format";
 
 interface HeaderProps {
   locale: "ar" | "en";
@@ -8,7 +9,23 @@ interface HeaderProps {
   onLogoClick?: () => void;
 }
 
+function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <a
+      href={href}
+      className="text-xs sm:text-sm font-bold no-underline transition-colors"
+      style={{ color: "#4A6862" }}
+      onMouseEnter={(e) => { e.currentTarget.style.color = "#1A3A35"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.color = "#4A6862"; }}
+    >
+      {children}
+    </a>
+  );
+}
+
 export default function Header({ locale, onLocaleChange, onLogoClick }: HeaderProps) {
+  const ar = locale === "ar";
+
   return (
     <header
       className="sticky top-0 z-50"
@@ -25,24 +42,15 @@ export default function Header({ locale, onLocaleChange, onLogoClick }: HeaderPr
         </button>
 
         <div className="flex items-center gap-3">
-          <a
-            href="/guides"
-            className="text-xs sm:text-sm font-bold no-underline transition-colors"
-            style={{ color: "#4A6862" }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = "#1A3A35"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = "#4A6862"; }}
-          >
-            {locale === "ar" ? "أدلة الإلغاء" : "Cancel Guides"}
-          </a>
-          <a
-            href="/blog"
-            className="text-xs sm:text-sm font-bold no-underline transition-colors"
-            style={{ color: "#4A6862" }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = "#1A3A35"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = "#4A6862"; }}
-          >
-            {locale === "ar" ? "المقالات" : "Articles"}
-          </a>
+          <NavLink href="/guides">
+            {ar ? "أدلة الإلغاء" : "Cancel Guides"}
+          </NavLink>
+          <NavLink href="/blog">
+            {ar ? "المقالات" : "Articles"}
+          </NavLink>
+          <NavLink href={SUPPORT_MAILTO}>
+            {ar ? "تواصل معنا" : "Contact"}
+          </NavLink>
           <button
             onClick={() => onLocaleChange(locale === "ar" ? "en" : "ar")}
             className="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-full transition-all"
@@ -57,7 +65,7 @@ export default function Header({ locale, onLocaleChange, onLogoClick }: HeaderPr
             }}
           >
             <Globe size={14} strokeWidth={1.5} />
-            {locale === "ar" ? "EN" : "ع"}
+            {ar ? "EN" : "ع"}
           </button>
         </div>
       </div>
