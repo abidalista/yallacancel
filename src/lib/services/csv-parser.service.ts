@@ -294,23 +294,53 @@ function parseDate(dateStr: string): string {
   return cleaned;
 }
 
+/**
+ * Locale-aware number normalization.
+ * Handles US "1,234.56", German/EU "1.234,56" and "6,99", and plain "19.99".
+ * Rule: if both separators appear, the LAST one is the decimal point.
+ * If only comma appears and it's a single group of ≤2 trailing digits, it's a
+ * decimal comma (EU); otherwise it's a thousands separator.
+ */
+function normalizeAmountString(value: string): string {
+  let s = normalizeDigits(value).replace(/[^\d.,+\-]/g, "").trim();
+  if (!s) return "";
+
+  const hasComma = s.includes(",");
+  const hasDot = s.includes(".");
+
+  if (hasComma && hasDot) {
+    if (s.lastIndexOf(",") > s.lastIndexOf(".")) {
+      s = s.replace(/\./g, "").replace(",", ".");
+    } else {
+      s = s.replace(/,/g, "");
+    }
+  } else if (hasComma) {
+    const firstComma = s.indexOf(",");
+    const after = s.slice(s.lastIndexOf(",") + 1);
+    if (firstComma === s.lastIndexOf(",") && after.length <= 2) {
+      s = s.replace(",", "."); // decimal comma (e.g. "6,99")
+    } else {
+      s = s.replace(/,/g, ""); // thousands separators (e.g. "1,234")
+    }
+  }
+  return s;
+}
+
+function parseNumberSmart(value: string): number | null {
+  const s = normalizeAmountString(value);
+  if (!s || s === "-" || s === "+") return null;
+  const num = parseFloat(s);
+  return isNaN(num) ? null : num;
+}
+
 function parseAmount(value: string): number {
-  const cleaned = normalizeDigits(value)
-    .replace(/[^\d.,-]/g, "")
-    .replace(/,/g, "")
-    .trim();
-  const num = parseFloat(cleaned);
-  return isNaN(num) ? 0 : Math.abs(num);
+  const num = parseNumberSmart(value);
+  return num === null ? 0 : Math.abs(num);
 }
 
 /** Signed parse — negative = spend (Revolut-style), positive = credit/income */
 function parseSignedAmount(value: string): number | null {
-  const cleaned = normalizeDigits(value)
-    .replace(/[^\d.,+\-]/g, "")
-    .replace(/,/g, "")
-    .trim();
-  const num = parseFloat(cleaned);
-  return isNaN(num) ? null : num;
+  return parseNumberSmart(value);
 }
 
 function parseCSVLine(line: string, delimiter: string = ","): string[] {

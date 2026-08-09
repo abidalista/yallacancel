@@ -167,6 +167,39 @@ const KNOWN_SUBSCRIPTIONS: Record<string, string> = {
   midjourney: "Midjourney",
   cursor: "Cursor Pro",
   gemini: "Google Gemini",
+  // ── EU / global services seen in real statements ──
+  clueso: "Clueso",
+  namecheap: "Namecheap",
+  godaddy: "GoDaddy",
+  "orange flex": "Orange Flex",
+  klarmobil: "klarmobil",
+  vodafone: "Vodafone",
+  "1&1": "1&1",
+  "deutsche telekom": "Telekom",
+  telekom: "Telekom",
+  zdrofit: "Zdrofit",
+  mcfit: "McFIT",
+  fitnessfirst: "Fitness First",
+  "fitness first": "Fitness First",
+  wewash: "WeWash",
+  wework: "WeWork",
+  weworkpl: "WeWork",
+  babbel: "Babbel",
+  patreon: "Patreon",
+  substack: "Substack",
+  onlyfans: "OnlyFans",
+  vercel: "Vercel",
+  "digital ocean": "DigitalOcean",
+  digitalocean: "DigitalOcean",
+  linode: "Linode",
+  heroku: "Heroku",
+  "amazon web services": "AWS",
+  "aws emea": "AWS",
+  proton: "Proton",
+  "proton mail": "Proton",
+  protonmail: "Proton",
+  mullvad: "Mullvad VPN",
+  "hbo max": "Max (HBO)",
 };
 
 const DEFINITE_SUBSCRIPTIONS = new Set([
@@ -188,6 +221,11 @@ const DEFINITE_SUBSCRIPTIONS = new Set([
   "Kindle Unlimited", "Prime Video", "Max (HBO)", "HBO",
   "Twitch", "Todoist", "Evernote", "هنقرستيشن",
   "Claude Pro", "Perplexity Pro", "Midjourney", "Cursor Pro", "Google Gemini",
+  // ── EU / global services seen in real statements ──
+  "Clueso", "Namecheap", "GoDaddy", "Orange Flex", "klarmobil", "Vodafone",
+  "1&1", "Telekom", "Zdrofit", "McFIT", "Fitness First", "WeWash", "WeWork",
+  "Babbel", "Patreon", "Substack", "OnlyFans", "Vercel", "DigitalOcean",
+  "Linode", "Heroku", "AWS", "Proton", "Mullvad VPN", "Max (HBO)",
 ]);
 
 /** Payroll, P2P transfers, cashback — never subscriptions (phrase-level only) */
@@ -310,6 +348,20 @@ const BANK_NOISE_PREFIX =
   /^(pos|mada|visa|mastercard|mc|purchase|payment|online|ecommerce|e-commerce|sadad|سداد|شراء|دفع|عملية|transaction|debit|credit|card)\b[\s\-:]*/i;
 
 const SHORT_KEYWORD_BOUNDARY = new Set(["max", "du", "hbo", "osn", "stc"]);
+
+/**
+ * Strong subscription signals in the merchant text itself (multi-language).
+ * Deliberately tight to avoid flagging one-off retail as a subscription.
+ */
+const SUBSCRIPTION_KEYWORDS =
+  /\b(subscription|subscribe|abonnement|recurring|membership|renewal|plan\s*fee|premium\s*plan|monthly\s*plan|annual\s*plan)\b|abo\b|اشتراك/i;
+
+function looksLikeSubscriptionByKeyword(description: string): boolean {
+  if (!SUBSCRIPTION_KEYWORDS.test(description)) return false;
+  // Guard: don't let transfers/fees/retail sneak in via a stray keyword
+  if (isNonSubscriptionDescription(description)) return false;
+  return true;
+}
 
 function matchKnownSubscription(description: string): string | null {
   const lower = description.toLowerCase();
@@ -620,6 +672,22 @@ export function analyzeTransactions(
         frequency: "monthly",
         confidence: "confirmed",
       });
+    } else if (
+      txs.length === 1 &&
+      looksLikeSubscriptionByKeyword(txs[0].description)
+    ) {
+      // Unknown merchant, but the description itself says it's a subscription
+      // (e.g. "Clueso Subscription", "… Abo", "Renewal"). Surface as unsure.
+      const avg = txs[0].amount;
+      if (toSar(avg, majorityCurrency(txs)) <= MAX_UNKNOWN_MONTHLY_SAR) {
+        pushSubscription(subscriptions, idCounter, {
+          key,
+          txs,
+          name: knownName || txs[0].description,
+          frequency: "monthly",
+          confidence: "suspicious",
+        });
+      }
     }
   }
 
