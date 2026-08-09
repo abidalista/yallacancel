@@ -20,7 +20,6 @@ import {
   analyzeTransactions,
   analyzeSpending,
   analyzeStatementsWithAI,
-  mergeSubscriptionReports,
   buildServerUploadFiles,
 } from "@/lib/services";
 import type { SpendingBreakdown as SpendingData } from "@/lib/services";
@@ -426,10 +425,10 @@ export default function HomePage() {
               (e) => e.split(":")[0]?.trim() || e
             );
           }
-          result =
-            localReport && localCount > 0
-              ? mergeSubscriptionReports(aiResult.report, localReport)
-              : aiResult.report;
+          // Trust the Haiku audit (skill-grade, currency-aware). We deliberately
+          // do NOT merge the local PDF parse here: its currency detection is
+          // unreliable and merging caused duplicate/mis-priced rows.
+          result = aiResult.report;
           engine = "haiku";
 
           if (aiResult.report.analyzedTransactions > 0) {
