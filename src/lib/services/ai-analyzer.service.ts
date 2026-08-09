@@ -69,15 +69,20 @@ export async function analyzeFileWithAI(file: File): Promise<AIAnalysisResult> {
   }
 }
 
-/** One skill-grade Claude call for all statement files (prompt-cached system). */
+/**
+ * One skill-grade Claude call for all statement files (prompt-cached system).
+ * tier "teaser" → cheap Haiku model (free scan fallback); "full" → Sonnet (paid).
+ */
 export async function analyzeStatementsWithAI(
-  files: File[]
+  files: File[],
+  tier: "teaser" | "full" = "full"
 ): Promise<AIAnalysisResult> {
   try {
     const formData = new FormData();
     for (const file of files) {
       formData.append("files", file);
     }
+    formData.append("tier", tier);
 
     const res = await fetch("/api/analyze-statements", {
       method: "POST",

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { analyzeStatementFiles } from "@/lib/server/statement-analysis";
+import { CLAUDE_MODEL, HAIKU_MODEL } from "@/lib/server/jfc-skill";
 
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT = 6; // combined scans per window
@@ -51,7 +52,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Max 8 files per scan" }, { status: 400 });
     }
 
-    const result = await analyzeStatementFiles(files);
+    // "teaser" → cheap Haiku (free scan fallback); "full" → Sonnet (paid report)
+    const tier = String(formData.get("tier") || "full");
+    const model = tier === "teaser" ? HAIKU_MODEL : CLAUDE_MODEL;
+
+    const result = await analyzeStatementFiles(files, model);
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(

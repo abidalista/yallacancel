@@ -14,7 +14,10 @@ export const FX = {
   CHF: 4.25,
 } as const;
 
+/** Full-quality model — used for the PAID report only. */
 export const CLAUDE_MODEL = "claude-sonnet-4-6";
+/** Cheap model — used for the FREE teaser fallback when local finds < 3 subs. */
+export const HAIKU_MODEL = "claude-haiku-4-5";
 
 /** Static skill instructions — cache this block (ephemeral / 1h). */
 export const JFC_SKILL_SYSTEM = `You are the Just Fucking Cancel subscription audit engine, running inside YallaCancel (Arabic-first Saudi product, mint brand — analysis logic is identical to JFC).
