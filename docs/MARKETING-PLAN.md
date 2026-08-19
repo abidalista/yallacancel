@@ -14,7 +14,14 @@ Linear: [YallaCancel sales](https://linear.app/abidal/project/yallacancel-sales-
 - [ABI-147](https://linear.app/abidal/issue/ABI-147/blocker-prove-scan-and-pay-work-before-any-marketing) **gate: prove scan + pay work**
 - [ABI-148](https://linear.app/abidal/issue/ABI-148/production-anthropic-key-is-invalid-401) production Claude key 401
 - [ABI-149](https://linear.app/abidal/issue/ABI-149/phone-test-real-bank-files-end-to-end) phone test real bank files
-- [ABI-138](https://linear.app/abidal/issue/ABI-138/week-0-conversion-patches-so-the-site-can-sell) conversion copy
+- [ABI-138](https://linear.app/abidal/issue/ABI-138/week-0-conversion-patches-so-the-site-can-sell) conversion parent
+  - [ABI-150](https://linear.app/abidal/issue/ABI-150/one-public-name-yalla-cancel-yla-kansl) one name
+  - [ABI-151](https://linear.app/abidal/issue/ABI-151/pricing-cta-goes-to-upload-not-whop) pricing CTA → upload
+  - [ABI-152](https://linear.app/abidal/issue/ABI-152/honest-privacy-one-liner-on-paid-vs-discarded) privacy
+  - [ABI-153](https://linear.app/abidal/issue/ABI-153/price-display-is-49-sar-not-49-ryal) 49 SAR
+  - [ABI-154](https://linear.app/abidal/issue/ABI-154/utm-bio-link-confirm-posthog-pay-events) UTM + PostHog
+  - [ABI-155](https://linear.app/abidal/issue/ABI-155/scan-own-snbal-rajhi-blurred-screenshot-for-videos) own scan screenshot
+  - [ABI-156](https://linear.app/abidal/issue/ABI-156/canonical-host-is-yallacancelcom-everywhere) canonical .com
 - [ABI-140](https://linear.app/abidal/issue/ABI-140/week-0-30-asks-first-5-payments-by-hand) first 5 sales (blocked by 147)
 - [ABI-142](https://linear.app/abidal/issue/ABI-142/days-8-to-30-23-arabic-short-form-videos) short-form (blocked by 147)
 - [ABI-144](https://linear.app/abidal/issue/ABI-144/background-gsc-canonicals-10-guide-ctas) SEO background
@@ -87,15 +94,13 @@ Saudi platform facts used here (Creative Era 2026): TikTok is the discovery engi
 
 Do this before posting. None of it is a rebuild.
 
-1. **One name everywhere:** Yalla Cancel / يلا كانسل. Kill أبدالستا and Abidalista on the public site.
-2. **Pricing CTA goes to upload**, not straight to Whop. People must see a teaser number before they pay.
-3. **Honest privacy one-liner:** files are analyzed then discarded. Paid path uses AI. Nothing stored after the report.
-4. **Price display:** `49 SAR` with Western digits (already the rule in `src/lib/format.ts`). Stop mixing `49 ريال` in Arabic UI.
-5. **UTM + PostHog:** every bio link is `https://yallacancel.com/?utm_source=tiktok&utm_campaign=mission30`. Confirm `paywall_viewed` and `payment_completed` still fire.
-6. **Scan your own 2 to 3 months** of SNB / Al Rajhi. Screenshot the yearly total with amounts visible, names blurred. This is your first 10 videos.
-7. **Canonical domain:** pick `yallacancel.com` or `yallacancel.sa` and make every cancel-guide canonical match. Split domains waste the SEO you already built.
-
-Linear: week-0 conversion issue in the project.
+1. **One name everywhere:** Yalla Cancel / يلا كانسل. Kill أبدالستا and Abidalista on the public site. [ABI-150](https://linear.app/abidal/issue/ABI-150/one-public-name-yalla-cancel-yla-kansl)
+2. **Pricing CTA goes to upload**, not straight to Whop. People must see a teaser number before they pay. [ABI-151](https://linear.app/abidal/issue/ABI-151/pricing-cta-goes-to-upload-not-whop)
+3. **Honest privacy one-liner:** files are analyzed then discarded. Paid path uses AI. Nothing stored after the report. [ABI-152](https://linear.app/abidal/issue/ABI-152/honest-privacy-one-liner-on-paid-vs-discarded)
+4. **Price display:** `49 SAR` with Western digits (already the rule in `src/lib/format.ts`). Stop mixing `49 ريال` in Arabic UI. [ABI-153](https://linear.app/abidal/issue/ABI-153/price-display-is-49-sar-not-49-ryal)
+5. **UTM + PostHog:** every bio link is `https://yallacancel.com/?utm_source=tiktok&utm_campaign=mission30`. Confirm `paywall_viewed` and `payment_completed` still fire. [ABI-154](https://linear.app/abidal/issue/ABI-154/utm-bio-link-confirm-posthog-pay-events)
+6. **Scan your own 2 to 3 months** of SNB / Al Rajhi. Screenshot the yearly total with amounts visible, names blurred. This is your first 10 videos. [ABI-155](https://linear.app/abidal/issue/ABI-155/scan-own-snbal-rajhi-blurred-screenshot-for-videos) (blocked until scan works)
+7. **Canonical domain:** `yallacancel.com`. Make every cancel-guide canonical match. [ABI-156](https://linear.app/abidal/issue/ABI-156/canonical-host-is-yallacancelcom-everywhere)
 
 ---
 
