@@ -8,10 +8,12 @@ Single source of truth for planned product work.
 
 ## Now (main track)
 
+- [ ] **BLOCKER** Production Claude key is invalid (401). [ABI-148](https://linear.app/abidal/issue/ABI-148/production-anthropic-key-is-invalid-401). Confirmed 19 Aug 2026.
+- [ ] Phone test with real 5–6 file mix (SNB + Revolut + Crypto.com). [ABI-149](https://linear.app/abidal/issue/ABI-149/phone-test-real-bank-files-end-to-end)
 - [ ] Harden new scan UX on production (upload → timer → HITL → results → Whop)
 - [ ] Fix FX / multi-currency accuracy on free + paid AI path
 - [ ] Make paid AI path reliable and closer to 30–90s where possible
-- [ ] Phone test with real 5–6 file mix (SNB + Revolut + Crypto.com)
+- [ ] Do **not** start the sales mission until [ABI-147](https://linear.app/abidal/issue/ABI-147/blocker-prove-scan-and-pay-work-before-any-marketing) is Done
 
 ---
 
@@ -45,9 +47,10 @@ Capabilities to eventually beat or match. Source: skill report screenshots, Jul 
 
 ## Later — Growth / ops
 
-- [ ] Post-MVP: one growth channel + weekly actions (Okara / outreach)  
-- [ ] WhatsApp Google Maps outreach (see `docs/outreach/` if present)  
-- [ ] Founder access code rotation / revoke when done testing  
+- [ ] **Now:** 30-day sales mission. Plan: `docs/MARKETING-PLAN.md`. Linear: [YallaCancel sales](https://linear.app/abidal/project/yallacancel-sales-d0bb0a9d3397)
+- [ ] WhatsApp Google Maps outreach is **Pass the Product**, not YallaCancel. Do not mix into this mission.
+- [ ] Founder access code rotation / revoke when done testing
+- [ ] After 10 sales: Snapchat ads cap 1,000 SAR (see plan). Not before.  
 
 ---
 
