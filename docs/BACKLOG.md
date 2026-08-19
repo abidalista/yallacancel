@@ -45,9 +45,10 @@ Capabilities to eventually beat or match. Source: skill report screenshots, Jul 
 
 ## Later — Growth / ops
 
-- [ ] Post-MVP: one growth channel + weekly actions (Okara / outreach)  
-- [ ] WhatsApp Google Maps outreach (see `docs/outreach/` if present)  
-- [ ] Founder access code rotation / revoke when done testing  
+- [ ] **Now (sales):** execute `docs/MARKETING-PLAN.md` (first 10 paying customers). Linear: YallaCancel GTM
+- [ ] Post-MVP: one growth channel + weekly actions (Okara / outreach)
+- [ ] WhatsApp Google Maps outreach is **Pass the Product**, not YallaCancel
+- [ ] Founder access code rotation / revoke when done testing
 
 ---
 
