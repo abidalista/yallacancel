@@ -45,9 +45,10 @@ Capabilities to eventually beat or match. Source: skill report screenshots, Jul 
 
 ## Later — Growth / ops
 
-- [ ] Post-MVP: one growth channel + weekly actions (Okara / outreach)  
-- [ ] WhatsApp Google Maps outreach (see `docs/outreach/` if present)  
-- [ ] Founder access code rotation / revoke when done testing  
+- [ ] **Now:** 30-day sales mission. Plan: `docs/MARKETING-PLAN.md`. Linear: [YallaCancel sales](https://linear.app/abidal/project/yallacancel-sales-d0bb0a9d3397)
+- [ ] WhatsApp Google Maps outreach is **Pass the Product**, not YallaCancel. Do not mix into this mission.
+- [ ] Founder access code rotation / revoke when done testing
+- [ ] After 10 sales: Snapchat ads cap 1,000 SAR (see plan). Not before.  
 
 ---
 
