@@ -8,10 +8,12 @@ Single source of truth for planned product work.
 
 ## Now (main track)
 
+- [ ] **BLOCKER** Production Claude key is invalid (401). [ABI-148](https://linear.app/abidal/issue/ABI-148/production-anthropic-key-is-invalid-401). Confirmed 19 Aug 2026.
+- [ ] Phone test with real 5–6 file mix (SNB + Revolut + Crypto.com). [ABI-149](https://linear.app/abidal/issue/ABI-149/phone-test-real-bank-files-end-to-end)
 - [ ] Harden new scan UX on production (upload → timer → HITL → results → Whop)
 - [ ] Fix FX / multi-currency accuracy on free + paid AI path
 - [ ] Make paid AI path reliable and closer to 30–90s where possible
-- [ ] Phone test with real 5–6 file mix (SNB + Revolut + Crypto.com)
+- [ ] Do **not** start the sales mission until [ABI-147](https://linear.app/abidal/issue/ABI-147/blocker-prove-scan-and-pay-work-before-any-marketing) is Done
 
 ---
 

@@ -8,11 +8,31 @@
 
 Linear: [YallaCancel sales](https://linear.app/abidal/project/yallacancel-sales-d0bb0a9d3397)
 
+**Stop. Product first.** Do not send WhatsApps or post videos until [ABI-147](https://linear.app/abidal/issue/ABI-147/blocker-prove-scan-and-pay-work-before-any-marketing) is Done.
+
 - [ABI-137](https://linear.app/abidal/issue/ABI-137/30-day-yallacancel-sales-mission-10-payments) parent
-- [ABI-138](https://linear.app/abidal/issue/ABI-138/week-0-conversion-patches-so-the-site-can-sell) conversion
-- [ABI-140](https://linear.app/abidal/issue/ABI-140/week-0-30-asks-first-5-payments-by-hand) first 5 sales
-- [ABI-142](https://linear.app/abidal/issue/ABI-142/days-8-to-30-23-arabic-short-form-videos) short-form
+- [ABI-147](https://linear.app/abidal/issue/ABI-147/blocker-prove-scan-and-pay-work-before-any-marketing) **gate: prove scan + pay work**
+- [ABI-148](https://linear.app/abidal/issue/ABI-148/production-anthropic-key-is-invalid-401) production Claude key 401
+- [ABI-149](https://linear.app/abidal/issue/ABI-149/phone-test-real-bank-files-end-to-end) phone test real bank files
+- [ABI-138](https://linear.app/abidal/issue/ABI-138/week-0-conversion-patches-so-the-site-can-sell) conversion copy
+- [ABI-140](https://linear.app/abidal/issue/ABI-140/week-0-30-asks-first-5-payments-by-hand) first 5 sales (blocked by 147)
+- [ABI-142](https://linear.app/abidal/issue/ABI-142/days-8-to-30-23-arabic-short-form-videos) short-form (blocked by 147)
 - [ABI-144](https://linear.app/abidal/issue/ABI-144/background-gsc-canonicals-10-guide-ctas) SEO background
+
+There is a duplicate Linear project [YallaCancel GTM](https://linear.app/abidal/project/yallacancel-gtm-ef311ecc67ab) (ABI-139, 141, 143, 145, 146). Same mission. Use **YallaCancel sales** as source of truth.
+
+---
+
+## Gate (do this before any marketing)
+
+Checked 19 Aug 2026 against live `yallacancel.com`:
+
+- Paid AI scan is **dead**: `POST /api/analyze-statements` → Claude `401 API key is invalid`
+- Local parser works on the synthetic `public/test-statement.csv` (9 subs). That is not a real bank export.
+- CSV-only happy path skips the server. PDF path needs Claude + LlamaParse. That is the path that used to fail for you.
+- After payment, 401 falls back to unblurring the local teaser. You would be selling an AI report people do not get.
+
+Fix [ABI-148](https://linear.app/abidal/issue/ABI-148/production-anthropic-key-is-invalid-401) (you paste the key into GitHub/Cloudflare). Then [ABI-149](https://linear.app/abidal/issue/ABI-149/phone-test-real-bank-files-end-to-end) on a phone with real Al Rajhi / SNB files. Then marketing.
 
 ---
 
