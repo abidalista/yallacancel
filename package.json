@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@amplitude/ai": "^0.16.0",
+    "@amplitude/analytics-node": "^1.5.71",
+    "@amplitude/unified": "^1.1.32",
     "@whop/checkout": "^0.0.52",
     "framer-motion": "^12.34.3",
     "lucide-react": "^0.575.0",

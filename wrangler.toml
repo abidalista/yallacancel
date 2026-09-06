@@ -1,3 +1,7 @@
 name = "yallacancel"
 compatibility_date = "2024-01-01"
 pages_build_output_dir = "out"
+
+# Amplitude Agent Analytics (same project key as the browser SDK; public by design)
+[vars]
+AMPLITUDE_AI_API_KEY = "2eaf3ee5b37146cea157fd9e34ca526d"

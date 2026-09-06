@@ -3,6 +3,8 @@
  * Prefer /api/analyze-statements for multi-file skill-grade scans.
  */
 
+import { trackClaudeAudit } from "../lib/amplitude-agent";
+
 const LLAMA_BASE = "https://api.cloud.llamaindex.ai";
 const CLAUDE_MODEL = "claude-sonnet-4-6";
 
@@ -186,6 +188,7 @@ function isRateLimited(ip: string): boolean {
 export async function onRequestPost(context: {
   request: Request;
   env: Record<string, string>;
+  waitUntil: (promise: Promise<unknown>) => void;
 }): Promise<Response> {
   const anthropicKey = context.env.ANTHROPIC_API_KEY;
   const llamaKey = context.env.LLAMA_CLOUD_API_KEY;
@@ -223,7 +226,12 @@ export async function onRequestPost(context: {
       return Response.json({ error: "Could not extract text from file" }, { status: 400 });
     }
 
-    const result = await analyzeWithClaude(rawText, anthropicKey);
+    const result = await trackClaudeAudit(
+      context.env,
+      context.waitUntil,
+      { textLength: rawText.length },
+      () => analyzeWithClaude(rawText, anthropicKey)
+    );
     return Response.json(result);
   } catch (error) {
     return Response.json(
