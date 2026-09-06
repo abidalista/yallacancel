@@ -8,6 +8,7 @@ import {
   JFC_SKILL_SYSTEM,
   buildStatementUserMessage,
 } from "./jfc-skill";
+import { runStatementAuditSession } from "../amplitude-ai";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const LLAMA_API_KEY = process.env.LLAMA_CLOUD_API_KEY;
@@ -72,6 +73,14 @@ export async function analyzeStatementText(rawText: string): Promise<unknown> {
   if (text.length > 180000) {
     text = text.slice(0, 180000);
   }
+
+  return runStatementAuditSession({ textLength: text.length }, () =>
+    callClaude(text)
+  );
+}
+
+async function callClaude(text: string): Promise<unknown> {
+  if (!ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY not set");
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",

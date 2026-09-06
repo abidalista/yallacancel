@@ -3,6 +3,8 @@
  * POST /api/analyze-statements  (FormData: files[])
  */
 
+import { trackClaudeAudit } from "../lib/amplitude-agent";
+
 const LLAMA_BASE = "https://api.cloud.llamaindex.ai";
 const CLAUDE_MODEL = "claude-sonnet-4-6";
 
@@ -202,6 +204,7 @@ function isRateLimited(ip: string): boolean {
 export async function onRequestPost(context: {
   request: Request;
   env: Record<string, string>;
+  waitUntil: (promise: Promise<unknown>) => void;
 }): Promise<Response> {
   const anthropicKey = context.env.ANTHROPIC_API_KEY;
   const llamaKey = context.env.LLAMA_CLOUD_API_KEY;
@@ -274,10 +277,13 @@ export async function onRequestPost(context: {
       );
     }
 
-    const result = (await analyzeWithClaude(chunks.join("\n"), anthropicKey)) as Record<
-      string,
-      unknown
-    >;
+    const combined = chunks.join("\n");
+    const result = (await trackClaudeAudit(
+      context.env,
+      context.waitUntil,
+      { textLength: combined.length },
+      () => analyzeWithClaude(combined, anthropicKey)
+    )) as Record<string, unknown>;
     if (errors.length) result._file_errors = errors;
     return Response.json(result);
   } catch (error) {
