@@ -104,7 +104,7 @@ export default function RootLayout({
                   name: "كيف أنزّل كشف حسابي؟",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "افتح تطبيق بنكك → الحسابات → كشف الحساب → اختر آخر 3 إلى 6 أشهر → نزّله كـ CSV أو PDF.",
+                    text: "افتح تطبيق بنكك · الحسابات · كشف الحساب · اختر آخر 3 إلى 6 أشهر · نزّله كـ CSV أو PDF.",
                   },
                 },
                 {
