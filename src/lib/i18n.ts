@@ -40,7 +40,7 @@ export const translations = {
     totalSubscriptions: "إجمالي الاشتراكات",
     monthlyTotal: "المجموع الشهري",
     yearlyTotal: "المجموع السنوي",
-    currency: "ريال",
+    currency: "SAR",
 
     // Categories
     cancelSection: "🚫 الغيها",
@@ -70,8 +70,8 @@ export const translations = {
 
     // Privacy
     privacyTitle: "خصوصيتك أولاً",
-    privacyDesc: "كل التحليل يتم على جهازك. ما نرسل أي بيانات لأي سيرفر.",
-    privacyPoint1: "بياناتك ما تطلع من جهازك أبداً",
+    privacyDesc: "نحلل الملف عشان نلقى الاشتراكات، وبعدها نحذفه. ما نخزن كشفك.",
+    privacyPoint1: "ما نخزن كشف حسابك بعد التحليل",
     privacyPoint2: "ما نخزن أي معلومات بنكية",
     privacyPoint3: "الكود مفتوح المصدر وتقدر تتأكد بنفسك",
     privacyPoint4: "تقدر تخفي أسماء الاشتراكات في التقرير",
@@ -157,8 +157,8 @@ export const translations = {
 
     privacyTitle: "Privacy First",
     privacyDesc:
-      "All analysis happens on your device. No data is ever sent to any server.",
-    privacyPoint1: "Your data never leaves your device",
+      "We analyze the file to find subscriptions, then delete it. We do not store your statement.",
+    privacyPoint1: "We do not store your bank statement after analysis",
     privacyPoint2: "We don't store any banking information",
     privacyPoint3: "Open source · verify for yourself",
     privacyPoint4: "You can hide subscription names in the report",

@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, FileText } from "lucide-react";
 import { formatBytes, truncateFilename } from "@/lib/format";
+import { track } from "@/lib/analytics";
 import Ltr from "@/components/Ltr";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -128,7 +129,23 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
 
   function handleScan() {
     if (selectedFiles.length === 0) return;
+    track("file_uploaded", { file_count: selectedFiles.length, locale });
     onScan(selectedFiles.map((f) => f.file));
+  }
+
+  async function handleDemo(e: React.MouseEvent) {
+    e.stopPropagation();
+    e.preventDefault();
+    try {
+      const res = await fetch("/test-statement.csv");
+      if (!res.ok) throw new Error("demo_missing");
+      const blob = await res.blob();
+      const file = new File([blob], "demo-statement.csv", { type: "text/csv" });
+      track("sample_data_tried", { locale });
+      onScan([file]);
+    } catch {
+      setFileError(ar ? "المثال ما تحمّل. جرّب ترفع ملفك." : "Demo failed to load. Upload your own file.");
+    }
   }
 
   const totalSize = selectedFiles.reduce((s, f) => s + f.size, 0);
@@ -167,7 +184,7 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
         }}
       >
         <p className="font-extrabold text-base sm:text-lg text-center mb-1.5 leading-snug" style={{ color: "#1A3A35" }}>
-          {ar ? "ارفع كشوفات آخر شهرين أو 3 شهور" : "Drop your last 2-3 months of statements"}
+          {ar ? "ارفع كشوفات آخر شهرين أو 3 شهور" : "Drop your last 2 to 3 months of statements"}
         </p>
         <p className="text-sm text-center" style={{ color: "#4A6862" }}>
           {ar ? (
@@ -191,9 +208,17 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
 
       <p className="text-xs text-center mt-3" style={{ color: "#8AADA8" }}>
         {ar
-          ? "ملفاتك تتحلل وتنحذف فوراً. ما نخزن شي."
-          : "Your files are analyzed and immediately discarded. Nothing is stored."}
+          ? "نحلل الملف ونحذفه فوراً. ما نخزن كشفك."
+          : "We analyze the file then delete it. Your statement is not stored."}
       </p>
+      <button
+        type="button"
+        onClick={handleDemo}
+        className="mt-2 text-xs font-bold underline-offset-2 hover:underline"
+        style={{ color: "#1A3A35" }}
+      >
+        {ar ? "ما عندك كشف؟ جرّب مثال جاهز" : "No statement handy? Try a sample"}
+      </button>
 
       {fileError && (
         <p className="text-xs text-red-500 text-center mt-2 whitespace-pre-line">{fileError}</p>

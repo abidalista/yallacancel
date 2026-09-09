@@ -1,22 +1,57 @@
 [
   {
-    "event": "language_switched",
-    "description": "Fired when the user toggles the locale between Arabic and English via the Header button.",
-    "file": "src/components/Header.tsx"
+    "event": "file_uploaded",
+    "description": "User selected real bank statement files and started a scan.",
+    "file": "src/components/UploadZone.tsx"
   },
   {
-    "event": "paywall_dismissed",
-    "description": "Fired when the user closes the paywall modal without completing payment.",
-    "file": "src/components/PaywallModal.tsx"
+    "event": "sample_data_tried",
+    "description": "User clicked the sample statement CTA (no file needed).",
+    "file": "src/components/UploadZone.tsx"
   },
   {
-    "event": "$exception",
-    "description": "Automatic exception capture via posthog.captureException() in analysis error catch blocks.",
+    "event": "analysis_started",
+    "description": "Scan began after upload or demo.",
     "file": "src/app/page.tsx"
   },
   {
-    "event": "$exception",
-    "description": "Automatic exception capture via posthog.captureException() in the whop-webhook error catch block.",
-    "file": "src/app/api/whop-webhook/route.ts"
+    "event": "analysis_completed",
+    "description": "Scan finished with a teaser report.",
+    "file": "src/app/page.tsx"
+  },
+  {
+    "event": "analysis_failed",
+    "description": "Scan failed (parse or server+local).",
+    "file": "src/app/page.tsx"
+  },
+  {
+    "event": "paywall_viewed",
+    "description": "Paywall modal opened after the free teaser.",
+    "file": "src/components/PaywallModal.tsx"
+  },
+  {
+    "event": "checkout_started",
+    "description": "User clicked Pay, pasted a pay_ receipt, or used an access code.",
+    "file": "src/components/PaywallModal.tsx"
+  },
+  {
+    "event": "payment_completed",
+    "description": "Whop returned a pay_ receipt and/or unlock succeeded after verify.",
+    "file": "src/components/PaywallModal.tsx"
+  },
+  {
+    "event": "payment_failed",
+    "description": "Missing receipt after checkout, or server verify rejected the receipt.",
+    "file": "src/components/PaywallModal.tsx"
+  },
+  {
+    "event": "paywall_dismissed",
+    "description": "User closed the paywall without completing payment.",
+    "file": "src/components/PaywallModal.tsx"
+  },
+  {
+    "event": "pricing_cta_clicked",
+    "description": "Pricing section CTA scrolled the user to the upload box (does not open checkout).",
+    "file": "src/app/page.tsx"
   }
 ]
