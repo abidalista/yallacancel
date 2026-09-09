@@ -1171,7 +1171,7 @@ export default function HomePage() {
                   transition={{ duration: 0.5, delay: i * 0.1 }}
                   className="bg-white border border-[#E5EFED] rounded-[24px] shadow-sm text-center py-8 px-4"
                 >
-                  <div className={`text-2xl sm:text-3xl font-extrabold tracking-tight text-[#00A651] mb-3 ${ar ? "" : "ltr-always"}`}>
+                  <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#00A651] mb-3 ltr-always">
                     {ar ? stat.headlineAr : stat.headlineEn}
                   </div>
                   <p className="text-[15px] text-slate-600 leading-relaxed max-w-[220px] mx-auto">
