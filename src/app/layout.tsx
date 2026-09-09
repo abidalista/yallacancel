@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import PostHogInit from "@/components/PostHogInit";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -68,7 +69,7 @@ export default function RootLayout({
               url: "https://yallacancel.com",
               applicationCategory: "FinanceApplication",
               operatingSystem: "Web",
-              offers: { "@type": "Offer", price: "0", priceCurrency: "SAR" },
+              offers: { "@type": "Offer", price: "49", priceCurrency: "SAR" },
               description: "اكتشف اشتراكاتك المخفية والغيها بضغطة زر. يدعم جميع البنوك السعودية.",
               inLanguage: ["ar", "en"],
               areaServed: { "@type": "Country", name: "Saudi Arabia" },
@@ -87,7 +88,7 @@ export default function RootLayout({
                   name: "هل بياناتي آمنة؟",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "نعم. كل التحليل يتم داخل متصفحك · ملفك ما يتم رفعه لأي سيرفر. ما نحتفظ بأي بيانات.",
+                    text: "نحلل الملف عشان نلقى الاشتراكات، وبعدها نحذفه. ما نخزن كشف حسابك.",
                   },
                 },
                 {
@@ -103,7 +104,7 @@ export default function RootLayout({
                   name: "كيف أنزّل كشف حسابي؟",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "افتح تطبيق بنكك → الحسابات → كشف الحساب → اختر آخر 3 إلى 6 أشهر → نزّله كـ CSV أو PDF.",
+                    text: "افتح تطبيق بنكك · الحسابات · كشف الحساب · اختر آخر 3 إلى 6 أشهر · نزّله كـ CSV أو PDF.",
                   },
                 },
                 {
@@ -133,7 +134,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <PostHogInit />
+        {children}
+      </body>
     </html>
   );
 }
