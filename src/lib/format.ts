@@ -110,8 +110,8 @@ export function formatNativeMonthly(
   return `${sym}${amount}/mo`;
 }
 
-export function formatPriceOnce(ar: boolean): string {
-  return ar ? "49 ريال" : "49 SAR";
+export function formatPriceOnce(_ar?: boolean): string {
+  return PRICE_LABEL;
 }
 
 export function formatSarYr(n: number): string {

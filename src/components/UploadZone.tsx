@@ -167,7 +167,7 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
         }}
       >
         <p className="font-extrabold text-base sm:text-lg text-center mb-1.5 leading-snug" style={{ color: "#1A3A35" }}>
-          {ar ? "ارفع كشوفات آخر شهرين أو 3 شهور" : "Drop your last 2-3 months of statements"}
+          {ar ? "ارفع كشوفات آخر شهرين أو 3 شهور" : "Drop your last 2 to 3 months of statements"}
         </p>
         <p className="text-sm text-center" style={{ color: "#4A6862" }}>
           {ar ? (
@@ -191,8 +191,8 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
 
       <p className="text-xs text-center mt-3" style={{ color: "#8AADA8" }}>
         {ar
-          ? "ملفاتك تتحلل وتنحذف فوراً. ما نخزن شي."
-          : "Your files are analyzed and immediately discarded. Nothing is stored."}
+          ? "CSV ينقرأ في المتصفح أولاً. الفحص الأعمق يمر على سيرفرنا ثم ينحذف الملف. ما نخزن كشفك."
+          : "CSV is read in the browser first. Deep analysis hits our API, then the file is discarded. We do not store your statement."}
       </p>
 
       {fileError && (

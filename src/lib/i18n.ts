@@ -70,10 +70,10 @@ export const translations = {
 
     // Privacy
     privacyTitle: "خصوصيتك أولاً",
-    privacyDesc: "كل التحليل يتم على جهازك. ما نرسل أي بيانات لأي سيرفر.",
-    privacyPoint1: "بياناتك ما تطلع من جهازك أبداً",
-    privacyPoint2: "ما نخزن أي معلومات بنكية",
-    privacyPoint3: "الكود مفتوح المصدر وتقدر تتأكد بنفسك",
+    privacyDesc: "CSV ينقرأ في المتصفح أولاً. الفحص الأعمق يرسل نص الكشف لسيرفرنا ثم نحذف الملف.",
+    privacyPoint1: "ما نخزن كشف حسابك بعد التحليل",
+    privacyPoint2: "ما نبيع بياناتك ولا نستخدمها لإعلانات",
+    privacyPoint3: "الكود على GitHub وتقدر تتأكد بنفسك",
     privacyPoint4: "تقدر تخفي أسماء الاشتراكات في التقرير",
 
     // Footer
@@ -157,10 +157,10 @@ export const translations = {
 
     privacyTitle: "Privacy First",
     privacyDesc:
-      "All analysis happens on your device. No data is ever sent to any server.",
-    privacyPoint1: "Your data never leaves your device",
-    privacyPoint2: "We don't store any banking information",
-    privacyPoint3: "Open source · verify for yourself",
+      "CSV is read in the browser first. Deep analysis sends statement text to our API, then we discard the file.",
+    privacyPoint1: "We do not store your statement after the scan",
+    privacyPoint2: "We do not sell your data or use it for ads",
+    privacyPoint3: "Code is on GitHub · verify for yourself",
     privacyPoint4: "You can hide subscription names in the report",
 
     madeWith: "Made with love in Saudi Arabia 🇸🇦",

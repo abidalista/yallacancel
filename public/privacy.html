@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الخصوصية · Yalla Cancel</title>
+  <meta name="description" content="كيف يتعامل يلا كانسل مع كشف حسابك: ما يبقى في المتصفح، وما يُرسل للتحليل، وما لا نخزّنه.">
+  <link rel="canonical" href="https://yallacancel.com/privacy.html">
+  <meta property="og:url" content="https://yallacancel.com/privacy.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Noto+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --green:#00A651; --ink:#1A3A35; --muted:#4A6862; --bg:#EDF5F3; --card:#fff; --border:#E5EFED; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "Noto Sans Arabic", Inter, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.8; }
+    a { color: var(--green); text-decoration: none; }
+    .wrap { max-width: 680px; margin: 0 auto; padding: 32px 20px 64px; }
+    .nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+    .logo { font-weight: 800; color: var(--ink); }
+    h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 8px; }
+    .lede { color: var(--muted); margin-bottom: 28px; }
+    h2 { font-size: 1.1rem; font-weight: 800; margin: 28px 0 8px; }
+    p, li { color: var(--muted); font-size: 0.95rem; }
+    ul { padding-inline-start: 1.2rem; margin: 8px 0 16px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 22px; margin: 16px 0; }
+    .en { direction: ltr; text-align: left; font-family: Inter, sans-serif; margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--border); }
+    .ltr { direction: ltr; unicode-bidi: isolate; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav">
+      <a class="logo" href="https://yallacancel.com/">yallacancel</a>
+      <a href="https://yallacancel.com/">العودة للرئيسية</a>
+    </div>
+
+    <h1>خصوصيتك</h1>
+    <p class="lede">نكتب هذا بصراحة. كشف البنك حساس، والنص التسويقي القديم كان يقول إن كل شيء يبقى على جهازك. هذا غير صحيح للفحص العميق.</p>
+
+    <div class="card">
+      <h2>وش يصير لملفك</h2>
+      <ul>
+        <li>CSV: نحاول نقرأه أولاً داخل المتصفح عشان نطلّع معاينة سريعة.</li>
+        <li>PDF أو فحص أعمق: نرسل نص الكشف (مو بالضرورة الملف الخام إذا استخرجناه محلياً) إلى سيرفر يلا كانسل.</li>
+        <li>السيرفر يستخدم Claude لقراءة العمليات وإيجاد الاشتراكات المتكررة. بعض ملفات PDF تحتاج LlamaParse لاستخراج النص.</li>
+        <li>ما نخزّن ملفك بعد انتهاء التحليل. ما نبيع بياناتك. ما نستخدم الكشف لإعلانات.</li>
+      </ul>
+    </div>
+
+    <h2>الدفع</h2>
+    <p>فتح القائمة الكاملة وروابط الإلغاء بـ <span class="ltr">49 SAR</span> مرة واحدة عبر Whop (مدى / فيزا / ماستركارد / Apple Pay). الدفع منفصل عن ملف الكشف.</p>
+
+    <h2>تواصل</h2>
+    <p><a href="mailto:theamsh@gmail.com?subject=YallaCancel%20Support">راسلنا</a> إذا تبي نحذف أي أثر أو عندك سؤال.</p>
+
+    <section class="en" lang="en">
+      <h1>Privacy</h1>
+      <p class="lede">Bank statements are sensitive. Older marketing said analysis never left your device. That is not true for the deep scan.</p>
+      <h2>What happens to your file</h2>
+      <ul>
+        <li>CSV: we try to parse it in the browser first for a quick preview.</li>
+        <li>PDF or a deeper scan: statement text is sent to the Yalla Cancel API.</li>
+        <li>The API uses Claude to find recurring subscriptions. Some PDFs need LlamaParse for text extraction.</li>
+        <li>We do not keep your file after the scan. We do not sell your data. We do not use statements for ads.</li>
+      </ul>
+      <h2>Payment</h2>
+      <p>Unlocking the full list and cancel links is a one time <span class="ltr">49 SAR</span> payment via Whop. Payment is separate from your statement file.</p>
+    </section>
+  </div>
+</body>
+</html>

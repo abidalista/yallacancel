@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, FolderOpen, FileDown, Link2, BookOpen, Loader2, Mail, Zap } from "lucide-react";
 import { WhopCheckoutEmbed } from "@whop/checkout/react";
 import { PRICE_LABEL, normalizeAccessCode } from "@/lib/format";
 import Ltr from "@/components/Ltr";
+import { track, POSTHOG_EVENTS } from "@/lib/analytics";
 
 interface PaywallModalProps {
   locale: "ar" | "en";
@@ -41,6 +42,10 @@ export default function PaywallModal({
   const [accessCode, setAccessCode] = useState("");
   const [codeError, setCodeError] = useState(false);
   const planId = process.env.NEXT_PUBLIC_WHOP_PLAN_ID || "plan_3E0V8cxU8VYXI";
+
+  useEffect(() => {
+    track(POSTHOG_EVENTS.PAYWALL_VIEW, { locale, plan_id: planId });
+  }, [locale, planId]);
 
   function submitAccessCode() {
     const code = normalizeAccessCode(accessCode);
@@ -114,7 +119,10 @@ export default function PaywallModal({
 
                 <button
                   className="btn-primary w-full text-center"
-                  onClick={() => setShowCheckout(true)}
+                  onClick={() => {
+                    track(POSTHOG_EVENTS.CHECKOUT_START, { locale, plan_id: planId });
+                    setShowCheckout(true);
+                  }}
                 >
                   {ar ? (
                     <>افتح الكل · <Ltr>{PRICE_LABEL}</Ltr></>
