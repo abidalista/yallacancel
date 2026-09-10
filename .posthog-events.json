@@ -1,22 +1,37 @@
 [
   {
-    "event": "language_switched",
-    "description": "Fired when the user toggles the locale between Arabic and English via the Header button.",
-    "file": "src/components/Header.tsx"
-  },
-  {
-    "event": "paywall_dismissed",
-    "description": "Fired when the user closes the paywall modal without completing payment.",
-    "file": "src/components/PaywallModal.tsx"
-  },
-  {
-    "event": "$exception",
-    "description": "Automatic exception capture via posthog.captureException() in analysis error catch blocks.",
+    "event": "landing_view",
+    "description": "Fired when the homepage landing step is shown.",
     "file": "src/app/page.tsx"
   },
   {
-    "event": "$exception",
-    "description": "Automatic exception capture via posthog.captureException() in the whop-webhook error catch block.",
-    "file": "src/app/api/whop-webhook/route.ts"
+    "event": "upload_start",
+    "description": "Fired when the user starts a statement scan (files selected and Scan clicked).",
+    "file": "src/app/page.tsx"
+  },
+  {
+    "event": "preview_shown",
+    "description": "Fired when the free teaser report is shown.",
+    "file": "src/app/page.tsx"
+  },
+  {
+    "event": "paywall_view",
+    "description": "Fired when the paywall modal mounts.",
+    "file": "src/components/PaywallModal.tsx"
+  },
+  {
+    "event": "checkout_start",
+    "description": "Fired when the user clicks through to Whop checkout.",
+    "file": "src/components/PaywallModal.tsx"
+  },
+  {
+    "event": "purchase_success",
+    "description": "Fired after Whop receipt verifies and the report unlocks.",
+    "file": "src/app/page.tsx"
+  },
+  {
+    "event": "purchase_fail",
+    "description": "Fired when payment verification fails.",
+    "file": "src/app/page.tsx"
   }
 ]

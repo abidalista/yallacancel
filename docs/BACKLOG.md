@@ -45,9 +45,10 @@ Capabilities to eventually beat or match. Source: skill report screenshots, Jul 
 
 ## Later — Growth / ops
 
-- [ ] Post-MVP: one growth channel + weekly actions (Okara / outreach)  
-- [ ] WhatsApp Google Maps outreach (see `docs/outreach/` if present)  
-- [ ] Founder access code rotation / revoke when done testing  
+- [ ] First sales: follow `docs/FOUNDER-MORNING-BRIEF.md` (GSC on .com, WhatsApp 10, 3 videos, Anthropic + PostHog secrets)
+- [ ] Post-MVP: one growth channel + weekly actions (Okara / outreach)
+- [ ] WhatsApp Google Maps outreach (see `docs/outreach/` if present)
+- [ ] Founder access code rotation / revoke when done testing
 
 ---
 

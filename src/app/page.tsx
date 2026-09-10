@@ -27,8 +27,10 @@ import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, Subscription, Transaction, BankId } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
 import BrandLogo from "@/components/BrandLogo";
-import { formatInt, formatHeadlineYearly, formatPriceOnce, fileCountLabel, subscriptionCountLabel, truncateFilename } from "@/lib/format";
+import { formatInt, formatHeadlineYearly, formatPriceOnce, fileCountLabel, subscriptionCountLabel, truncateFilename, PRICE_LABEL } from "@/lib/format";
 import Ltr from "@/components/Ltr";
+import HomeJsonLd from "@/components/HomeJsonLd";
+import { track, POSTHOG_EVENTS } from "@/lib/analytics";
 import {
   storeScanSession,
   getPendingScanFiles,
@@ -63,8 +65,6 @@ interface ParseError {
   warnings: string[];
 }
 
-const AR_PRICE = "49 ريال";
-
 const BANKS = [
   { name: "الراجحي", domain: "alrajhibank.com.sa" },
   { name: "الأهلي", domain: "alahli.com" },
@@ -79,8 +79,8 @@ const BANKS = [
 
 const PROBLEM_STATS = [
   {
-    headlineAr: "382 ريال/شهر",
-    headlineEn: "382 Riyal/mo",
+    headlineAr: "382 SAR/mo",
+    headlineEn: "382 SAR/mo",
     bodyAr: "متوسط صرف السعودي على الاشتراكات",
     bodyEn: "Average spend of the Saudi on subscriptions",
   },
@@ -144,28 +144,40 @@ const TESTIMONIALS: { quote: string; name: string; role: string; initial: string
 
 const FAQ_ITEMS = [
   {
-    q: "هل بياناتي آمنة؟",
-    a: "نقرأ CSV و PDF على السيرفر (Claude + LlamaParse). ما نخزن ملفاتك بعد التحليل.",
+    qAr: "هل بياناتي آمنة؟",
+    aAr: "CSV نحاول نقرأه في المتصفح أولاً. الفحص الأعمق يرسل نص الكشف لسيرفرنا (Claude) عشان يطلع الاشتراكات. بعض ملفات PDF تحتاج استخراج نص على السيرفر. ما نخزن ملفاتك بعد التحليل. ما نبيع بياناتك.",
+    qEn: "Are my files safe?",
+    aEn: "We try to read CSV in your browser first. Deep analysis sends statement text to our API (Claude) to find subscriptions. Some PDFs need server text extraction. We do not store your files after the scan. We do not sell your data.",
   },
   {
-    q: "أي بنوك تدعمون؟",
-    a: "ندعم البنوك السعودية (الراجحي، الأهلي، الرياض، وغيرها) بالإضافة إلى Revolut و Crypto.com. CSV أوضح من PDF.",
+    qAr: "أي بنوك تدعمون؟",
+    aAr: "ندعم البنوك السعودية (الراجحي، الأهلي، الرياض، وغيرها) بالإضافة إلى Revolut و Crypto.com. CSV أوضح من PDF.",
+    qEn: "Which banks do you support?",
+    aEn: "Saudi banks (Al Rajhi, SNB, Riyad, and others) plus Revolut and Crypto.com. CSV is clearer than PDF.",
   },
   {
-    q: "كيف أنزّل كشف حسابي؟",
-    a: "افتح تطبيق بنكك → الحسابات → كشف الحساب → اختر آخر 3 إلى 6 أشهر → نزّله كـ CSV أو PDF.",
+    qAr: "كيف أنزّل كشف حسابي؟",
+    aAr: "افتح تطبيق بنكك ثم الحسابات ثم كشف الحساب. اختر آخر 3 إلى 6 أشهر. نزّله كـ CSV أو PDF.",
+    qEn: "How do I download my statement?",
+    aEn: "Open your bank app, then Accounts, then Statement. Pick the last 3 to 6 months. Download CSV or PDF.",
   },
   {
-    q: "هل الأداة مجانية؟",
-    a: "الفحص مجاني ويطلع لك الاشتراكات. فتح القائمة كاملة وروابط الإلغاء بـ 49 ريال مرة واحدة.",
+    qAr: "هل الأداة مجانية؟",
+    aAr: "الفحص مجاني ويطلع لك الاشتراكات. فتح القائمة كاملة وروابط الإلغاء بـ 49 SAR مرة واحدة.",
+    qEn: "Is it free?",
+    aEn: "The scan is free and shows your subscriptions. Unlock the full list and cancel links for 49 SAR once.",
   },
   {
-    q: "هل يلا كانسل يلغي الاشتراكات عني؟",
-    a: "حالياً نوفر لك تقرير تفصيلي مع روابط إلغاء مباشرة. الإلغاء نفسه تسويه بنفسك عبر الرابط · عادة يأخذ أقل من دقيقة لكل اشتراك.",
+    qAr: "هل يلا كانسل يلغي الاشتراكات عني؟",
+    aAr: "حالياً نوفر لك تقرير تفصيلي مع روابط إلغاء مباشرة. الإلغاء نفسه تسويه بنفسك عبر الرابط · عادة يأخذ أقل من دقيقة لكل اشتراك.",
+    qEn: "Does Yalla Cancel cancel for me?",
+    aEn: "We give you a report with direct cancel links. You cancel yourself via the link · usually under a minute per subscription.",
   },
   {
-    q: "كيف أتواصل معكم؟",
-    a: "اضغط «تواصل معنا» في أسفل الصفحة — يفتح بريدك مباشرة. نرد عادة خلال يوم عمل.",
+    qAr: "كيف أتواصل معكم؟",
+    aAr: "اضغط «تواصل معنا» في أسفل الصفحة. يفتح بريدك مباشرة. نرد عادة خلال يوم عمل.",
+    qEn: "How do I contact you?",
+    aEn: "Tap Contact at the bottom of the page. It opens your email. We usually reply within one business day.",
   },
 ];
 
@@ -201,6 +213,13 @@ export default function HomePage() {
     document.documentElement.setAttribute("dir", ar ? "rtl" : "ltr");
     document.documentElement.setAttribute("lang", locale);
   }, [locale, ar]);
+
+  useEffect(() => {
+    if (step !== "landing") return;
+    track(POSTHOG_EVENTS.LANDING_VIEW, { locale });
+    // locale is sampled at view time; do not re-fire on language toggle
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
 
   useEffect(() => {
     if (isReportUnlocked()) {
@@ -239,6 +258,12 @@ export default function HomePage() {
     setReportTier("teaser");
     setUnsureSubs([]);
     setStep("results");
+    track(POSTHOG_EVENTS.PREVIEW_SHOWN, {
+      locale,
+      subscription_count: finalReport.subscriptions.length,
+      engine,
+      file_count: files.length,
+    });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -321,6 +346,10 @@ export default function HomePage() {
   }
 
   async function handleScan(files: File[], bankOverride?: BankId) {
+    track(POSTHOG_EVENTS.UPLOAD_START, {
+      locale,
+      file_count: files.length,
+    });
     setParseError(null);
     setStep("uploading");
     setTxCount(0);
@@ -518,6 +547,7 @@ export default function HomePage() {
 
     const valid = await verifyPaymentReceipt(receiptId);
     if (!valid) {
+      track(POSTHOG_EVENTS.PURCHASE_FAIL, { locale, receipt_id: receiptId, reason: "verify_failed" });
       setStep("results");
       setParseError({
         type: "file_error",
@@ -539,6 +569,7 @@ export default function HomePage() {
     savePaymentReceipt(receiptId);
     setIsUnlocked(true);
     setReportTier("full");
+    track(POSTHOG_EVENTS.PURCHASE_SUCCESS, { locale, receipt_id: receiptId });
 
     // Free scan was local — pay = unblur + Claude upgrade
     if (isClaudeScan()) {
@@ -973,10 +1004,10 @@ export default function HomePage() {
                     onClick={() => setShowPaywall(true)}
                     className="btn-primary w-full max-w-none rounded-xl py-4 text-base tracking-tight"
                   >
-                    {ar ? `افتح — ${formatPriceOnce(true)}` : `Unlock — ${formatPriceOnce(false)}`}
+                    {ar ? `افتح · ${formatPriceOnce(true)}` : `Unlock · ${formatPriceOnce(false)}`}
                   </button>
                   <p className="text-[12px] text-slate-400 mt-3">
-                    {ar ? "دفعة واحدة. بدون حساب." : "One-time. No account needed."}
+                    {ar ? "دفعة واحدة. بدون حساب." : "One time. No account needed."}
                   </p>
                 </motion.div>
               )}
@@ -1001,6 +1032,7 @@ export default function HomePage() {
       {/* ── LANDING PAGE ── */}
       {step === "landing" && (
         <>
+          <HomeJsonLd />
           {/* Hero — compact first viewport (JFC-style: headline + box + files without scroll) */}
           <section ref={heroRef} className="hero-gradient relative overflow-hidden pt-20 pb-8 px-6 lg:pt-16 lg:pb-6">
             <HeroScatteredLogos />
@@ -1115,8 +1147,8 @@ export default function HomePage() {
                   transition={{ duration: 0.5, delay: i * 0.1 }}
                   className="bg-white border border-[#E5EFED] rounded-[24px] shadow-sm text-center py-8 px-4"
                 >
-                  <div className={`text-2xl sm:text-3xl font-extrabold tracking-tight text-[#00A651] mb-3 ${ar ? "" : "ltr-always"}`}>
-                    {ar ? stat.headlineAr : stat.headlineEn}
+                  <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#00A651] mb-3">
+                    <Ltr>{ar ? stat.headlineAr : stat.headlineEn}</Ltr>
                   </div>
                   <p className="text-[15px] text-slate-600 leading-relaxed max-w-[220px] mx-auto">
                     {ar ? stat.bodyAr : stat.bodyEn}
@@ -1299,10 +1331,10 @@ export default function HomePage() {
                       {
                         labelAr: "وقت البحث",
                         labelEn: "Time to find",
-                        ycAr: "✅ 90 ثانية",
-                        ycEn: "✅ 90 seconds",
-                        manAr: "❌ 3-4 ساعات",
-                        manEn: "❌ 3-4 hours",
+                        ycAr: <>✅ <Ltr>90</Ltr> ثانية</>,
+                        ycEn: <>✅ <Ltr>90 seconds</Ltr></>,
+                        manAr: <>❌ <Ltr>3</Ltr> إلى <Ltr>4</Ltr> ساعات</>,
+                        manEn: <>❌ <Ltr>3 to 4 hours</Ltr></>,
                       },
                       {
                         labelAr: "الاشتراكات المكتشفة",
@@ -1331,16 +1363,16 @@ export default function HomePage() {
                       {
                         labelAr: "خصوصية",
                         labelEn: "Privacy",
-                        ycAr: "✅ على جهازك",
-                        ycEn: "✅ On your device",
-                        manAr: "❌ مجهود يدوي طويل",
-                        manEn: "❌ Hours of manual work",
+                        ycAr: "✅ ما نخزن كشفك",
+                        ycEn: "✅ We do not store statements",
+                        manAr: "❌ كشفك عندك أنت",
+                        manEn: "❌ You keep the file yourself",
                       },
                       {
                         labelAr: "السعر",
                         labelEn: "Price",
-                        ycAr: "✅ 49 Riyal مرة واحدة",
-                        ycEn: "✅ 49 Riyal once",
+                        ycAr: <>✅ <Ltr>{PRICE_LABEL}</Ltr> مرة واحدة</>,
+                        ycEn: <>✅ <Ltr>{PRICE_LABEL}</Ltr> once</>,
                         manAr: "❌ وقتك + مجهودك",
                         manEn: "❌ Your time + effort",
                       },
@@ -1370,7 +1402,7 @@ export default function HomePage() {
                 <Zap size={12} strokeWidth={1.5} /> {ar ? "سعر واحد. بدون اشتراك." : "One price. No subscription."}
               </span>
               <h2 className="section-title mb-2">
-                {ar ? AR_PRICE : "49 SAR"}
+                <Ltr>{PRICE_LABEL}</Ltr>
               </h2>
               <p className="text-sm text-slate-400 mb-8">
                 {ar ? "دفعة واحدة · مو اشتراك شهري. وتقدر تسترجع فلوسك كاملة." : "One time payment · not a monthly subscription. Full money back guarantee."}
@@ -1393,7 +1425,11 @@ export default function HomePage() {
                 onClick={() => setShowPaywall(true)}
                 className="btn-primary w-full text-base py-4 mb-3"
               >
-                {ar ? `حلل كشف حسابك، ${AR_PRICE}` : "Analyze your statement · 49 SAR"}
+                {ar ? (
+                  <>حلل كشف حسابك · <Ltr>{PRICE_LABEL}</Ltr></>
+                ) : (
+                  <>Analyze your statement · <Ltr>{PRICE_LABEL}</Ltr></>
+                )}
               </button>
               <p className="text-xs text-slate-400">
                 {ar ? "يقبل مدى · فيزا · ماستركارد · ضمان استرداد كامل" : "Accepts mada · Visa · Mastercard · Full refund guarantee"}
@@ -1422,7 +1458,7 @@ export default function HomePage() {
                       onClick={() => setOpenFaq(openFaq === i ? null : i)}
                       className="w-full flex items-center justify-between py-1 text-right"
                     >
-                      <span className="font-bold text-sm text-slate-800">{faq.q}</span>
+                      <span className="font-bold text-sm text-slate-800">{ar ? faq.qAr : faq.qEn}</span>
                       {openFaq === i
                         ? <ChevronUp size={16} strokeWidth={1.5} className="text-slate-400 flex-shrink-0" />
                         : <ChevronDown size={16} strokeWidth={1.5} className="text-slate-400 flex-shrink-0" />}
@@ -1437,7 +1473,7 @@ export default function HomePage() {
                           className="overflow-hidden"
                         >
                           <p className="text-sm text-slate-500 leading-relaxed pt-3 border-t border-slate-100 mt-3">
-                            {faq.a}
+                            {ar ? faq.aAr : faq.aEn}
                           </p>
                         </motion.div>
                       )}
@@ -1491,10 +1527,19 @@ export default function HomePage() {
                 <a href="/guides" className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}>
                   {ar ? "أدلة الإلغاء" : "Cancel Guides"}
                 </a>
+                <a href="/privacy.html" className="text-sm no-underline transition-colors" style={{ color: "#8AADA8" }}>
+                  {ar ? "الخصوصية" : "Privacy"}
+                </a>
                 <SupportContact locale={locale} variant="footer" />
               </div>
               <p className="text-xs mb-1" style={{ color: "#8AADA8" }}>
-                {ar ? `${AR_PRICE} مرة واحدة، بدون اشتراك، ضمان استرداد كامل` : "49 SAR one-time · No subscription · Full refund guarantee"}
+                {ar ? (
+                  <>
+                    <Ltr>{PRICE_LABEL}</Ltr> مرة واحدة، بدون اشتراك، ضمان استرداد كامل
+                  </>
+                ) : (
+                  "49 SAR one time · No subscription · Full refund guarantee"
+                )}
               </p>
               <p className="text-xs" style={{ color: "#4A6862" }}>
                 © {new Date().getFullYear()} YallaCancel · {ar ? "صُنع بحب في السعودية 🇸🇦" : "Made with love in Saudi Arabia 🇸🇦"}
