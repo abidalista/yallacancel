@@ -40,7 +40,7 @@ export const translations = {
     totalSubscriptions: "إجمالي الاشتراكات",
     monthlyTotal: "المجموع الشهري",
     yearlyTotal: "المجموع السنوي",
-    currency: "ريال",
+    currency: "SAR",
 
     // Categories
     cancelSection: "🚫 الغيها",
