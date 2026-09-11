@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, FileText } from "lucide-react";
 import { formatBytes, truncateFilename } from "@/lib/format";
+import { track, POSTHOG_EVENTS } from "@/lib/analytics";
 import Ltr from "@/components/Ltr";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -128,7 +129,23 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
 
   function handleScan() {
     if (selectedFiles.length === 0) return;
+    track(POSTHOG_EVENTS.FILE_UPLOADED, { file_count: selectedFiles.length, locale });
     onScan(selectedFiles.map((f) => f.file));
+  }
+
+  async function handleDemo(e: React.MouseEvent) {
+    e.stopPropagation();
+    e.preventDefault();
+    try {
+      const res = await fetch("/test-statement.csv");
+      if (!res.ok) throw new Error("demo_missing");
+      const blob = await res.blob();
+      const file = new File([blob], "demo-statement.csv", { type: "text/csv" });
+      track(POSTHOG_EVENTS.SAMPLE_DATA_TRIED, { locale });
+      onScan([file]);
+    } catch {
+      setFileError(ar ? "المثال ما تحمّل. جرّب ترفع ملفك." : "Demo failed to load. Upload your own file.");
+    }
   }
 
   const totalSize = selectedFiles.reduce((s, f) => s + f.size, 0);
@@ -194,6 +211,14 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
           ? "CSV ينقرأ في المتصفح أولاً. الفحص الأعمق يمر على سيرفرنا ثم ينحذف الملف. ما نخزن كشفك."
           : "CSV is read in the browser first. Deep analysis hits our API, then the file is discarded. We do not store your statement."}
       </p>
+      <button
+        type="button"
+        onClick={handleDemo}
+        className="mt-2 text-xs font-bold underline-offset-2 hover:underline"
+        style={{ color: "#1A3A35" }}
+      >
+        {ar ? "ما عندك كشف؟ جرّب مثال جاهز" : "No statement handy? Try a sample"}
+      </button>
 
       {fileError && (
         <p className="text-xs text-red-500 text-center mt-2 whitespace-pre-line">{fileError}</p>
