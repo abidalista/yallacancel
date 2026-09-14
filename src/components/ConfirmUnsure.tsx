@@ -10,6 +10,7 @@ type Verdict = "yes" | "no" | "unknown";
 interface ConfirmUnsureProps {
   locale: "ar" | "en";
   clearCount: number;
+  clearNames?: string[];
   unsure: Subscription[];
   onComplete: (kept: Subscription[]) => void;
   onSkip: () => void;
@@ -18,6 +19,7 @@ interface ConfirmUnsureProps {
 export default function ConfirmUnsure({
   locale,
   clearCount,
+  clearNames = [],
   unsure,
   onComplete,
   onSkip,
@@ -26,6 +28,8 @@ export default function ConfirmUnsure({
   const [verdicts, setVerdicts] = useState<Record<string, Verdict>>(() =>
     Object.fromEntries(unsure.map((s) => [s.id, "unknown" as Verdict]))
   );
+  const named = clearNames.filter(Boolean);
+  const firstName = named[0] || "";
 
   function setVerdict(id: string, v: Verdict) {
     setVerdicts((prev) => ({ ...prev, [id]: v }));
@@ -36,24 +40,39 @@ export default function ConfirmUnsure({
     onComplete(kept);
   }
 
+  const clearLine =
+    clearCount === 1 && firstName
+      ? ar
+        ? `لقينا اشتراك واحد واضح: ${firstName}`
+        : `We found one clear recurring subscription: ${firstName}`
+      : clearCount > 1 && firstName
+        ? ar
+          ? `لقينا ${clearCount} اشتراكات واضحة، منها ${firstName}`
+          : `We found ${clearCount} clear recurring subscriptions, including ${firstName}`
+        : ar
+          ? `لقينا ${clearCount} اشتراكات واضحة`
+          : `We found ${clearCount} clear recurring subscriptions`;
+
   return (
     <div className="min-h-screen bg-white pt-24 pb-16 px-6">
       <div className="max-w-[640px] mx-auto">
         <p className="text-sm font-bold text-[#00A651] mb-2">
-          {ar
-            ? `لقينا ${clearCount} اشتراكات واضحة`
-            : `Found ${clearCount} clear subscriptions`}
+          {clearLine}
         </p>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-3">
           {ar
-            ? `ساعدنا نحدد ${unsure.length} إضافية`
-            : `Help identify ${unsure.length} more`}
+            ? unsure.length === 1
+              ? "هل هذي اشتراك كمان؟"
+              : `ساعدنا نفهم ${unsure.length} عمليات زيادة`
+            : unsure.length === 1
+              ? "Is this also a subscription?"
+              : `Help us check ${unsure.length} extra charges`}
         </h1>
         <div className="border-t border-dashed border-[#00A651]/40 mb-4" />
         <p className="text-[15px] text-slate-500 mb-8 leading-relaxed">
           {ar
-            ? "لقينا خصومات متكررة مو متأكدين منها. ساعدنا نضيفها للمجموع:"
-            : "We found some recurring charges we're not sure about. Help us include them in your total:"}
+            ? "لكل عملية: اضغط «اشتراك» إذا هي خصم متكرر تدفعه، أو «مو اشتراك» إذا هي شراء مرة واحدة. إذا ما تدري، اضغط «ما أدري»."
+            : "For each charge, tap Subscription if it is a recurring payment you make, or Not a subscription if it was a one time purchase. Tap Don't know if you are unsure."}
         </p>
 
         <div className="space-y-4 mb-8">
