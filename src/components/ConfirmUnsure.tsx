@@ -71,7 +71,7 @@ export default function ConfirmUnsure({
         <div className="border-t border-dashed border-[#00A651]/40 mb-4" />
         <p className="text-[15px] text-slate-500 mb-8 leading-relaxed">
           {ar
-            ? "لكل عملية: اضغط «اشتراك» إذا هي خصم متكرر تدفعه، أو «مو اشتراك» إذا هي شراء مرة واحدة. إذا ما تدري، اضغط «ما أدري»."
+            ? "لكل عملية: اضغط «اشتراك» إذا هذي دفعة تتكرر كل شهر أو كل سنة، أو «مو اشتراك» إذا اشتريت شيء مرة واحدة. إذا ما تدري، اضغط «ما أدري»."
             : "For each charge, tap Subscription if it is a recurring payment you make, or Not a subscription if it was a one time purchase. Tap Don't know if you are unsure."}
         </p>
 
