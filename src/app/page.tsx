@@ -227,6 +227,26 @@ export default function HomePage() {
     }
   }, []);
 
+  // Whop 3DS / mada return: ?status=success&payment_id=pay_…
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const paymentId = params.get("payment_id");
+    const status = params.get("status");
+    if (!paymentId || !paymentId.startsWith("pay_")) return;
+    if (status && status !== "success") return;
+
+    const url = new URL(window.location.href);
+    url.searchParams.delete("payment_id");
+    url.searchParams.delete("status");
+    url.searchParams.delete("state_id");
+    url.searchParams.delete("whop_return");
+    window.history.replaceState({}, "", url.pathname + url.search);
+
+    void handlePaymentSuccess(paymentId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on return from Whop
+  }, []);
+
   useEffect(() => {
     if (step !== "analyzing" && step !== "uploading") return;
     setElapsedSec(0);
@@ -361,6 +381,7 @@ export default function HomePage() {
     setIsUnlocked(false);
     setUnsureSubs([]);
     setAnalyzeStatus(ar ? "جاري رفع الملفات..." : "Uploading files...");
+    track(POSTHOG_EVENTS.ANALYSIS_STARTED, { file_count: files.length, locale });
     window.scrollTo({ top: 0, behavior: "smooth" });
 
     const uploadStarted = Date.now();
@@ -490,7 +511,7 @@ export default function HomePage() {
             detailsAr:
               aiResult.error?.includes("404") || aiResult.error?.includes("not_found")
                 ? "الفحص بالذكاء الاصطناعي مو متاح حالياً. جرب بعد دقيقة."
-                : "جرب مرة ثانية — CSV أو PDF من تطبيق البنك.",
+                : "جرب مرة ثانية · CSV أو PDF من تطبيق البنك.",
             suggestions: ["Use CSV if PDF fails", "Try again in a minute"],
             suggestionsAr: ["جرّب CSV لو PDF ما انقرأ", "جرب بعد دقيقة"],
             showBankSelector: false,
@@ -498,6 +519,7 @@ export default function HomePage() {
             failedFiles,
             warnings: ["server_and_local_failed"],
           });
+          track(POSTHOG_EVENTS.ANALYSIS_FAILED, { locale, reason: "server_and_local_failed" });
           setRetryFiles(files);
           setStep("landing");
           return;
@@ -511,6 +533,12 @@ export default function HomePage() {
 
       setFailedScanFiles(scanFailedFiles);
       storeScanSession(files, result, spending, scanFailedFiles, engine);
+
+      track(POSTHOG_EVENTS.ANALYSIS_COMPLETED, {
+        locale,
+        subscription_count: result.subscriptions.length,
+        method: engine,
+      });
 
       const clear = result.subscriptions.filter((s) => s.confidence === "confirmed");
       const unsure = result.subscriptions.filter((s) => s.confidence === "suspicious");
@@ -538,6 +566,7 @@ export default function HomePage() {
         failedFiles: [],
         warnings: ["unexpected_error"],
       });
+      track(POSTHOG_EVENTS.ANALYSIS_FAILED, { locale, reason: "unexpected_error" });
       setStep("landing");
     }
   }
@@ -570,6 +599,7 @@ export default function HomePage() {
     setIsUnlocked(true);
     setReportTier("full");
     track(POSTHOG_EVENTS.PURCHASE_SUCCESS, { locale, receipt_id: receiptId });
+    track(POSTHOG_EVENTS.PAYMENT_COMPLETED, { locale, unlocked: true });
 
     // Free scan was local — pay = unblur + Claude upgrade
     if (isClaudeScan()) {
@@ -692,6 +722,16 @@ export default function HomePage() {
       {showPaywall && (
         <PaywallModal
           locale={locale}
+          hiddenCount={
+            report && !isUnlocked && reportTier !== "full"
+              ? Math.max(0, report.subscriptions.length - 3)
+              : 0
+          }
+          hiddenYearlySar={
+            report && !isUnlocked && reportTier !== "full"
+              ? report.subscriptions.slice(3).reduce((sum, sub) => sum + sub.monthlySar * 12, 0)
+              : 0
+          }
           onClose={() => setShowPaywall(false)}
           onPaymentSuccess={handlePaymentSuccess}
         />
@@ -1034,7 +1074,7 @@ export default function HomePage() {
         <>
           <HomeJsonLd />
           {/* Hero — compact first viewport (JFC-style: headline + box + files without scroll) */}
-          <section ref={heroRef} className="hero-gradient relative overflow-hidden pt-20 pb-8 px-6 lg:pt-16 lg:pb-6">
+          <section id="upload" ref={heroRef} className="hero-gradient relative overflow-hidden pt-20 pb-8 px-6 lg:pt-16 lg:pb-6">
             <HeroScatteredLogos />
             <div className="max-w-[900px] mx-auto text-center relative z-10">
               <motion.div
@@ -1409,11 +1449,10 @@ export default function HomePage() {
               </p>
               <div className="bento-card p-6 text-right mb-6">
                 {[
-                  { ar: "تحليل غير محدود · كل بنوكك وبطاقاتك", en: "Unlimited analysis · all your banks and cards" },
-                  { ar: "روابط إلغاء مباشرة لـ 50+ خدمة سعودية", en: "Direct cancel links for 50+ Saudi services" },
-                  { ar: "تقرير PDF بالعربي تحتفظ فيه", en: "Arabic PDF report you can keep" },
-                  { ar: "قوالب رسائل إلغاء جاهزة", en: "Ready-to-send cancellation message templates" },
-                  { ar: "تحديثات مدى الحياة", en: "Lifetime updates" },
+                  { ar: "معاينة مجانية تطلع أقوى الاشتراكات", en: "Free preview of your top subscriptions" },
+                  { ar: "تحليل لكل بنوكك وبطاقاتك في نفس الفحص", en: "Scan every bank and card in one go" },
+                  { ar: "روابط إلغاء مباشرة لأكثر من 50 خدمة", en: "Direct cancel links for 50+ services" },
+                  { ar: "دفعة واحدة. بدون حساب وبدون اشتراك", en: "One payment. No account. No subscription" },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3 py-2">
                     <CheckCircle2 size={16} strokeWidth={1.5} className="text-[#00A651] flex-shrink-0" />
@@ -1422,13 +1461,16 @@ export default function HomePage() {
                 ))}
               </div>
               <button
-                onClick={() => setShowPaywall(true)}
+                onClick={() => {
+                  track(POSTHOG_EVENTS.PRICING_CTA_CLICKED, { locale });
+                  document.getElementById("upload")?.scrollIntoView({ behavior: "smooth" });
+                }}
                 className="btn-primary w-full text-base py-4 mb-3"
               >
                 {ar ? (
-                  <>حلل كشف حسابك · <Ltr>{PRICE_LABEL}</Ltr></>
+                  <>ارفع كشفك · المعاينة مجانية</>
                 ) : (
-                  <>Analyze your statement · <Ltr>{PRICE_LABEL}</Ltr></>
+                  <>Upload your statement · preview is free</>
                 )}
               </button>
               <p className="text-xs text-slate-400">

@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, FolderOpen, FileDown, Link2, BookOpen, Loader2, Mail, Zap } from "lucide-react";
 import { WhopCheckoutEmbed } from "@whop/checkout/react";
-import { PRICE_LABEL, normalizeAccessCode } from "@/lib/format";
-import Ltr from "@/components/Ltr";
+import { PRICE_LABEL, normalizeAccessCode, formatHeadlineYearly, subscriptionCountLabel } from "@/lib/format";
 import { track, POSTHOG_EVENTS } from "@/lib/analytics";
+import Ltr from "@/components/Ltr";
 
 interface PaywallModalProps {
   locale: "ar" | "en";
+  hiddenCount?: number;
+  hiddenYearlySar?: number;
   onClose: () => void;
   onPaymentSuccess: (receiptId: string) => void;
 }
@@ -25,13 +27,15 @@ const FEATURES_EN = [
   { icon: Link2, text: "Direct cancel links for every hidden subscription" },
   { icon: FolderOpen, text: "Unblur every subscription name" },
   { icon: FileDown, text: "Full yearly spend, clearly listed" },
-  { icon: BookOpen, text: "Step-by-step cancel guide for each service" },
+  { icon: BookOpen, text: "Step by step cancel guide for each service" },
 ];
 
 const DEV_UNLOCK = process.env.NEXT_PUBLIC_DEV_UNLOCK === "true";
 
 export default function PaywallModal({
   locale,
+  hiddenCount = 0,
+  hiddenYearlySar = 0,
   onClose,
   onPaymentSuccess,
 }: PaywallModalProps) {
@@ -41,20 +45,51 @@ export default function PaywallModal({
   const [showCode, setShowCode] = useState(false);
   const [accessCode, setAccessCode] = useState("");
   const [codeError, setCodeError] = useState(false);
+  const [receiptMissing, setReceiptMissing] = useState(false);
   const planId = process.env.NEXT_PUBLIC_WHOP_PLAN_ID || "plan_3E0V8cxU8VYXI";
+  const hasHiddenValue = hiddenCount > 0 && hiddenYearlySar > 0;
 
   useEffect(() => {
-    track(POSTHOG_EVENTS.PAYWALL_VIEW, { locale, plan_id: planId });
-  }, [locale, planId]);
+    const props = {
+      locale,
+      plan_id: planId,
+      hidden_count: hiddenCount,
+      hidden_yearly_sar: Math.round(hiddenYearlySar),
+    };
+    track(POSTHOG_EVENTS.PAYWALL_VIEWED, props);
+    track(POSTHOG_EVENTS.PAYWALL_VIEW, props);
+  }, [locale, planId, hiddenCount, hiddenYearlySar]);
 
   function submitAccessCode() {
-    const code = normalizeAccessCode(accessCode);
+    const raw = accessCode.trim();
+    // Recovery: paste Whop receipt id (pay_…) from dashboard email / support
+    if (/^pay_[A-Za-z0-9]+$/.test(raw)) {
+      setCodeError(false);
+      track(POSTHOG_EVENTS.CHECKOUT_STARTED, { locale, plan_id: planId, method: "pay_receipt" });
+      track(POSTHOG_EVENTS.CHECKOUT_START, { locale, plan_id: planId, method: "pay_receipt" });
+      onPaymentSuccess(raw);
+      return;
+    }
+    const code = normalizeAccessCode(raw);
     if (!code) {
       setCodeError(true);
       return;
     }
     setCodeError(false);
+    track(POSTHOG_EVENTS.CHECKOUT_STARTED, { locale, plan_id: planId, method: "access_code" });
+    track(POSTHOG_EVENTS.CHECKOUT_START, { locale, plan_id: planId, method: "access_code" });
     onPaymentSuccess(`founder_${code}`);
+  }
+
+  function startCheckout() {
+    track(POSTHOG_EVENTS.CHECKOUT_STARTED, { locale, plan_id: planId, method: "whop" });
+    track(POSTHOG_EVENTS.CHECKOUT_START, { locale, plan_id: planId, method: "whop" });
+    setShowCheckout(true);
+  }
+
+  function handleClose() {
+    track(POSTHOG_EVENTS.PAYWALL_DISMISSED, { locale, plan_id: planId, saw_checkout: showCheckout });
+    onClose();
   }
 
   return (
@@ -64,7 +99,7 @@ export default function PaywallModal({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-        onClick={(e) => e.target === e.currentTarget && onClose()}
+        onClick={(e) => e.target === e.currentTarget && handleClose()}
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -76,16 +111,34 @@ export default function PaywallModal({
         >
           <div className="bg-gradient-to-br from-[#1A3A35] to-[#0F2A26] px-6 py-6 text-white text-center relative">
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="absolute top-4 left-4 text-white/70 hover:text-white p-1 rounded-full transition-colors"
-              aria-label="Close"
+              aria-label={ar ? "إغلاق" : "Close"}
             >
               <X size={18} strokeWidth={1.5} />
             </button>
             <Zap size={28} strokeWidth={1.5} className="mx-auto mb-2" />
-            <h2 className="text-xl font-extrabold">YallaCancel Pro</h2>
+            <h2 className="text-xl font-extrabold">
+              {ar ? "افتح باقي الاشتراكات" : "Unlock the rest"}
+            </h2>
             <p className="text-white/70 text-sm mt-1">
-              {ar ? "افتح كل الاشتراكات وروابط الإلغاء" : "Unblur every sub + direct cancel links"}
+              {hasHiddenValue ? (
+                ar ? (
+                  <>
+                    باقي {subscriptionCountLabel(hiddenCount, true)} ·{" "}
+                    <Ltr className="text-white">{formatHeadlineYearly(hiddenYearlySar, true)}</Ltr>
+                  </>
+                ) : (
+                  <>
+                    {subscriptionCountLabel(hiddenCount, false)} still hidden ·{" "}
+                    <Ltr className="text-white">{formatHeadlineYearly(hiddenYearlySar, false)}</Ltr>
+                  </>
+                )
+              ) : ar ? (
+                "أسماء كاملة وروابط إلغاء مباشرة"
+              ) : (
+                "Unblur every sub + direct cancel links"
+              )}
             </p>
           </div>
 
@@ -110,7 +163,7 @@ export default function PaywallModal({
               <div className="px-6 pb-6 space-y-3">
                 <div className="bg-[#E8F7EE] border border-[#E5EFED] rounded-2xl p-4 text-center">
                   <div className="text-3xl font-extrabold text-[#00A651] tracking-tight">
-                    <Ltr>{ar ? PRICE_LABEL : "49 SAR"}</Ltr>
+                    <Ltr>{PRICE_LABEL}</Ltr>
                   </div>
                   <div className="text-sm text-slate-500">
                     {ar ? "دفعة واحدة · بدون اشتراك شهري" : "One time payment · no monthly fee"}
@@ -119,15 +172,12 @@ export default function PaywallModal({
 
                 <button
                   className="btn-primary w-full text-center"
-                  onClick={() => {
-                    track(POSTHOG_EVENTS.CHECKOUT_START, { locale, plan_id: planId });
-                    setShowCheckout(true);
-                  }}
+                  onClick={startCheckout}
                 >
                   {ar ? (
-                    <>افتح الكل · <Ltr>{PRICE_LABEL}</Ltr></>
+                    <>ادفع · <Ltr>{PRICE_LABEL}</Ltr></>
                   ) : (
-                    <>Unlock all · <Ltr>49 SAR</Ltr></>
+                    <>Pay · <Ltr>{PRICE_LABEL}</Ltr></>
                   )}
                 </button>
 
@@ -147,10 +197,17 @@ export default function PaywallModal({
                     className="w-full text-center text-xs text-slate-400 py-1 hover:text-slate-600"
                     onClick={() => setShowCode(true)}
                   >
-                    {ar ? "لديك كود؟" : "Have an access code?"}
+                    {ar ? "دفعت وما انفتح؟ الصق رقم الإيصال" : "Paid but locked? Paste your receipt"}
                   </button>
                 ) : (
                   <div className="space-y-2 pt-1">
+                    {receiptMissing && (
+                      <p className="text-xs text-amber-700 text-center bg-amber-50 rounded-lg px-2 py-2">
+                        {ar
+                          ? "الدفع تم · الصق رقم الإيصال pay_ من إيميل Whop"
+                          : "Payment went through · paste your pay_ receipt from Whop email"}
+                      </p>
+                    )}
                     <input
                       type="text"
                       value={accessCode}
@@ -159,7 +216,7 @@ export default function PaywallModal({
                         setCodeError(false);
                       }}
                       onKeyDown={(e) => e.key === "Enter" && submitAccessCode()}
-                      placeholder={ar ? "اكتب الكود هنا" : "Enter access code"}
+                      placeholder={ar ? "كود أو pay_" : "Code or pay_ receipt"}
                       className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-[#00A651]"
                       dir="ltr"
                       autoComplete="off"
@@ -204,8 +261,35 @@ export default function PaywallModal({
                 planId={planId}
                 theme="light"
                 skipRedirect
+                returnUrl={
+                  typeof window !== "undefined"
+                    ? `${window.location.origin}${window.location.pathname}?whop_return=1`
+                    : undefined
+                }
                 onComplete={(_planId, receiptId) => {
-                  onPaymentSuccess(receiptId || "whop_paid");
+                  // receipt_id is pay_… — never invent a fake id (verify would fail)
+                  if (!receiptId || !receiptId.startsWith("pay_")) {
+                    track(POSTHOG_EVENTS.PAYMENT_FAILED, {
+                      locale,
+                      plan_id: planId,
+                      reason: "missing_receipt",
+                    });
+                    track(POSTHOG_EVENTS.PURCHASE_FAIL, {
+                      locale,
+                      plan_id: planId,
+                      reason: "missing_receipt",
+                    });
+                    setReceiptMissing(true);
+                    setShowCheckout(false);
+                    setShowCode(true);
+                    return;
+                  }
+                  track(POSTHOG_EVENTS.PAYMENT_COMPLETED, {
+                    locale,
+                    plan_id: planId,
+                    receipt_prefix: "pay_",
+                  });
+                  onPaymentSuccess(receiptId);
                 }}
                 fallback={
                   <div className="flex items-center justify-center py-16">
@@ -217,7 +301,7 @@ export default function PaywallModal({
                 onClick={() => setShowCheckout(false)}
                 className="w-full text-center text-sm mt-3 py-2 text-slate-400"
               >
-                {ar ? "← رجوع" : "← Back"}
+                {ar ? "رجوع" : "Back"}
               </button>
             </div>
           )}

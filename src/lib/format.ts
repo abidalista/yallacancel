@@ -54,10 +54,9 @@ export function formatSarMo(n: number): string {
   return `${formatMoney(n)} SAR/mo`;
 }
 
-/** Monthly subscription cost — Arabic uses ريال/شهر */
-export function formatSubCost(monthly: number, ar: boolean): string {
-  const amount = formatMoney(monthly);
-  return ar ? `${amount} ريال/شهر` : `${amount} SAR/mo`;
+/** Monthly subscription cost — Western digits + English unit in both locales */
+export function formatSubCost(monthly: number, _ar?: boolean): string {
+  return `${formatMoney(monthly)} SAR/mo`;
 }
 
 const CURRENCY_SYMBOL: Record<string, string> = {
@@ -75,16 +74,16 @@ export function formatHeadlineYearly(yearlySar: number, _ar?: boolean): string {
   return `${amount} SAR/year`;
 }
 
-/** JFC-style native yearly display: $316/yr · €210/yr · 672 ريال/سنة */
+/** JFC-style native yearly display: $316/yr · €210/yr · 672 SAR/yr */
 export function formatNativeYearly(
   yearly: number,
   currency: string | undefined,
-  ar: boolean
+  _ar?: boolean
 ): string {
   const cur = (currency || "SAR").toUpperCase();
   const amount = formatMoney(yearly);
   if (cur === "SAR") {
-    return ar ? `${amount} ريال/سنة` : `${amount} SAR/yr`;
+    return `${amount} SAR/yr`;
   }
   const sym = CURRENCY_SYMBOL[cur];
   if (sym) {
@@ -98,12 +97,12 @@ export function formatNativeYearly(
 export function formatNativeMonthly(
   monthly: number,
   currency: string | undefined,
-  ar: boolean
+  _ar?: boolean
 ): string {
   const cur = (currency || "SAR").toUpperCase();
   const amount = formatMoney(monthly);
   if (cur === "SAR") {
-    return ar ? `${amount} ريال/شهر` : `${amount} SAR/mo`;
+    return `${amount} SAR/mo`;
   }
   const sym = CURRENCY_SYMBOL[cur] ?? `${cur} `;
   if (sym.endsWith(" ")) return `${sym}${amount}/mo`;

@@ -10,8 +10,33 @@
     "file": "src/app/page.tsx"
   },
   {
+    "event": "file_uploaded",
+    "description": "User selected real bank statement files and started a scan.",
+    "file": "src/components/UploadZone.tsx"
+  },
+  {
+    "event": "sample_data_tried",
+    "description": "User clicked the sample statement CTA (no file needed).",
+    "file": "src/components/UploadZone.tsx"
+  },
+  {
+    "event": "analysis_started",
+    "description": "Scan began after upload or demo.",
+    "file": "src/app/page.tsx"
+  },
+  {
     "event": "preview_shown",
     "description": "Fired when the free teaser report is shown.",
+    "file": "src/app/page.tsx"
+  },
+  {
+    "event": "analysis_completed",
+    "description": "Scan finished with a teaser report.",
+    "file": "src/app/page.tsx"
+  },
+  {
+    "event": "analysis_failed",
+    "description": "Scan failed (parse or server+local).",
     "file": "src/app/page.tsx"
   },
   {
@@ -20,8 +45,18 @@
     "file": "src/components/PaywallModal.tsx"
   },
   {
+    "event": "paywall_viewed",
+    "description": "Paywall modal opened after the free teaser.",
+    "file": "src/components/PaywallModal.tsx"
+  },
+  {
     "event": "checkout_start",
     "description": "Fired when the user clicks through to Whop checkout.",
+    "file": "src/components/PaywallModal.tsx"
+  },
+  {
+    "event": "checkout_started",
+    "description": "User clicked Pay, pasted a pay_ receipt, or used an access code.",
     "file": "src/components/PaywallModal.tsx"
   },
   {
@@ -30,8 +65,28 @@
     "file": "src/app/page.tsx"
   },
   {
+    "event": "payment_completed",
+    "description": "Whop returned a pay_ receipt and/or unlock succeeded after verify.",
+    "file": "src/components/PaywallModal.tsx"
+  },
+  {
     "event": "purchase_fail",
     "description": "Fired when payment verification fails.",
+    "file": "src/app/page.tsx"
+  },
+  {
+    "event": "payment_failed",
+    "description": "Missing receipt after checkout, or server verify rejected the receipt.",
+    "file": "src/components/PaywallModal.tsx"
+  },
+  {
+    "event": "paywall_dismissed",
+    "description": "User closed the paywall without completing payment.",
+    "file": "src/components/PaywallModal.tsx"
+  },
+  {
+    "event": "pricing_cta_clicked",
+    "description": "Pricing section CTA scrolled the user to the upload box (does not open checkout).",
     "file": "src/app/page.tsx"
   }
 ]
