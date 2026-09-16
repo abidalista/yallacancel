@@ -3,7 +3,8 @@
  * Prefer /api/analyze-statements for multi-file skill-grade scans.
  */
 
-const LLAMA_BASE = "https://api.cloud.llamaindex.ai";
+import { extractPdfWithLlamaParse } from "../_lib/llamaparse";
+
 const CLAUDE_MODEL = "claude-sonnet-4-6";
 
 const FX = {
@@ -85,47 +86,6 @@ Return JSON ONLY (no markdown fences):
 }
 
 Be thorough. Miss nothing a careful human auditor would catch. Prefer false-positive "suspicious" over silent misses.`;
-
-async function extractPDFText(file: File, llamaKey: string): Promise<string> {
-  if (!llamaKey) throw new Error("LLAMA_CLOUD_API_KEY not set");
-
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const uploadRes = await fetch(`${LLAMA_BASE}/api/v1/parsing/upload`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${llamaKey}`,
-      Accept: "application/json",
-    },
-    body: formData,
-  });
-
-  if (!uploadRes.ok) {
-    throw new Error(`LlamaParse upload failed: ${uploadRes.status}`);
-  }
-
-  const { id: jobId } = await uploadRes.json();
-
-  for (let i = 0; i < 60; i++) {
-    await new Promise((r) => setTimeout(r, 2000));
-    const res = await fetch(
-      `${LLAMA_BASE}/api/v1/parsing/job/${jobId}/result/markdown`,
-      {
-        headers: {
-          Authorization: `Bearer ${llamaKey}`,
-          Accept: "application/json",
-        },
-      }
-    );
-    if (res.status === 404) continue;
-    if (!res.ok) continue;
-    const data = await res.json();
-    if (data.markdown) return data.markdown;
-  }
-
-  throw new Error("LlamaParse timeout");
-}
 
 async function analyzeWithClaude(rawText: string, anthropicKey: string): Promise<unknown> {
   let text = rawText;
@@ -216,9 +176,12 @@ export async function onRequestPost(context: {
     }
 
     const ext = file.name.split(".").pop()?.toLowerCase();
+    if (ext === "pdf" && !llamaKey) {
+      return Response.json({ error: "LLAMA_CLOUD_API_KEY not set" }, { status: 500 });
+    }
     let rawText =
       ext === "pdf"
-        ? await extractPDFText(file, llamaKey)
+        ? await extractPdfWithLlamaParse(file, llamaKey)
         : await file.text();
 
     if (!rawText || rawText.length < 50) {
