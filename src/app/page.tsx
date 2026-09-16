@@ -27,7 +27,7 @@ import type { SpendingBreakdown as SpendingData } from "@/lib/services";
 import { AuditReport as Report, Subscription, Transaction, BankId } from "@/lib/types";
 import { getCancelInfo } from "@/lib/cancel-db";
 import BrandLogo from "@/components/BrandLogo";
-import { formatInt, formatHeadlineYearly, formatPriceOnce, fileCountLabel, subscriptionCountLabel, truncateFilename, PRICE_LABEL } from "@/lib/format";
+import { formatInt, formatHeadlineYearly, formatNativeYearly, formatPriceOnce, fileCountLabel, subscriptionCountLabel, truncateFilename, PRICE_LABEL } from "@/lib/format";
 import Ltr from "@/components/Ltr";
 import HomeJsonLd from "@/components/HomeJsonLd";
 import { track, POSTHOG_EVENTS } from "@/lib/analytics";
@@ -774,7 +774,7 @@ export default function HomePage() {
         )}
       </AnimatePresence>
 
-      {/* ── ANALYZING (JFC: only the seconds counter, centered) ── */}
+      {/* ── ANALYZING (seconds + live progress copy) ── */}
       <AnimatePresence>
         {step === "analyzing" && (
           <motion.div
@@ -789,8 +789,19 @@ export default function HomePage() {
                 style={{ border: "2px dashed #00A65166" }}
               >
                 <p className="text-sm font-medium text-slate-600 mb-8 max-w-xs">
-                  {analyzeStatus ||
-                    (ar ? "فحص عميق يبدأ الآن..." : "Deep scan starting...")}
+                  {elapsedSec < 8
+                    ? analyzeStatus || (ar ? "فحص عميق يبدأ الآن..." : "Deep scan starting...")
+                    : elapsedSec < 20
+                      ? ar
+                        ? "نقرأ كل العمليات في كشفك..."
+                        : "Reading every transaction on your statement..."
+                      : elapsedSec < 40
+                        ? ar
+                          ? "نطابق التجار والمبالغ المتكررة..."
+                          : "Matching merchants and recurring amounts..."
+                        : ar
+                          ? "لسه شغالين. الكشوفات الكبيرة تاخذ حوالي دقيقة."
+                          : "Still working. Large statements can take about a minute."}
                 </p>
                 <p className="text-6xl sm:text-7xl font-extrabold tracking-tight text-[#00A651] tabular-nums ltr-always leading-none mb-8">
                   {elapsedSec}s
@@ -810,6 +821,9 @@ export default function HomePage() {
         <ConfirmUnsure
           locale={locale}
           clearCount={clearCount}
+          clearNames={(baseReport || report)?.subscriptions
+            .filter((s) => s.confidence === "confirmed")
+            .map((s) => s.name) || []}
           unsure={unsureSubs}
           onComplete={(kept) => {
             const template = baseReport || report;
@@ -859,13 +873,6 @@ export default function HomePage() {
         const hiddenYearlySar = hidden.reduce((sum, sub) => sum + sub.monthlySar * 12, 0);
         const needsPaywall = !showFull && hidden.length > 0;
 
-        const cancelLabel = (
-          <>
-            {ar ? "الغي" : "Cancel"}{" "}
-            <span aria-hidden>{ar ? "←" : "→"}</span>
-          </>
-        );
-
         function SubRow({
           sub,
           index,
@@ -876,11 +883,16 @@ export default function HomePage() {
           locked?: boolean;
         }) {
           const info = getCancelInfo(sub.name);
-          const yearlySar = sub.monthlySar * 12;
+          const cancelUrl = info?.cancelUrl?.trim() || "";
+          const yearlyLabel = formatNativeYearly(
+            sub.yearlyEquivalent,
+            sub.currency,
+            ar
+          );
 
           return (
             <div
-              className="grid grid-cols-[1.75rem_minmax(0,1fr)_auto_4.5rem] items-center gap-x-3 px-4 sm:px-5 py-[15px] border-b border-slate-100 last:border-b-0"
+              className="grid grid-cols-[1.75rem_minmax(0,1fr)_auto_minmax(4.5rem,auto)] items-center gap-x-3 px-4 sm:px-5 py-[15px] border-b border-slate-100 last:border-b-0"
             >
               <Ltr className="text-[13px] text-slate-400 tabular-nums">{index}.</Ltr>
               {locked ? (
@@ -894,22 +906,26 @@ export default function HomePage() {
                 </span>
               )}
               <Ltr className="font-semibold text-[15px] text-slate-900 tabular-nums whitespace-nowrap">
-                {formatHeadlineYearly(yearlySar, ar)}
+                {yearlyLabel}
               </Ltr>
               {locked ? (
                 <Lock size={15} strokeWidth={1.75} className="text-slate-300 justify-self-end" />
-              ) : info?.cancelUrl ? (
+              ) : cancelUrl ? (
                 <a
-                  href={info.cancelUrl}
+                  href={cancelUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[#00A651] font-semibold text-sm no-underline hover:underline whitespace-nowrap justify-self-end"
                 >
-                  {cancelLabel}
+                  {ar ? "الغي" : "Cancel"}{" "}
+                  <span aria-hidden>{ar ? "←" : "→"}</span>
                 </a>
               ) : (
-                <span className="text-[#00A651] font-semibold text-sm whitespace-nowrap justify-self-end">
-                  {cancelLabel}
+                <span
+                  className="text-slate-400 font-medium text-[11px] sm:text-xs whitespace-nowrap justify-self-end text-end leading-tight"
+                  title={ar ? "ما عندنا رابط إلغاء لهذي الخدمة" : "No cancel link for this service"}
+                >
+                  {ar ? "ما فيه رابط" : "No cancel link"}
                 </span>
               )}
             </div>
@@ -947,9 +963,13 @@ export default function HomePage() {
                 </h1>
                 {subs.length > 0 && (
                   <p className="text-[15px] text-slate-500 mb-0">
-                    {ar
-                      ? `عبر ${subscriptionCountLabel(subs.length, true)}`
-                      : `across ${subscriptionCountLabel(subs.length, false)}`}
+                    {subs.length === 1
+                      ? ar
+                        ? `اشتراك واحد واضح: ${subs[0].name}`
+                        : `one clear recurring subscription: ${subs[0].name}`
+                      : ar
+                        ? `عبر ${subscriptionCountLabel(subs.length, true)}`
+                        : `across ${subscriptionCountLabel(subs.length, false)}`}
                   </p>
                 )}
                 <div className="mt-5 border-t border-dashed border-[#00A651]/55" />

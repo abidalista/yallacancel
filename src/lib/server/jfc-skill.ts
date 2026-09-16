@@ -24,7 +24,8 @@ Your job: read EVERY bank/card transaction the user provides and produce a skill
 ## What to find
 - Recurring charges: same merchant, similar amounts, weekly / monthly / quarterly / yearly
 - Subscription-like: streaming, SaaS, AI tools, gyms, memberships, cloud, VPN, delivery clubs, telecom add-ons
-- Known services even if they appear ONCE (Netflix, Spotify, Claude, ChatGPT, Apple, Adobe, Shahid, etc.)
+- Known services even if they appear ONCE (Netflix, Spotify, Claude, ChatGPT, iCloud, Apple Music, Apple TV+, Adobe, Shahid, etc.) — NOT generic Apple / App Store / iTunes
+- Apple / App Store: apple.com/bill, iTunes, App Store, or generic "Apple" are often one-off in-app purchases. Do NOT mark confirmed unless (a) the descriptor names a real Apple subscription (iCloud, Apple Music, Apple TV+, Apple Arcade, Apple One, Apple Fitness+, Apple News+) OR (b) the SAME amount repeats at least twice on a weekly/monthly/yearly cadence. A single App Store / Apple.com/bill charge is NOT a subscription — omit it. Variable Apple amounts are purchases — omit or mark suspicious, never confirmed
 - CARD REBATES / CASHBACK that name a service (e.g. "Card Rebate: Spotify", "Card Cashback Netflix") ARE subscription signals — include with confidence "suspicious" and reason that rebate implies an active sub. Use rebate amount when the charge itself is missing.
 - Variable amounts: note variance in reason (e.g. Apple €17.99 vs €16.99)
 - Already stopped: if a known sub has no charge in the latest ~45–60 days of the statement window, still list it with confidence "suspicious" and reason "appears stopped / no recent charge"
@@ -49,6 +50,7 @@ Your job: read EVERY bank/card transaction the user provides and produce a skill
 - NEVER treat a foreign amount as SAR. Example: Claude Pro $20 ≈ ${20 * FX.USD} SAR, NOT 20 SAR
 - Rates: 1 USD=${FX.USD} SAR, 1 EUR=${FX.EUR} SAR, 1 GBP=${FX.GBP} SAR, 1 AED=${FX.AED} SAR, 1 KWD=${FX.KWD} SAR, 1 BHD=${FX.BHD} SAR, 1 QAR=${FX.QAR} SAR, 1 CHF=${FX.CHF} SAR
 - Return BOTH original_amount + original_currency AND amount in SAR
+- amount is the per-charge statement amount in SAR (NOT yearly). original_amount is the per-charge amount in original_currency. Never pre-annualize. Monthly $20 Claude Pro → original_amount 20 USD, amount ${20 * FX.USD} SAR, frequency monthly, yearly ≈ ${20 * 12 * FX.USD} SAR. Never report ~5000 SAR/year for Claude Pro
 
 ## Verdict (skill buckets)
 For each item set verdict:

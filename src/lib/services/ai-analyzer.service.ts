@@ -2,13 +2,17 @@
  * Client-side AI analysis — calls /api/parse-pdf and maps to AuditReport.
  */
 
-import { toSar } from "../fx";
 import {
   Transaction,
   Subscription,
   AuditReport,
   SubscriptionFrequency,
 } from "../types";
+import {
+  amountsFromCharge,
+  appleDisplayName,
+  classifyAppleCharge,
+} from "../subscription-rules";
 
 export interface ClaudeAnalysisResult {
   success: true;
@@ -218,7 +222,7 @@ function mergeAuditReports(reports: AuditReport[]): AuditReport {
 
 /** Known monthly services — OK to keep even with 1 charge in a short window */
 const KNOWN_MONTHLY_BRANDS =
-  /netflix|spotify|apple|icloud|chatgpt|claude|anthropic|openai|youtube premium|disney|hbo|amazon prime|microsoft|office 365|adobe|linkedin|shahid|anghami|canva|notion|cursor|grammarly|perplexity|midjourney|lovable|clueso/i;
+  /netflix|spotify|icloud|apple\s*tv|apple\s*music|apple\s*arcade|apple\s*one|apple\s*fitness|chatgpt|claude|anthropic|openai|youtube premium|disney|hbo|amazon prime|microsoft|office 365|adobe|linkedin|shahid|anghami|canva|notion|cursor|grammarly|perplexity|midjourney|lovable|clueso/i;
 
 /** Pay-per-use / day-pass — drop if only charged once */
 const PAY_PER_USE_MERCHANTS =
@@ -230,6 +234,15 @@ function shouldDropOneOffSub(
   occurrences: number,
   category: string
 ): boolean {
+  const apple = classifyAppleCharge({
+    name,
+    description: rawDescription,
+    occurrences,
+    consistentAmount: true,
+    frequency: "monthly",
+  });
+  if (apple.kind !== "not_apple" && !apple.include) return true;
+
   if (occurrences >= 2) return false;
   const hay = `${name} ${rawDescription}`.toLowerCase();
   if (KNOWN_MONTHLY_BRANDS.test(hay)) return false;
@@ -243,7 +256,7 @@ function shouldDropOneOffSub(
   return false;
 }
 
-function transformClaudeResponse(data: Record<string, unknown>): AuditReport {
+export function transformClaudeResponse(data: Record<string, unknown>): AuditReport {
   const subs = (data.subscriptions || []) as Array<Record<string, unknown>>;
   const subscriptions: Subscription[] = [];
   let idCounter = 0;
@@ -268,26 +281,45 @@ function transformClaudeResponse(data: Record<string, unknown>): AuditReport {
     const nativeCharge =
       originalAmount != null && Number.isFinite(originalAmount)
         ? originalAmount
-        : originalCurrency === "SAR"
-          ? rawSar
-          : rawSar;
+        : rawSar;
     const currency =
       originalAmount != null && originalCurrency
         ? originalCurrency
         : "SAR";
 
-    const monthlyNative = calculateMonthly(nativeCharge, frequency);
-    const monthlySar =
-      currency === "SAR"
-        ? monthlyNative
-        : toSar(monthlyNative, currency) ||
-          (rawSar > 0 ? calculateMonthly(rawSar, frequency) : toSar(monthlyNative, currency));
+    const apple = classifyAppleCharge({
+      name,
+      description: rawDescription,
+      occurrences,
+      consistentAmount: true,
+      frequency,
+    });
+    if (apple.kind !== "not_apple" && !apple.include) {
+      continue;
+    }
+
+    const displayName =
+      apple.kind !== "not_apple"
+        ? appleDisplayName(name, rawDescription)
+        : name;
+
+    const money = amountsFromCharge({
+      name: displayName,
+      chargeAmount: nativeCharge,
+      currency,
+      frequency,
+      occurrences,
+    });
 
     const confidenceRaw = String(sub.confidence || "confirmed").toLowerCase();
-    const confidence =
+    let confidence: Subscription["confidence"] =
       confidenceRaw.includes("suspect") || confidenceRaw.includes("unsure")
-        ? ("suspicious" as const)
-        : ("confirmed" as const);
+        ? "suspicious"
+        : "confirmed";
+    if (apple.kind !== "not_apple" && apple.confidence === "suspicious") {
+      confidence = "suspicious";
+    }
+
     const reason =
       sub.reason != null
         ? String(sub.reason)
@@ -305,14 +337,14 @@ function transformClaudeResponse(data: Record<string, unknown>): AuditReport {
 
     subscriptions.push({
       id: `sub_${++idCounter}`,
-      name,
-      normalizedName: name.toLowerCase(),
-      amount: Math.round(nativeCharge * 100) / 100,
-      currency,
-      frequency,
-      monthlyEquivalent: Math.round(monthlyNative * 100) / 100,
-      yearlyEquivalent: Math.round(monthlyNative * 12 * 100) / 100,
-      monthlySar: Math.round(monthlySar * 100) / 100,
+      name: displayName,
+      normalizedName: displayName.toLowerCase(),
+      amount: money.amount,
+      currency: money.currency,
+      frequency: money.frequency,
+      monthlyEquivalent: money.monthlyEquivalent,
+      yearlyEquivalent: money.yearlyEquivalent,
+      monthlySar: money.monthlySar,
       occurrences,
       lastCharge: String(sub.last_date || ""),
       firstCharge: String(sub.first_date || ""),
@@ -320,7 +352,7 @@ function transformClaudeResponse(data: Record<string, unknown>): AuditReport {
       confidence,
       aiDescription: reason,
       rawDescription,
-      transactions: buildFakeTransactions(sub, nativeCharge, currency),
+      transactions: buildFakeTransactions(sub, money.amount, money.currency),
     });
   }
 
@@ -350,19 +382,6 @@ function normalizeFrequency(freq: string): SubscriptionFrequency {
   if (f.includes("quarter")) return "quarterly";
   if (f.includes("year") || f.includes("annual")) return "yearly";
   return "monthly";
-}
-
-function calculateMonthly(amount: number, frequency: SubscriptionFrequency): number {
-  switch (frequency) {
-    case "weekly":
-      return amount * 4.33;
-    case "monthly":
-      return amount;
-    case "quarterly":
-      return amount / 3;
-    case "yearly":
-      return amount / 12;
-  }
 }
 
 function buildFakeTransactions(

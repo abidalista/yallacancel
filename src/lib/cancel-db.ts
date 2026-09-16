@@ -137,6 +137,44 @@ const CANCEL_DB: Record<string, CancelInfo> = {
     domain: "apple.com",
     darkPattern: "لازم تلغي من إعدادات الجهاز مو من الموقع",
   },
+  "App Store": {
+    cancelUrl: "https://apps.apple.com/account/subscriptions",
+    difficulty: "medium",
+    domain: "apple.com",
+    darkPattern: "لازم تلغي من إعدادات الجهاز مو من الموقع",
+  },
+  "Apple Music": {
+    cancelUrl: "https://apps.apple.com/account/subscriptions",
+    difficulty: "medium",
+    domain: "apple.com",
+    darkPattern: "لازم تلغي من إعدادات الجهاز مو من الموقع",
+    guideSlug: "cancel-apple-music",
+  },
+  "Apple Arcade": {
+    cancelUrl: "https://apps.apple.com/account/subscriptions",
+    difficulty: "medium",
+    domain: "apple.com",
+    darkPattern: "لازم تلغي من إعدادات الجهاز مو من الموقع",
+    guideSlug: "cancel-apple-arcade",
+  },
+  "Apple One": {
+    cancelUrl: "https://apps.apple.com/account/subscriptions",
+    difficulty: "medium",
+    domain: "apple.com",
+    darkPattern: "لازم تلغي من إعدادات الجهاز مو من الموقع",
+  },
+  "Apple Fitness+": {
+    cancelUrl: "https://apps.apple.com/account/subscriptions",
+    difficulty: "medium",
+    domain: "apple.com",
+    darkPattern: "لازم تلغي من إعدادات الجهاز مو من الموقع",
+  },
+  "Apple News+": {
+    cancelUrl: "https://apps.apple.com/account/subscriptions",
+    difficulty: "medium",
+    domain: "apple.com",
+    darkPattern: "لازم تلغي من إعدادات الجهاز مو من الموقع",
+  },
   "iCloud+": {
     cancelUrl: "https://support.apple.com/en-us/HT207594",
     difficulty: "medium",
@@ -253,6 +291,21 @@ const CANCEL_DB: Record<string, CancelInfo> = {
     difficulty: "easy",
     domain: "github.com",
     guideSlug: "cancel-github-copilot",
+  },
+  "Claude Pro": {
+    cancelUrl: "https://claude.ai/settings/billing",
+    difficulty: "easy",
+    domain: "anthropic.com",
+  },
+  "Cursor Pro": {
+    cancelUrl: "https://cursor.com/dashboard?tab=billing",
+    difficulty: "easy",
+    domain: "cursor.com",
+  },
+  "Perplexity Pro": {
+    cancelUrl: "https://www.perplexity.ai/settings/account",
+    difficulty: "easy",
+    domain: "perplexity.ai",
   },
 
   // ── Gaming ──
@@ -499,26 +552,63 @@ const CANCEL_DB: Record<string, CancelInfo> = {
   },
 };
 
+function normalizeCancelNeedle(name: string): string {
+  return name.toLowerCase().replace(/[+._]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+const CANCEL_ALIASES: Array<[string, string]> = [
+  ["claude ai", "Claude Pro"],
+  ["claude pro", "Claude Pro"],
+  ["anthropic", "Claude Pro"],
+  ["cursor pro", "Cursor Pro"],
+  ["perplexity pro", "Perplexity Pro"],
+  ["perplexity", "Perplexity Pro"],
+  ["apple music", "Apple Music"],
+  ["apple arcade", "Apple Arcade"],
+  ["apple fitness", "Apple Fitness+"],
+  ["apple news", "Apple News+"],
+  ["apple one", "Apple One"],
+  ["apple tv", "Apple TV+"],
+  ["apple com/bill", "Apple"],
+  ["apple com bill", "Apple"],
+  ["app store", "App Store"],
+  ["itunes", "Apple iTunes"],
+  ["icloud", "iCloud+"],
+];
+
+CANCEL_ALIASES.sort((a, b) => b[0].length - a[0].length);
+
 export function getCancelInfo(serviceName: string): CancelInfo | null {
-  return CANCEL_DB[serviceName] || null;
+  if (!serviceName) return null;
+  const exact = CANCEL_DB[serviceName];
+  if (exact) return exact;
+
+  const needle = normalizeCancelNeedle(serviceName);
+  for (const [key, info] of Object.entries(CANCEL_DB)) {
+    if (normalizeCancelNeedle(key) === needle) return info;
+  }
+  for (const [alias, key] of CANCEL_ALIASES) {
+    if (needle.includes(alias) || needle === alias) return CANCEL_DB[key] || null;
+  }
+  return null;
 }
 
 export function getCancelUrl(serviceName: string): string | null {
-  const info = CANCEL_DB[serviceName];
+  const info = getCancelInfo(serviceName);
   return info?.cancelUrl || null;
 }
 
 export function getDifficulty(serviceName: string): CancelDifficulty {
-  const info = CANCEL_DB[serviceName];
+  const info = getCancelInfo(serviceName);
   return info?.difficulty || "medium";
 }
 
 export function getDomain(serviceName: string): string {
-  const info = CANCEL_DB[serviceName];
+  const info = getCancelInfo(serviceName);
   return info?.domain || "";
 }
 
 export function getGuideSlug(serviceName: string): string | null {
-  const info = CANCEL_DB[serviceName];
+  const info = getCancelInfo(serviceName);
   return info?.guideSlug || null;
 }
