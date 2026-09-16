@@ -7,6 +7,14 @@ const KEY_UNLOCKED = "yc_unlocked";
 export function savePaymentReceipt(receiptId: string): void {
   try {
     localStorage.setItem(KEY_RECEIPT, receiptId);
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Call only after the paid AI report is ready, or the teaser was already Claude. */
+export function markReportUnlocked(): void {
+  try {
     localStorage.setItem(KEY_UNLOCKED, "1");
   } catch {
     /* ignore */

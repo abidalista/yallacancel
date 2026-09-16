@@ -14,6 +14,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ valid: false }, { status: 400 });
     }
 
+    const trimmed = receiptId.trim();
+    if (!trimmed || trimmed === "whop_paid") {
+      return NextResponse.json({ valid: false }, { status: 400 });
+    }
+
     if (isFounderReceipt(receiptId, process.env.FOUNDER_ACCESS_TOKEN)) {
       return NextResponse.json({ valid: true });
     }

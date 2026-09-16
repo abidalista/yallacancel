@@ -3,7 +3,8 @@
  * POST /api/analyze-statements  (FormData: files[])
  */
 
-const LLAMA_BASE = "https://api.cloud.llamaindex.ai";
+import { extractPdfWithLlamaParse } from "../_lib/llamaparse";
+
 const CLAUDE_MODEL = "claude-sonnet-4-6";
 
 const FX = {
@@ -92,50 +93,9 @@ Return JSON ONLY (no markdown fences):
 
 Be thorough. Miss nothing a careful human auditor would catch. Prefer false-positive "suspicious" over silent misses.`;
 
-async function extractPDFText(file: File, llamaKey: string): Promise<string> {
-  if (!llamaKey) throw new Error("LLAMA_CLOUD_API_KEY not set");
-
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const uploadRes = await fetch(`${LLAMA_BASE}/api/v1/parsing/upload`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${llamaKey}`,
-      Accept: "application/json",
-    },
-    body: formData,
-  });
-
-  if (!uploadRes.ok) {
-    throw new Error(`LlamaParse upload failed: ${uploadRes.status}`);
-  }
-
-  const { id: jobId } = await uploadRes.json();
-
-  for (let i = 0; i < 60; i++) {
-    await new Promise((r) => setTimeout(r, 2000));
-    const res = await fetch(
-      `${LLAMA_BASE}/api/v1/parsing/job/${jobId}/result/markdown`,
-      {
-        headers: {
-          Authorization: `Bearer ${llamaKey}`,
-          Accept: "application/json",
-        },
-      }
-    );
-    if (res.status === 404) continue;
-    if (!res.ok) continue;
-    const data = await res.json();
-    if (data.markdown) return data.markdown;
-  }
-
-  throw new Error("LlamaParse timeout");
-}
-
 async function extractFileText(file: File, llamaKey: string): Promise<string> {
   const ext = file.name.split(".").pop()?.toLowerCase();
-  if (ext === "pdf") return extractPDFText(file, llamaKey);
+  if (ext === "pdf") return extractPdfWithLlamaParse(file, llamaKey);
   return file.text();
 }
 
@@ -237,6 +197,11 @@ export async function onRequestPost(context: {
     }
     if (files.length > 8) {
       return Response.json({ error: "Max 8 files per scan" }, { status: 400 });
+    }
+
+    const needsLlama = files.some((f) => /\.pdf$/i.test(f.name));
+    if (needsLlama && !llamaKey) {
+      return Response.json({ error: "LLAMA_CLOUD_API_KEY not set" }, { status: 500 });
     }
 
     const chunks: string[] = [];

@@ -8,54 +8,14 @@ import {
   JFC_SKILL_SYSTEM,
   buildStatementUserMessage,
 } from "./jfc-skill";
+import { extractPdfWithLlamaParse } from "./llamaparse";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const LLAMA_API_KEY = process.env.LLAMA_CLOUD_API_KEY;
-const LLAMA_BASE = "https://api.cloud.llamaindex.ai";
 
 export async function extractPDFText(file: File): Promise<string> {
   if (!LLAMA_API_KEY) throw new Error("LLAMA_CLOUD_API_KEY not set");
-
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const uploadRes = await fetch(`${LLAMA_BASE}/api/v1/parsing/upload`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${LLAMA_API_KEY}`,
-      Accept: "application/json",
-    },
-    body: formData,
-  });
-
-  if (!uploadRes.ok) {
-    const err = await uploadRes.text();
-    throw new Error(`LlamaParse upload failed: ${uploadRes.status} ${err}`);
-  }
-
-  const { id: jobId } = await uploadRes.json();
-
-  for (let i = 0; i < 60; i++) {
-    await new Promise((r) => setTimeout(r, 2000));
-
-    const res = await fetch(
-      `${LLAMA_BASE}/api/v1/parsing/job/${jobId}/result/markdown`,
-      {
-        headers: {
-          Authorization: `Bearer ${LLAMA_API_KEY}`,
-          Accept: "application/json",
-        },
-      }
-    );
-
-    if (res.status === 404) continue;
-    if (!res.ok) continue;
-
-    const data = await res.json();
-    if (data.markdown) return data.markdown;
-  }
-
-  throw new Error("LlamaParse timeout");
+  return extractPdfWithLlamaParse(file, LLAMA_API_KEY);
 }
 
 export async function extractFileText(file: File): Promise<string> {

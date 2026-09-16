@@ -58,6 +58,11 @@ export async function onRequestPost(context: {
       return Response.json({ valid: false }, { status: 400 });
     }
 
+    const trimmed = receiptId.trim();
+    if (!trimmed || trimmed === "whop_paid") {
+      return Response.json({ valid: false }, { status: 400 });
+    }
+
     const founderToken = context.env.FOUNDER_ACCESS_TOKEN;
     if (isFounderReceipt(receiptId, founderToken)) {
       return Response.json({ valid: true });

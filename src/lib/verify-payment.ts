@@ -1,3 +1,5 @@
+import { isUsableReceiptId } from "./scan-flow";
+
 /**
  * Verify payment receipt with the server.
  * Retries when Whop has not settled the payment yet (202 pending).
@@ -11,6 +13,8 @@ function sleep(ms: number): Promise<void> {
 }
 
 export async function verifyPaymentReceipt(receiptId: string): Promise<boolean> {
+  if (!isUsableReceiptId(receiptId)) return false;
+
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     try {
       const res = await fetch("/api/verify-payment", {
