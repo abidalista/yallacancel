@@ -17,17 +17,17 @@ interface PaywallModalProps {
 }
 
 const FEATURES_AR = [
-  { icon: Link2, text: "روابط إلغاء مباشرة لكل اشتراك مخفي" },
+  { icon: Link2, text: "روابط إلغاء للخدمات المعروفة. إذا ما فيه رابط نكتب ذلك" },
   { icon: FolderOpen, text: "أسماء كل الاشتراكات بدون تمويه" },
   { icon: FileDown, text: "المبلغ السنوي الكامل واضح" },
-  { icon: BookOpen, text: "دليل خطوة بخطوة لإلغاء كل خدمة" },
+  { icon: BookOpen, text: "صفحة إلغاء مباشرة بدل البحث العشوائي" },
 ];
 
 const FEATURES_EN = [
-  { icon: Link2, text: "Direct cancel links for every hidden subscription" },
+  { icon: Link2, text: "Cancel links for services we recognize. No link? We say so" },
   { icon: FolderOpen, text: "Unblur every subscription name" },
   { icon: FileDown, text: "Full yearly spend, clearly listed" },
-  { icon: BookOpen, text: "Step by step cancel guide for each service" },
+  { icon: BookOpen, text: "A cancel page instead of hunting for it" },
 ];
 
 const DEV_UNLOCK = process.env.NEXT_PUBLIC_DEV_UNLOCK === "true";
@@ -46,6 +46,7 @@ export default function PaywallModal({
   const [accessCode, setAccessCode] = useState("");
   const [codeError, setCodeError] = useState(false);
   const [receiptMissing, setReceiptMissing] = useState(false);
+  const [checkoutError, setCheckoutError] = useState(false);
   const planId = process.env.NEXT_PUBLIC_WHOP_PLAN_ID || "plan_3E0V8cxU8VYXI";
   const hasHiddenValue = hiddenCount > 0 && hiddenYearlySar > 0;
 
@@ -84,6 +85,7 @@ export default function PaywallModal({
   function startCheckout() {
     track(POSTHOG_EVENTS.CHECKOUT_STARTED, { locale, plan_id: planId, method: "whop" });
     track(POSTHOG_EVENTS.CHECKOUT_START, { locale, plan_id: planId, method: "whop" });
+    setCheckoutError(false);
     setShowCheckout(true);
   }
 
@@ -267,8 +269,8 @@ export default function PaywallModal({
                     : undefined
                 }
                 onComplete={(_planId, receiptId) => {
-                  // receipt_id is pay_… — never invent a fake id (verify would fail)
-                  if (!receiptId || !receiptId.startsWith("pay_")) {
+                  // Never invent a fake id. Reject missing receipts and the whop_paid placeholder.
+                  if (!receiptId || receiptId === "whop_paid" || !receiptId.startsWith("pay_")) {
                     track(POSTHOG_EVENTS.PAYMENT_FAILED, {
                       locale,
                       plan_id: planId,
@@ -279,11 +281,12 @@ export default function PaywallModal({
                       plan_id: planId,
                       reason: "missing_receipt",
                     });
+                    setCheckoutError(true);
                     setReceiptMissing(true);
-                    setShowCheckout(false);
                     setShowCode(true);
                     return;
                   }
+                  setCheckoutError(false);
                   track(POSTHOG_EVENTS.PAYMENT_COMPLETED, {
                     locale,
                     plan_id: planId,
@@ -297,6 +300,13 @@ export default function PaywallModal({
                   </div>
                 }
               />
+              {checkoutError && (
+                <p className="text-xs text-red-600 text-center mt-3">
+                  {ar
+                    ? "الدفع تم بس ما وصلنا رقم الإيصال. تواصل معنا وما تدفع مرة ثانية."
+                    : "Payment went through but we did not get a receipt id. Contact support. Do not pay again."}
+                </p>
+              )}
               <button
                 onClick={() => setShowCheckout(false)}
                 className="w-full text-center text-sm mt-3 py-2 text-slate-400"

@@ -5,6 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, FileText } from "lucide-react";
 import { formatBytes, truncateFilename } from "@/lib/format";
 import { track, POSTHOG_EVENTS } from "@/lib/analytics";
+import {
+  DEMO_STATEMENT_FILENAME,
+  DEMO_STATEMENT_URL,
+  demoStatementFile,
+} from "@/lib/demo-statement";
 import Ltr from "@/components/Ltr";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -27,6 +32,7 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
   const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
   const [fileError, setFileError] = useState<string | null>(null);
   const [fileTip, setFileTip] = useState<string | null>(null);
+  const [demoLoading, setDemoLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const ar = locale === "ar";
 
@@ -136,14 +142,22 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
   async function handleDemo(e: React.MouseEvent) {
     e.stopPropagation();
     e.preventDefault();
+    if (demoLoading) return;
+    setFileError(null);
+    setFileTip(null);
+    setDemoLoading(true);
     try {
-      const res = await fetch("/test-statement.csv");
+      const res = await fetch(DEMO_STATEMENT_URL);
       if (!res.ok) throw new Error("demo_missing");
       const blob = await res.blob();
-      const file = new File([blob], "demo-statement.csv", { type: "text/csv" });
+      const file = demoStatementFile(blob);
+      if (file.name !== DEMO_STATEMENT_FILENAME || file.size === 0) {
+        throw new Error("demo_empty");
+      }
       track(POSTHOG_EVENTS.SAMPLE_DATA_TRIED, { locale });
       onScan([file]);
     } catch {
+      setDemoLoading(false);
       setFileError(ar ? "المثال ما تحمّل. جرّب ترفع ملفك." : "Demo failed to load. Upload your own file.");
     }
   }
@@ -211,14 +225,23 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
           ? "CSV ينقرأ في المتصفح أولاً. الفحص الأعمق يمر على سيرفرنا ثم ينحذف الملف. ما نخزن كشفك."
           : "CSV is read in the browser first. Deep analysis hits our API, then the file is discarded. We do not store your statement."}
       </p>
-      <button
-        type="button"
-        onClick={handleDemo}
-        className="mt-2 text-xs font-bold underline-offset-2 hover:underline"
-        style={{ color: "#1A3A35" }}
-      >
-        {ar ? "ما عندك كشف؟ جرّب مثال جاهز" : "No statement handy? Try a sample"}
-      </button>
+      <div className="mt-3 text-center">
+        <button
+          type="button"
+          onClick={handleDemo}
+          disabled={demoLoading}
+          aria-busy={demoLoading}
+          className="btn-ghost min-h-11 px-5 text-sm disabled:opacity-50"
+        >
+          {demoLoading
+            ? ar
+              ? "نحمل المثال..."
+              : "Loading sample..."
+            : ar
+              ? "ما عندك كشف؟ جرّب مثال جاهز"
+              : "No statement handy? Try a sample"}
+        </button>
+      </div>
 
       {fileError && (
         <p className="text-xs text-red-500 text-center mt-2 whitespace-pre-line">{fileError}</p>

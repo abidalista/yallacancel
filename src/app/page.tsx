@@ -20,7 +20,6 @@ import {
   analyzeTransactions,
   analyzeSpending,
   analyzeStatementsWithAI,
-  mergeSubscriptionReports,
   buildServerUploadFiles,
 } from "@/lib/services";
 import type { SpendingBreakdown as SpendingData } from "@/lib/services";
@@ -36,17 +35,26 @@ import {
   getPendingScanFiles,
   clearScanSession,
   getTeaserReport,
-  getTeaserSpending,
   isClaudeScan,
+  getScanEngine,
   type ScanEngine,
 } from "@/lib/scan-session";
 import {
   savePaymentReceipt,
+  getPaymentReceipt,
   isReportUnlocked,
   saveReportData,
   clearPaymentState,
+  markReportUnlocked,
 } from "@/lib/payment-store";
 import { verifyPaymentReceipt } from "@/lib/verify-payment";
+import {
+  decidePayAiResult,
+  decidePayUnlock,
+  decideTeaserScan,
+  isUsableReceiptId,
+  scanErrorFromAi,
+} from "@/lib/scan-flow";
 
 type Step = "landing" | "uploading" | "analyzing" | "confirm" | "results";
 type ReportTier = "teaser" | "full";
@@ -118,10 +126,10 @@ const STEPS = [
   {
     num: "3",
     icon: Link2,
-    titleAr: "الغي بضغطة زر",
-    titleEn: "Cancel in one click",
-    descAr: "لكل اشتراك رابط إلغاء مباشر. اضغط وألغي · بدون دوخة أو بحث.",
-    descEn: "Every subscription has a direct cancel link. Click and cancel · no searching or runaround.",
+    titleAr: "افتح صفحة الإلغاء",
+    titleEn: "Open the cancel page",
+    descAr: "للخدمات المعروفة رابط إلغاء مباشر. اضغط وألغي من صفحة الخدمة. إذا ما عندنا رابط، نكتب ذلك بصراحة.",
+    descEn: "Known services get a direct cancel link. Tap and cancel on the merchant page. If we have no link, we say so.",
   },
 ];
 
@@ -204,6 +212,7 @@ export default function HomePage() {
   const [clearCount, setClearCount] = useState(0);
   const [elapsedSec, setElapsedSec] = useState(0);
   const [baseReport, setBaseReport] = useState<Report | null>(null);
+  const [analyzingPdf, setAnalyzingPdf] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
 
 
@@ -275,7 +284,9 @@ export default function HomePage() {
     storeScanSession(files, finalReport, spending, failed, engine);
     setReport(finalReport);
     setSpendingData(spending);
-    setReportTier("teaser");
+    if (!isReportUnlocked()) {
+      setReportTier("teaser");
+    }
     setUnsureSubs([]);
     setStep("results");
     track(POSTHOG_EVENTS.PREVIEW_SHOWN, {
@@ -380,6 +391,7 @@ export default function HomePage() {
     setReportTier("teaser");
     setIsUnlocked(false);
     setUnsureSubs([]);
+    setAnalyzingPdf(files.some((f) => /\.pdf$/i.test(f.name)));
     setAnalyzeStatus(ar ? "جاري رفع الملفات..." : "Uploading files...");
     track(POSTHOG_EVENTS.ANALYSIS_STARTED, { file_count: files.length, locale });
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -451,79 +463,47 @@ export default function HomePage() {
       const localCount = localReport?.subscriptions.length ?? 0;
       const scanStarted = Date.now();
 
-      // CSV-only with local hits → instant (skip 60–90s server wait)
-      let result: Report;
-      let engine: ScanEngine;
-      let scanFailedFiles = failedFiles;
-
+      let aiResult: Awaited<ReturnType<typeof analyzeStatementsWithAI>> | null = null;
       if (!hasPdf && localReport && localCount > 0) {
-        result = localReport;
-        engine = "local";
+        // CSV-only with local hits → instant (skip 60 to 90s server wait)
       } else {
         const serverFiles = buildServerUploadFiles(files, pdfTexts);
-        const aiResult = await analyzeStatementsWithAI(serverFiles);
-
-        if (aiResult.success) {
-          if (aiResult.fileErrors?.length) {
-            scanFailedFiles = aiResult.fileErrors.map(
-              (e) => e.split(":")[0]?.trim() || e
-            );
-          }
-          const claudeCount = aiResult.report.subscriptions.length;
-
-          if (claudeCount > 0 && localCount > 0) {
-            result = mergeSubscriptionReports(aiResult.report, localReport!);
-            engine = "claude";
-          } else if (claudeCount > 0) {
-            result = aiResult.report;
-            engine = "claude";
-          } else if (localReport && localCount > 0) {
-            result = localReport;
-            engine = "local";
-          } else if (localReport) {
-            result = localReport;
-            engine = "local";
-          } else {
-            result = aiResult.report;
-            engine = "claude";
-          }
-
-          if (aiResult.report.analyzedTransactions > 0) {
-            setTxCount(aiResult.report.analyzedTransactions);
-          } else if (identified > 0) {
-            setTxCount(identified);
-          }
-        } else if (localReport) {
-          console.warn("[scan] Server failed, local fallback:", aiResult.error);
-          result = localReport;
-          engine = "local";
-          setTxCount(identified);
-        } else {
-          console.error("[scan] Server and local both failed:", aiResult.error);
-          setParseError({
-            type: "file_error",
-            message: "Could not analyze files",
-            messageAr: "ما قدرنا نحلل الملفات",
-            details:
-              aiResult.error?.includes("404") || aiResult.error?.includes("not_found")
-                ? "AI scan is temporarily unavailable. Try again in a minute."
-                : aiResult.error || "Try CSV or PDF again.",
-            detailsAr:
-              aiResult.error?.includes("404") || aiResult.error?.includes("not_found")
-                ? "الفحص بالذكاء الاصطناعي مو متاح حالياً. جرب بعد دقيقة."
-                : "جرب مرة ثانية · CSV أو PDF من تطبيق البنك.",
-            suggestions: ["Use CSV if PDF fails", "Try again in a minute"],
-            suggestionsAr: ["جرّب CSV لو PDF ما انقرأ", "جرب بعد دقيقة"],
-            showBankSelector: false,
-            showPasteInput: true,
-            failedFiles,
-            warnings: ["server_and_local_failed"],
-          });
-          track(POSTHOG_EVENTS.ANALYSIS_FAILED, { locale, reason: "server_and_local_failed" });
-          setRetryFiles(files);
-          setStep("landing");
-          return;
+        if (hasPdf) {
+          setAnalyzeStatus(ar ? "نقرأ ملف PDF..." : "Reading your PDF...");
         }
+        aiResult = await analyzeStatementsWithAI(serverFiles);
+      }
+
+      const decision = decideTeaserScan({
+        hasPdf,
+        localReport,
+        localCount,
+        aiResult,
+      });
+
+      if (decision.action === "error") {
+        setParseError(
+          scanErrorFromAi(decision.kind, {
+            failedFiles: decision.failedFiles || failedFiles,
+            warning: "ai_scan_failed",
+            showPasteInput: true,
+          })
+        );
+        setRetryFiles(files);
+        setStep("landing");
+        return;
+      }
+
+      const result = decision.report;
+      const engine = decision.engine;
+      const scanFailedFiles = decision.failedFiles?.length
+        ? decision.failedFiles
+        : failedFiles;
+
+      if (result.analyzedTransactions > 0) {
+        setTxCount(result.analyzedTransactions);
+      } else if (identified > 0) {
+        setTxCount(identified);
       }
 
       setBaseReport(result);
@@ -574,6 +554,25 @@ export default function HomePage() {
   async function handlePaymentSuccess(receiptId: string) {
     setShowPaywall(false);
 
+    if (!isUsableReceiptId(receiptId)) {
+      track(POSTHOG_EVENTS.PURCHASE_FAIL, { locale, receipt_id: String(receiptId || ""), reason: "missing_receipt" });
+      setStep("results");
+      setParseError({
+        type: "file_error",
+        message: "Payment completed without a receipt",
+        messageAr: "الدفع تم بدون رقم إيصال",
+        details: "Contact support below. Do not pay again.",
+        detailsAr: "تواصل معنا تحت. لا تدفع مرة ثانية.",
+        suggestions: [],
+        suggestionsAr: [],
+        showBankSelector: false,
+        showPasteInput: false,
+        failedFiles: [],
+        warnings: ["payment_verify_failed"],
+      });
+      return;
+    }
+
     const valid = await verifyPaymentReceipt(receiptId);
     if (!valid) {
       track(POSTHOG_EVENTS.PURCHASE_FAIL, { locale, receipt_id: receiptId, reason: "verify_failed" });
@@ -596,15 +595,20 @@ export default function HomePage() {
 
     setParseError(null);
     savePaymentReceipt(receiptId);
-    setIsUnlocked(true);
-    setReportTier("full");
     track(POSTHOG_EVENTS.PURCHASE_SUCCESS, { locale, receipt_id: receiptId });
     track(POSTHOG_EVENTS.PAYMENT_COMPLETED, { locale, unlocked: true });
 
-    // Free scan was local — pay = unblur + Claude upgrade
-    if (isClaudeScan()) {
+    const plan = decidePayUnlock({
+      engine: getScanEngine(),
+      hasPendingFiles: getPendingScanFiles().length > 0,
+    });
+
+    if (plan.action === "unblur_existing") {
       const full = getTeaserReport() || baseReport || report;
       if (full) {
+        markReportUnlocked();
+        setIsUnlocked(true);
+        setReportTier("full");
         setReport(full);
         saveReportData(full, spendingData);
       }
@@ -613,29 +617,39 @@ export default function HomePage() {
       return;
     }
 
-    // Rare fallback if session lost Claude flag
+    if (plan.action === "missing_files") {
+      setParseError(
+        scanErrorFromAi("missing_files", {
+          warning: "ai_unlock_missing_files",
+          showPasteInput: false,
+        })
+      );
+      setStep("results");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
     setAnalyzeStatus(ar ? "فحص عميق يبدأ الآن..." : "Deep scan starting...");
     setStep("analyzing");
     setAiProgress(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
 
     const files = getPendingScanFiles();
-    if (files.length === 0) {
-      setStep("results");
-      return;
-    }
-
     try {
       const aiResult = await analyzeStatementsWithAI(files);
       setAiProgress(null);
+      const decision = decidePayAiResult(aiResult, getTeaserReport());
 
-      if (aiResult.success) {
-        const aiReport = aiResult.report;
+      if (decision.action === "use_ai") {
+        const aiReport = decision.report;
         const clear = aiReport.subscriptions.filter((s) => s.confidence === "confirmed");
         const unsure = aiReport.subscriptions.filter((s) => s.confidence === "suspicious");
         setBaseReport(aiReport);
-        setSpendingData(null);
-        storeScanSession(files, aiReport, null, [], "claude");
+        storeScanSession(files, aiReport, spendingData, decision.failedFiles || [], "claude");
+        markReportUnlocked();
+        setIsUnlocked(true);
+        setReportTier("full");
+        saveReportData(aiReport, spendingData);
 
         if (unsure.length > 0) {
           setClearCount(clear.length);
@@ -644,21 +658,27 @@ export default function HomePage() {
           setStep("confirm");
         } else {
           setReport(aiReport);
-          saveReportData(aiReport, null);
           setStep("results");
         }
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
 
-      console.warn("[unlock] AI failed, showing local full report:", aiResult.error);
-      const teaser = getTeaserReport();
-      const spending = getTeaserSpending();
-      if (teaser) setReport(teaser);
-      if (spending) setSpendingData(spending);
-      if (teaser) saveReportData(teaser, spending);
+      console.warn("[unlock] AI failed, not unblurring local teaser:", decision.error);
+      setParseError(
+        scanErrorFromAi(decision.kind, {
+          warning: "ai_unlock_failed",
+          showPasteInput: false,
+        })
+      );
     } catch (err) {
       console.error("[unlock] AI error:", err);
+      setParseError(
+        scanErrorFromAi("generic", {
+          warning: "ai_unlock_failed",
+          showPasteInput: false,
+        })
+      );
     }
 
     setStep("results");
@@ -698,6 +718,7 @@ export default function HomePage() {
     setClearCount(0);
     setReportTier("teaser");
     setIsUnlocked(false);
+    setAnalyzingPdf(false);
     clearScanSession();
     clearPaymentState();
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -792,16 +813,28 @@ export default function HomePage() {
                   {elapsedSec < 8
                     ? analyzeStatus || (ar ? "فحص عميق يبدأ الآن..." : "Deep scan starting...")
                     : elapsedSec < 20
-                      ? ar
-                        ? "نقرأ كل العمليات في كشفك..."
-                        : "Reading every transaction on your statement..."
-                      : elapsedSec < 40
+                      ? analyzingPdf
                         ? ar
-                          ? "نطابق التجار والمبالغ المتكررة..."
-                          : "Matching merchants and recurring amounts..."
+                          ? "نستخرج النص من ملف PDF..."
+                          : "Extracting text from your PDF..."
                         : ar
-                          ? "لسه شغالين. الكشوفات الكبيرة تاخذ حوالي دقيقة."
-                          : "Still working. Large statements can take about a minute."}
+                          ? "نقرأ كل العمليات في كشفك..."
+                          : "Reading every transaction on your statement..."
+                      : elapsedSec < 40
+                        ? analyzingPdf
+                          ? ar
+                            ? "نرسل الكشف للذكاء الاصطناعي..."
+                            : "Sending the statement to AI..."
+                          : ar
+                            ? "نطابق التجار والمبالغ المتكررة..."
+                            : "Matching merchants and recurring amounts..."
+                        : analyzingPdf
+                          ? ar
+                            ? "كشوفات PDF تاخذ حوالي دقيقة. ابقَ في الصفحة."
+                            : "PDF scans can take about a minute. Stay on this page."
+                          : ar
+                            ? "لسه شغالين. الكشوفات الكبيرة تاخذ حوالي دقيقة."
+                            : "Still working. Large statements can take about a minute."}
                 </p>
                 <p className="text-6xl sm:text-7xl font-extrabold tracking-tight text-[#00A651] tabular-nums ltr-always leading-none mb-8">
                   {elapsedSec}s
@@ -935,7 +968,7 @@ export default function HomePage() {
         return (
           <div className="min-h-screen bg-white pt-24 pb-20 px-6">
             <div className="max-w-[560px] mx-auto">
-              {parseError?.warnings.includes("payment_verify_failed") && (
+              {parseError && (
                 <div className="mb-8 rounded-xl border border-red-100 bg-red-50 p-4 text-center">
                   <p className="font-bold text-red-700 mb-1">
                     {ar ? parseError.messageAr : parseError.message}
@@ -943,6 +976,18 @@ export default function HomePage() {
                   <p className="text-sm text-red-600 mb-3">
                     {ar ? parseError.detailsAr : parseError.details}
                   </p>
+                  {parseError.warnings.includes("ai_unlock_failed") && getPaymentReceipt() && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const receipt = getPaymentReceipt();
+                        if (receipt) handlePaymentSuccess(receipt);
+                      }}
+                      className="btn-primary mb-3 text-sm"
+                    >
+                      {ar ? "إعادة فحص الذكاء الاصطناعي" : "Retry AI scan"}
+                    </button>
+                  )}
                   <SupportContact locale={locale} variant="muted" />
                 </div>
               )}
@@ -1056,15 +1101,28 @@ export default function HomePage() {
                 >
                   <p className="text-[15px] text-slate-900 mb-5">
                     {ar
-                      ? `روابط إلغاء مباشرة لجميع الـ ${subs.length} اشتراكات.`
-                      : `Direct cancel links for all ${subs.length} subscriptions.`}
+                      ? `القائمة كاملة وروابط الإلغاء للخدمات المعروفة (${subscriptionCountLabel(subs.length, true)}).`
+                      : `Full list plus cancel links for services we recognize (${subscriptionCountLabel(subs.length, false)}).`}
                   </p>
                   <button
                     type="button"
-                    onClick={() => setShowPaywall(true)}
+                    onClick={() => {
+                      const receipt = getPaymentReceipt();
+                      if (receipt) {
+                        handlePaymentSuccess(receipt);
+                        return;
+                      }
+                      setShowPaywall(true);
+                    }}
                     className="btn-primary w-full max-w-none rounded-xl py-4 text-base tracking-tight"
                   >
-                    {ar ? `افتح · ${formatPriceOnce(true)}` : `Unlock · ${formatPriceOnce(false)}`}
+                    {getPaymentReceipt()
+                      ? ar
+                        ? "أكمل فحص الذكاء الاصطناعي"
+                        : "Finish AI scan"
+                      : ar
+                        ? `افتح · ${formatPriceOnce(true)}`
+                        : `Unlock · ${formatPriceOnce(false)}`}
                   </button>
                   <p className="text-[12px] text-slate-400 mt-3">
                     {ar ? "دفعة واحدة. بدون حساب." : "One time. No account needed."}
