@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "npx --yes tsx --test src/lib/subscription-rules.test.ts src/lib/cancel-db.test.ts src/lib/services/subscription-analyzer.test.ts"
   },
   "dependencies": {
     "@whop/checkout": "^0.0.52",

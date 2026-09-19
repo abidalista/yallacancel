@@ -10,30 +10,11 @@ import {
   SubscriptionFrequency,
   AuditReport,
 } from "../types";
-
-/**
- * Free/local path sometimes misses Currency col and treats USD as SAR.
- * Fix known ~$20 AI tools by tagging USD — keep native amount for display.
- */
-function resolveNativeAmount(
-  name: string,
-  amount: number,
-  currency: string
-): { amount: number; currency: string } {
-  const n = name.toLowerCase();
-  const cur = currency.toUpperCase();
-  const isAiTool = /claude|anthropic|chatgpt|openai|cursor|perplexity|midjourney/.test(n);
-
-  // Raw USD left as SAR (~$20)
-  if (cur === "SAR" && isAiTool && amount >= 17 && amount <= 23) {
-    return { amount, currency: "USD" };
-  }
-  // Already wrongly converted USD→SAR (~$20 × 3.75)
-  if (cur === "SAR" && isAiTool && amount >= 65 && amount <= 90) {
-    return { amount: Math.round((amount / 3.75) * 100) / 100, currency: "USD" };
-  }
-  return { amount, currency: cur || "SAR" };
-}
+import {
+  amountsFromCharge,
+  appleDisplayName,
+  classifyAppleCharge,
+} from "../subscription-rules";
 
 function majorityCurrency(txs: Transaction[]): string {
   const counts = new Map<string, number>();
@@ -62,6 +43,10 @@ const KNOWN_SUBSCRIPTIONS: Record<string, string> = {
   "apple.com": "Apple",
   "apple.com/bill": "Apple Subscriptions",
   itunes: "Apple iTunes",
+  "app store": "App Store",
+  "apple music": "Apple Music",
+  "apple arcade": "Apple Arcade",
+  "apple one": "Apple One",
   "google play": "Google Play",
   "google storage": "Google One",
   "google one": "Google One",
@@ -170,7 +155,7 @@ const KNOWN_SUBSCRIPTIONS: Record<string, string> = {
 };
 
 const DEFINITE_SUBSCRIPTIONS = new Set([
-  "Netflix", "Spotify", "Apple Subscriptions", "Apple iTunes", "Apple",
+  "Netflix", "Spotify",
   "Google One", "YouTube Premium", "Amazon Prime",
   "شاهد VIP", "STC Play", "STC TV", "STC",
   "أنغامي", "Deezer", "Adobe Creative Cloud", "Adobe",
@@ -179,7 +164,8 @@ const DEFINITE_SUBSCRIPTIONS = new Set([
   "Dropbox", "iCloud+", "Notion", "Figma", "Canva Pro",
   "Grammarly", "Zoom", "Slack", "LinkedIn Premium", "X Premium",
   "نادي رياضي", "فتنس تايم", "لي جام",
-  "Disney+", "Hulu", "Paramount+", "Apple TV+",
+  "Disney+", "Hulu", "Paramount+", "Apple TV+", "Apple Music",
+  "Apple Arcade", "Apple One", "Apple Fitness+", "Apple News+",
   "Crunchyroll", "Duolingo Plus", "Headspace", "Calm",
   "1Password", "LastPass", "NordVPN", "ExpressVPN", "Surfshark",
   "Coursera", "Skillshare", "MasterClass",
@@ -313,7 +299,10 @@ const SHORT_KEYWORD_BOUNDARY = new Set(["max", "du", "hbo", "osn", "stc"]);
 
 function matchKnownSubscription(description: string): string | null {
   const lower = description.toLowerCase();
-  for (const [keyword, name] of Object.entries(KNOWN_SUBSCRIPTIONS)) {
+  const entries = Object.entries(KNOWN_SUBSCRIPTIONS).sort(
+    (a, b) => b[0].length - a[0].length
+  );
+  for (const [keyword, name] of entries) {
     if (SHORT_KEYWORD_BOUNDARY.has(keyword)) {
       const re = new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
       if (re.test(lower)) return name;
@@ -475,7 +464,7 @@ function calculateMonthlyEquivalent(
 ): number {
   switch (frequency) {
     case "weekly":
-      return amount * 4.33;
+      return (amount * 52) / 12;
     case "monthly":
       return amount;
     case "quarterly":
@@ -498,11 +487,13 @@ function pushSubscription(
 ): void {
   const { key, txs, name, frequency, confidence } = params;
   const rawAvg = txs.reduce((sum, t) => sum + t.amount, 0) / txs.length;
-  const resolved = resolveNativeAmount(name, rawAvg, majorityCurrency(txs));
-  const avgAmount = resolved.amount;
-  const currency = resolved.currency;
-  const monthlyEquivalent = calculateMonthlyEquivalent(avgAmount, frequency);
-  const monthlySar = toSar(monthlyEquivalent, currency);
+  const money = amountsFromCharge({
+    name,
+    chargeAmount: rawAvg,
+    currency: majorityCurrency(txs),
+    frequency,
+    occurrences: txs.length,
+  });
   const sortedDates = txs
     .map((t) => t.date)
     .sort()
@@ -512,12 +503,12 @@ function pushSubscription(
     id: `sub_${++idCounter.value}`,
     name,
     normalizedName: key,
-    amount: Math.round(avgAmount * 100) / 100,
-    currency,
-    frequency,
-    monthlyEquivalent: Math.round(monthlyEquivalent * 100) / 100,
-    yearlyEquivalent: Math.round(monthlyEquivalent * 12 * 100) / 100,
-    monthlySar: Math.round(monthlySar * 100) / 100,
+    amount: money.amount,
+    currency: money.currency,
+    frequency: money.frequency,
+    monthlyEquivalent: money.monthlyEquivalent,
+    yearlyEquivalent: money.yearlyEquivalent,
+    monthlySar: money.monthlySar,
     occurrences: txs.length,
     lastCharge: sortedDates[sortedDates.length - 1] || "",
     firstCharge: sortedDates[0] || "",
@@ -545,6 +536,25 @@ export function analyzeTransactions(
     const knownName = matchKnownSubscription(txs[0].description);
     const isKnownSub = knownName && DEFINITE_SUBSCRIPTIONS.has(knownName);
     const fromRebate = txs.some((t) => t.source === "rebate");
+    const apple = classifyAppleCharge({
+      name: knownName || txs[0].description,
+      description: txs[0].description,
+      occurrences: txs.length,
+      consistentAmount: hasConsistentAmount(txs, 0.35),
+      frequency: detectFrequency(txs),
+    });
+
+    if (apple.kind !== "not_apple") {
+      if (!apple.include) continue;
+      pushSubscription(subscriptions, idCounter, {
+        key,
+        txs,
+        name: appleDisplayName(knownName || txs[0].description, txs[0].description),
+        frequency: detectFrequency(txs) ?? "monthly",
+        confidence: fromRebate ? "suspicious" : apple.confidence,
+      });
+      continue;
+    }
 
     if (txs.length >= 2 || (fromRebate && txs.length >= 1)) {
       const consistent = hasConsistentAmount(
