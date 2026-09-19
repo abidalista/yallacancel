@@ -126,10 +126,10 @@ const STEPS = [
   {
     num: "3",
     icon: Link2,
-    titleAr: "الغي بضغطة زر",
-    titleEn: "Cancel in one click",
-    descAr: "لكل اشتراك رابط إلغاء مباشر. اضغط وألغي · بدون دوخة أو بحث.",
-    descEn: "Every subscription has a direct cancel link. Click and cancel · no searching or runaround.",
+    titleAr: "افتح صفحة الإلغاء",
+    titleEn: "Open the cancel page",
+    descAr: "للخدمات المعروفة رابط إلغاء مباشر. اضغط وألغي من صفحة الخدمة. إذا ما عندنا رابط، نكتب ذلك بصراحة.",
+    descEn: "Known services get a direct cancel link. Tap and cancel on the merchant page. If we have no link, we say so.",
   },
 ];
 
@@ -1101,8 +1101,8 @@ export default function HomePage() {
                 >
                   <p className="text-[15px] text-slate-900 mb-5">
                     {ar
-                      ? `روابط إلغاء مباشرة لجميع الـ ${subs.length} اشتراكات.`
-                      : `Direct cancel links for all ${subs.length} subscriptions.`}
+                      ? `القائمة كاملة وروابط الإلغاء للخدمات المعروفة (${subscriptionCountLabel(subs.length, true)}).`
+                      : `Full list plus cancel links for services we recognize (${subscriptionCountLabel(subs.length, false)}).`}
                   </p>
                   <button
                     type="button"

@@ -17,17 +17,17 @@ interface PaywallModalProps {
 }
 
 const FEATURES_AR = [
-  { icon: Link2, text: "روابط إلغاء مباشرة لكل اشتراك مخفي" },
+  { icon: Link2, text: "روابط إلغاء للخدمات المعروفة. إذا ما فيه رابط نكتب ذلك" },
   { icon: FolderOpen, text: "أسماء كل الاشتراكات بدون تمويه" },
   { icon: FileDown, text: "المبلغ السنوي الكامل واضح" },
-  { icon: BookOpen, text: "دليل خطوة بخطوة لإلغاء كل خدمة" },
+  { icon: BookOpen, text: "صفحة إلغاء مباشرة بدل البحث العشوائي" },
 ];
 
 const FEATURES_EN = [
-  { icon: Link2, text: "Direct cancel links for every hidden subscription" },
+  { icon: Link2, text: "Cancel links for services we recognize. No link? We say so" },
   { icon: FolderOpen, text: "Unblur every subscription name" },
   { icon: FileDown, text: "Full yearly spend, clearly listed" },
-  { icon: BookOpen, text: "Step by step cancel guide for each service" },
+  { icon: BookOpen, text: "A cancel page instead of hunting for it" },
 ];
 
 const DEV_UNLOCK = process.env.NEXT_PUBLIC_DEV_UNLOCK === "true";
