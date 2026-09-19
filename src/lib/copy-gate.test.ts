@@ -40,7 +40,7 @@ describe("ABI-151 pricing CTA", () => {
     const page = readFileSync(join(ROOT, "src/app/page.tsx"), "utf8");
     const pricingIdx = page.indexOf('id="pricing"');
     assert.ok(pricingIdx > 0);
-    const pricingChunk = page.slice(pricingIdx, pricingIdx + 1800);
+    const pricingChunk = page.slice(pricingIdx, page.indexOf("{/* FAQ */}", pricingIdx));
     assert.match(pricingChunk, /getElementById\("upload"\)\?\.scrollIntoView/);
     assert.doesNotMatch(pricingChunk, /setShowPaywall\(true\)/);
     assert.match(pricingChunk, /حلل كشف حسابك/);
