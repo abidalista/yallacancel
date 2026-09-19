@@ -1,13 +1,13 @@
 {
-  "name": "abidalista",
+  "name": "yalla-cancel",
   "version": "1.0.0",
-  "description": "عبدالله ليستا - Saudi subscription audit platform",
+  "description": "Yalla Cancel / يلا كانسل · Saudi subscription audit platform",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "npx --yes tsx --test src/lib/subscription-rules.test.ts src/lib/cancel-db.test.ts src/lib/services/subscription-analyzer.test.ts src/lib/scan-flow.test.ts src/lib/demo-statement.test.ts"
+    "test": "npx --yes tsx --test src/lib/subscription-rules.test.ts src/lib/cancel-db.test.ts src/lib/services/subscription-analyzer.test.ts src/lib/scan-flow.test.ts src/lib/demo-statement.test.ts src/lib/copy-gate.test.ts"
   },
   "dependencies": {
     "@whop/checkout": "^0.0.52",

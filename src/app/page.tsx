@@ -27,6 +27,7 @@ import { AuditReport as Report, Subscription, Transaction, BankId } from "@/lib/
 import { getCancelInfo } from "@/lib/cancel-db";
 import BrandLogo from "@/components/BrandLogo";
 import { formatInt, formatHeadlineYearly, formatNativeYearly, formatPriceOnce, fileCountLabel, subscriptionCountLabel, truncateFilename, PRICE_LABEL } from "@/lib/format";
+import { PRIVACY_ONE_LINER } from "@/lib/i18n";
 import Ltr from "@/components/Ltr";
 import HomeJsonLd from "@/components/HomeJsonLd";
 import { track, POSTHOG_EVENTS } from "@/lib/analytics";
@@ -153,9 +154,9 @@ const TESTIMONIALS: { quote: string; name: string; role: string; initial: string
 const FAQ_ITEMS = [
   {
     qAr: "هل بياناتي آمنة؟",
-    aAr: "CSV نحاول نقرأه في المتصفح أولاً. الفحص الأعمق يرسل نص الكشف لسيرفرنا (Claude) عشان يطلع الاشتراكات. بعض ملفات PDF تحتاج استخراج نص على السيرفر. ما نخزن ملفاتك بعد التحليل. ما نبيع بياناتك.",
+    aAr: PRIVACY_ONE_LINER.ar,
     qEn: "Are my files safe?",
-    aEn: "We try to read CSV in your browser first. Deep analysis sends statement text to our API (Claude) to find subscriptions. Some PDFs need server text extraction. We do not store your files after the scan. We do not sell your data.",
+    aEn: PRIVACY_ONE_LINER.en,
   },
   {
     qAr: "أي بنوك تدعمون؟",
@@ -787,7 +788,7 @@ export default function HomePage() {
                 </p>
                 <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-full px-4 py-2 text-xs text-slate-500">
                   <Lock size={12} strokeWidth={1.5} />
-                  {ar ? "ملفاتك ما تنحفظ" : "Your files are never stored."}
+                  {ar ? PRIVACY_ONE_LINER.ar : PRIVACY_ONE_LINER.en}
                 </div>
               </div>
             </div>
@@ -1168,10 +1169,13 @@ export default function HomePage() {
                     ? "اعرف وين تروح فلوسك كل شهر"
                     : "See exactly where your money goes each month"}
                 </h1>
-                <p className="text-sm sm:text-[15px] max-w-[520px] mx-auto mb-5 leading-relaxed" style={{ color: "#4A6862" }}>
+                <p className="text-sm sm:text-[15px] max-w-[520px] mx-auto mb-3 leading-relaxed" style={{ color: "#4A6862" }}>
                   {ar
                     ? "ارفع كشف حسابك البنكي وفي ثواني نجيب لك كل اشتراكاتك الشهرية مع رابط الغاء مباشر لكل خدمة."
                     : "Upload your bank statement and in seconds we'll list every subscription you're paying for with a direct cancel link for each one."}
+                </p>
+                <p className="text-xs sm:text-[13px] max-w-[520px] mx-auto mb-5 leading-relaxed" style={{ color: "#8AADA8" }}>
+                  {ar ? PRIVACY_ONE_LINER.ar : PRIVACY_ONE_LINER.en}
                 </p>
               </motion.div>
 
@@ -1481,8 +1485,8 @@ export default function HomePage() {
                       {
                         labelAr: "خصوصية",
                         labelEn: "Privacy",
-                        ycAr: "✅ ما نخزن كشفك",
-                        ycEn: "✅ We do not store statements",
+                        ycAr: `✅ ${PRIVACY_ONE_LINER.ar}`,
+                        ycEn: `✅ ${PRIVACY_ONE_LINER.en}`,
                         manAr: "❌ كشفك عندك أنت",
                         manEn: "❌ You keep the file yourself",
                       },
@@ -1545,11 +1549,7 @@ export default function HomePage() {
                 }}
                 className="btn-primary w-full text-base py-4 mb-3"
               >
-                {ar ? (
-                  <>ارفع كشفك · المعاينة مجانية</>
-                ) : (
-                  <>Upload your statement · preview is free</>
-                )}
+                {ar ? "حلل كشف حسابك" : "Analyze your statement"}
               </button>
               <p className="text-xs text-slate-400">
                 {ar ? "يقبل مدى · فيزا · ماستركارد · ضمان استرداد كامل" : "Accepts mada · Visa · Mastercard · Full refund guarantee"}

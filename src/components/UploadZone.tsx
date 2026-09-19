@@ -11,6 +11,7 @@ import {
   demoStatementFile,
 } from "@/lib/demo-statement";
 import Ltr from "@/components/Ltr";
+import { PRIVACY_ONE_LINER } from "@/lib/i18n";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_TOTAL_SIZE = 25 * 1024 * 1024;
@@ -221,9 +222,7 @@ export default function UploadZone({ locale, onScan }: UploadZoneProps) {
       </div>
 
       <p className="text-xs text-center mt-3" style={{ color: "#8AADA8" }}>
-        {ar
-          ? "CSV ينقرأ في المتصفح أولاً. الفحص الأعمق يمر على سيرفرنا ثم ينحذف الملف. ما نخزن كشفك."
-          : "CSV is read in the browser first. Deep analysis hits our API, then the file is discarded. We do not store your statement."}
+        {ar ? PRIVACY_ONE_LINER.ar : PRIVACY_ONE_LINER.en}
       </p>
       <div className="mt-3 text-center">
         <button
