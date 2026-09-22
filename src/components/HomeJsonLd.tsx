@@ -1,11 +1,12 @@
 "use client";
 
 import { SITE_URL } from "@/lib/site";
+import { PRIVACY_ONE_LINER } from "@/lib/i18n";
 
 const FAQ = [
   {
     q: "هل بياناتي آمنة؟",
-    a: "CSV نحاول نقرأه في المتصفح أولاً. الفحص الأعمق يرسل نص الكشف لسيرفرنا (Claude) عشان يطلع الاشتراكات. بعض ملفات PDF تحتاج استخراج نص على السيرفر. ما نخزن ملفاتك بعد التحليل. ما نبيع بياناتك.",
+    a: PRIVACY_ONE_LINER.ar,
   },
   {
     q: "أي بنوك تدعمون؟",

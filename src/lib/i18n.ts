@@ -1,9 +1,15 @@
 export type Locale = "ar" | "en";
 
+/** One honest privacy line. Same sentence on hero, upload, FAQ, comparison, i18n. */
+export const PRIVACY_ONE_LINER = {
+  ar: "نحلل ملفاتك ثم نحذفها. المسار المدفوع يستخدم الذكاء الاصطناعي. ما نخزن شيء بعد التقرير.",
+  en: "Files are analyzed then discarded. The paid path uses AI. Nothing is stored after the report.",
+} as const;
+
 export const translations = {
   ar: {
     // Header
-    appName: "أبدالستا",
+    appName: "يلا كانسل",
     tagline: "اكتشف اشتراكاتك المخفية والغي اللي ما تحتاجه",
     subtitle: "ارفع كشف حسابك البنكي ونحلله لك على طول",
 
@@ -70,7 +76,7 @@ export const translations = {
 
     // Privacy
     privacyTitle: "خصوصيتك أولاً",
-    privacyDesc: "CSV ينقرأ في المتصفح أولاً. الفحص الأعمق يرسل نص الكشف لسيرفرنا ثم نحذف الملف.",
+    privacyDesc: PRIVACY_ONE_LINER.ar,
     privacyPoint1: "ما نخزن كشف حسابك بعد التحليل",
     privacyPoint2: "ما نبيع بياناتك ولا نستخدمها لإعلانات",
     privacyPoint3: "الكود على GitHub وتقدر تتأكد بنفسك",
@@ -94,7 +100,7 @@ export const translations = {
     potentialSavings: "وفر لحد",
   },
   en: {
-    appName: "Abidalista",
+    appName: "Yalla Cancel",
     tagline: "Find your hidden subscriptions and cancel what you don't need",
     subtitle: "Upload your bank statement and we'll analyze it instantly",
 
@@ -156,8 +162,7 @@ export const translations = {
     step3Desc: "Choose what to cancel and what to keep",
 
     privacyTitle: "Privacy First",
-    privacyDesc:
-      "CSV is read in the browser first. Deep analysis sends statement text to our API, then we discard the file.",
+    privacyDesc: PRIVACY_ONE_LINER.en,
     privacyPoint1: "We do not store your statement after the scan",
     privacyPoint2: "We do not sell your data or use it for ads",
     privacyPoint3: "Code is on GitHub · verify for yourself",
