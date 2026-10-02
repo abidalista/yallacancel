@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { basename, join, relative } from "node:path";
 import { describe, it } from "node:test";
 import { formatPriceOnce, PRICE_LABEL } from "./format";
 import { PRIVACY_ONE_LINER, translations } from "./i18n";
@@ -112,5 +112,50 @@ describe("ABI-156 canonical host", () => {
     }
     const sitemap = readFileSync(join(ROOT, "public/sitemap.xml"), "utf8");
     assert.match(sitemap, /https:\/\/yallacancel\.com\//);
+  });
+
+  it("every public cancel-*.html has a yallacancel.com canonical", () => {
+    const files = walkFiles(join(ROOT, "public"), new Set([".html"]))
+      .filter((f) => /\/cancel-[^/]+\.html$/.test(f));
+    assert.ok(files.length > 10);
+    for (const file of files) {
+      const text = readFileSync(file, "utf8");
+      const name = basename(file);
+      assert.match(
+        text,
+        new RegExp(`rel="canonical" href="https://yallacancel\\.com/${name.replaceAll(".", "\\.")}"`),
+        relative(ROOT, file),
+      );
+    }
+  });
+});
+
+const HIGH_INTENT_GUIDES = [
+  "cancel-netflix.html",
+  "cancel-shahid.html",
+  "cancel-hungerstation-pro.html",
+  "cancel-stc.html",
+  "cancel-youtube-premium.html",
+  "cancel-icloud.html",
+  "cancel-chatgpt.html",
+  "cancel-jahez-plus.html",
+  "cancel-careem-plus.html",
+  "cancel-noon-vip.html",
+] as const;
+
+describe("ABI-144/145 guide CTAs", () => {
+  it("10 high-intent guides have an above-the-fold ارفع كشفك CTA to /?utm_source=seo_guide", () => {
+    for (const name of HIGH_INTENT_GUIDES) {
+      const text = readFileSync(join(ROOT, "public", name), "utf8");
+      const contentIdx = text.indexOf('class="content"');
+      assert.ok(contentIdx > 0, name);
+      const fold = text.slice(0, contentIdx);
+      assert.match(fold, /ارفع كشفك/, name);
+      assert.match(fold, /href="\/\?utm_source=seo_guide"/, name);
+      assert.match(fold, /49 SAR/, name);
+      assert.match(fold, /نحلل ملفاتك ثم نحذفها/, name);
+      assert.doesNotMatch(text, /على جهازك|on your device|on-device/i, name);
+      assert.doesNotMatch(fold, /[—–]/, name);
+    }
   });
 });
