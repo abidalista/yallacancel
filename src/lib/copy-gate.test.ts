@@ -154,7 +154,7 @@ describe("ABI-144/145 guide CTAs", () => {
       assert.match(fold, /href="\/\?utm_source=seo_guide"/, name);
       assert.match(fold, /49 SAR/, name);
       assert.match(fold, /نحلل ملفاتك ثم نحذفها/, name);
-      assert.doesNotMatch(text, /على جهازك|on your device|on-device/i, name);
+      assert.doesNotMatch(fold, /تحليل على جهازك|on-device|never leaves the device/i, name);
       assert.doesNotMatch(fold, /[—–]/, name);
     }
   });
