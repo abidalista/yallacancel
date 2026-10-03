@@ -1,5 +1,12 @@
 name: Deploy to Cloudflare Pages
 
+# Required GitHub Actions secrets (repo Settings → Secrets and variables → Actions):
+#   CLOUDFLARE_API_TOKEN   – token with Account → Cloudflare Pages: Edit
+#   CLOUDFLARE_ACCOUNT_ID  – from Workers & Pages overview
+#   ANTHROPIC_API_KEY      – synced to Pages on every successful deploy
+# Optional (skipped when empty so live Cloudflare values are not wiped):
+#   LLAMA_CLOUD_API_KEY, WHOP_API_KEY, FOUNDER_ACCESS_TOKEN
+
 on:
   push:
     branches: [main]
@@ -15,8 +22,51 @@ jobs:
     permissions:
       contents: read
       deployments: write
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Check Cloudflare + Anthropic secrets
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          set -euo pipefail
+          missing=0
+          if [ -z "${CLOUDFLARE_API_TOKEN}" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN is empty. Wrangler cannot deploy or sync Pages secrets."
+            missing=1
+          fi
+          if [ -z "${CLOUDFLARE_ACCOUNT_ID}" ]; then
+            echo "::error::CLOUDFLARE_ACCOUNT_ID is empty."
+            missing=1
+          fi
+          if [ -z "${ANTHROPIC_API_KEY}" ]; then
+            echo "::error::ANTHROPIC_API_KEY is empty. Live analyze will 401 until this is set and synced."
+            missing=1
+          fi
+          if [ "$missing" -ne 0 ]; then
+            cat <<'EOF'
+          Founder: restore GitHub Actions secrets, then re-run this workflow.
+
+          1. Cloudflare Dashboard → Manage Account → Account API Tokens → Create Token
+             Use the "Edit Cloudflare Workers" template (includes Pages:Edit).
+          2. Copy Account ID from Workers & Pages (right sidebar).
+          3. GitHub → this repo → Settings → Secrets and variables → Actions
+             Set repository secrets (not Environment secrets):
+               CLOUDFLARE_API_TOKEN
+               CLOUDFLARE_ACCOUNT_ID
+               ANTHROPIC_API_KEY
+          4. Actions → Deploy to Cloudflare Pages → Run workflow
+
+          Unblock live analyze without waiting for CI:
+          Cloudflare → Workers & Pages → yallacancel → Settings → Variables and Secrets
+          Set Production secret ANTHROPIC_API_KEY, then Retry the latest production deployment.
+          EOF
+            exit 1
+          fi
+          echo "Required secrets are present."
 
       - uses: actions/setup-node@v4
         with:
@@ -32,17 +82,31 @@ jobs:
         run: npm ci && npm run build
 
       - name: Sync Pages secrets
-        continue-on-error: true
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          LLAMA_CLOUD_API_KEY: ${{ secrets.LLAMA_CLOUD_API_KEY }}
+          WHOP_API_KEY: ${{ secrets.WHOP_API_KEY }}
+          FOUNDER_ACCESS_TOKEN: ${{ secrets.FOUNDER_ACCESS_TOKEN }}
         run: |
-          printf '%s' "${{ secrets.ANTHROPIC_API_KEY }}" | npx wrangler pages secret put ANTHROPIC_API_KEY --project-name=yallacancel
-          printf '%s' "${{ secrets.LLAMA_CLOUD_API_KEY }}" | npx wrangler pages secret put LLAMA_CLOUD_API_KEY --project-name=yallacancel
-          printf '%s' "${{ secrets.WHOP_API_KEY }}" | npx wrangler pages secret put WHOP_API_KEY --project-name=yallacancel
-          if [ -n "${{ secrets.FOUNDER_ACCESS_TOKEN }}" ]; then
-            printf '%s' "${{ secrets.FOUNDER_ACCESS_TOKEN }}" | npx wrangler pages secret put FOUNDER_ACCESS_TOKEN --project-name=yallacancel
-          fi
+          set -euo pipefail
+          put_pages_secret() {
+            local name="$1"
+            local value="$2"
+            local required="${3:-}"
+            if [ -z "$value" ]; then
+              if [ "$required" = "required" ]; then
+                echo "::error::$name GitHub secret is empty."
+                exit 1
+              fi
+              echo "Skipping $name (empty in GitHub; Cloudflare value left unchanged)"
+              return 0
+            fi
+            printf '%s' "$value" | npx --yes wrangler pages secret put "$name" --project-name=yallacancel
+          }
+          put_pages_secret ANTHROPIC_API_KEY "$ANTHROPIC_API_KEY" required
+          put_pages_secret LLAMA_CLOUD_API_KEY "$LLAMA_CLOUD_API_KEY"
+          put_pages_secret WHOP_API_KEY "$WHOP_API_KEY"
+          put_pages_secret FOUNDER_ACCESS_TOKEN "$FOUNDER_ACCESS_TOKEN"
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
@@ -50,3 +114,6 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy out --project-name=yallacancel --branch=main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
