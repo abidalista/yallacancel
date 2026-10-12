@@ -38,9 +38,11 @@ If GSC already exists for buildsaudi.co, that does not cover this domain. This s
 
 Production `POST /api/analyze-statements` returns **500** if `ANTHROPIC_API_KEY` is missing. The UI then falls back to the weaker on-device parser. Do not drive WhatsApp traffic until this is green.
 
-### GitHub Actions (this repo builds here, then deploys `out/` to Cloudflare Pages)
+### GitHub Actions (optional / currently disabled)
 
-Repo → **Settings → Secrets and variables → Actions**. Required names:
+Cloudflare Pages **git integration** is the live deploy path. The **Deploy to Cloudflare Pages** Actions workflow is dispatch-only because repo secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` have been empty since 2026-09-15. Do not re-enable `on: push` until those two secrets are set again.
+
+Repo → **Settings → Secrets and variables → Actions**. Names if you restore wrangler deploy:
 
 | Secret | Used for |
 |---|---|
@@ -120,7 +122,7 @@ Vertical 9:16. Arabic captions. Blur the statement. Last 2 seconds: `yallacancel
 ## After merge: 5 minute checklist
 
 - [ ] GitHub secrets above are set (especially Anthropic + PostHog)
-- [ ] Re-run **Deploy to Cloudflare Pages** if you added secrets after the last build
+- [ ] Confirm Cloudflare Pages git deploy finished (do not re-enable the Actions wrangler workflow until `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` are set)
 - [ ] GSC property + sitemap submitted
 - [ ] Live scan works (Network 200 on `/api/analyze-statements`)
 - [ ] PostHog live: host `yallacancel.com`
