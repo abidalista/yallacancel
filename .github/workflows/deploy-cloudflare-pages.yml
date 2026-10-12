@@ -1,8 +1,12 @@
+# Direct wrangler deploy is redundant: Cloudflare Pages git integration already
+# builds and ships main (the live site updated while this workflow was failing).
+# Auto-run on push is disabled so main stops going red. Do not re-enable until
+# GitHub Actions secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are set
+# again (repo Settings → Secrets and variables → Actions). Both have been empty
+# since 2026-09-15 (run 34986571826); last time they were present was 2026-07-29.
 name: Deploy to Cloudflare Pages
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 concurrency:
