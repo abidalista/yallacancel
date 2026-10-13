@@ -48,6 +48,7 @@ Pass requires all of:
 
 - State file `$YALLACANCEL_VERIFY_DIR/state.json` present (this run started the instance).
 - `nextPid` alive; `chromePid` alive.
+- Port check via `ss`, else `lsof`, else `fuser`. If none of those binaries exist, HTTP identity is the port proof.
 - `GET $url/` HTTP 200 containing `yallacancel`.
 - `GET $url/test-statement.csv` HTTP 200 containing `SPOTIFY PREMIUM`.
 - CDP `http://127.0.0.1:$cdpPort/json/version` HTTP 200.

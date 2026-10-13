@@ -1,0 +1,203 @@
+RootWebArea: Yalla Cancel | يلا كانسل · اكتشف اشتراكاتك المخفية
+  none
+    none
+      none
+        banner
+          none
+            button: yallacancel
+              StaticText: yallacancel
+                InlineTextBox: yallacancel
+            none
+              link: أدلة الإلغاء
+                StaticText: أدلة الإلغاء
+                  InlineTextBox: أدلة 
+                  InlineTextBox: الإلغاء
+              link: المقالات
+                StaticText: المقالات
+                  InlineTextBox: المقالات
+              link: تواصل معنا
+                StaticText: تواصل معنا
+                  InlineTextBox: تواصل 
+                  InlineTextBox: معنا
+              button: EN
+                StaticText: EN
+                  InlineTextBox: EN
+        none
+          none
+            none
+              heading: تصرف 5,411.28 SAR/year
+                StaticText: تصرف 
+                  InlineTextBox: تصرف 
+                StaticText: 5,411.28 SAR/year
+                  InlineTextBox: 5,411.28 SAR/year
+              paragraph
+                StaticText: عبر 9 اشتراكات
+                  InlineTextBox:  اشتراكات
+                  InlineTextBox: 9
+                  InlineTextBox: عبر 
+              none
+            none
+              none
+                none
+                  StaticText: 1
+                    InlineTextBox: 1
+                  StaticText: .
+                    InlineTextBox: .
+                none
+                  StaticText: Adobe Creative Cloud
+                    InlineTextBox: Adobe Creative Cloud
+                    InlineTextBox: Adobe
+                    InlineTextBox: …
+                none
+                  StaticText: 1,607.88 SAR/yr
+                    InlineTextBox: 1,607.88 SAR/yr
+                link: الغي 
+                  StaticText: الغي
+                    InlineTextBox: الغي
+                  StaticText:  
+                    InlineTextBox:  
+              none
+                none
+                  StaticText: 2
+                    InlineTextBox: 2
+                  StaticText: .
+                    InlineTextBox: .
+                none
+                  StaticText: ChatGPT Plus
+                    InlineTextBox: ChatGPT Plus
+                none
+                  StaticText: $240/yr
+                    InlineTextBox: $240/yr
+                link: الغي 
+                  StaticText: الغي
+                    InlineTextBox: الغي
+                  StaticText:  
+                    InlineTextBox:  
+              none
+                none
+                  StaticText: 3
+                    InlineTextBox: 3
+                  StaticText: .
+                    InlineTextBox: .
+                none
+                  StaticText: Netflix
+                    InlineTextBox: Netflix
+                none
+                  StaticText: 719.88 SAR/yr
+                    InlineTextBox: 719.88 SAR/yr
+                link: الغي 
+                  StaticText: الغي
+                    InlineTextBox: الغي
+                  StaticText:  
+                    InlineTextBox:  
+              none
+                none
+                  StaticText: 4
+                    InlineTextBox: 4
+                  StaticText: .
+                    InlineTextBox: .
+                generic: مخفي
+                none
+                  StaticText: 540 SAR/yr
+                    InlineTextBox: 540 SAR/yr
+              none
+                none
+                  StaticText: 5
+                    InlineTextBox: 5
+                  StaticText: .
+                    InlineTextBox: .
+                generic: مخفي
+                none
+                  StaticText: 539.88 SAR/yr
+                    InlineTextBox: 539.88 SAR/yr
+              none
+                none
+                  StaticText: 6
+                    InlineTextBox: 6
+                  StaticText: .
+                    InlineTextBox: .
+                generic: مخفي
+                none
+                  StaticText: 395.88 SAR/yr
+                    InlineTextBox: 395.88 SAR/yr
+              none
+                none
+                  StaticText: 7
+                    InlineTextBox: 7
+                  StaticText: .
+                    InlineTextBox: .
+                generic: مخفي
+                none
+                  StaticText: 348 SAR/yr
+                    InlineTextBox: 348 SAR/yr
+              none
+                none
+                  StaticText: 8
+                    InlineTextBox: 8
+                  StaticText: .
+                    InlineTextBox: .
+                generic: مخفي
+                none
+                  StaticText: 179.88 SAR/yr
+                    InlineTextBox: 179.88 SAR/yr
+              none
+                none
+                  StaticText: 9
+                    InlineTextBox: 9
+                  StaticText: .
+                    InlineTextBox: .
+                generic: مخفي
+                none
+                  StaticText: 179.88 SAR/yr
+                    InlineTextBox: 179.88 SAR/yr
+              none
+                none
+                  StaticText: + 
+                    InlineTextBox: + 
+                  StaticText: 6
+                    InlineTextBox: 6
+                  StaticText:  
+                    InlineTextBox:  
+                  StaticText: إضافية
+                    InlineTextBox: إضافية
+                  StaticText:  (
+                    InlineTextBox:  (
+                  StaticText: 2,183.52 SAR/year
+                    InlineTextBox: 2,183.52 SAR/year
+                  StaticText: )
+                    InlineTextBox: )
+            none
+              paragraph
+                StaticText: القائمة كاملة وروابط الإلغاء للخدمات المعروفة (9 اشتراكات).
+                  InlineTextBox: 9 
+                  InlineTextBox: القائمة كاملة وروابط الإلغاء للخدمات المعروفة (
+                  InlineTextBox: اشتراكات).
+              button: افتح · 49 SAR
+                StaticText: افتح · 49 SAR
+                  InlineTextBox: SAR
+                  InlineTextBox:  
+                  InlineTextBox: 49
+                  InlineTextBox: افتح · 
+              paragraph
+                StaticText: دفعة واحدة. بدون حساب.
+                  InlineTextBox: دفعة واحدة. بدون حساب.
+            generic
+              button: ابدأ من جديد
+                StaticText: ابدأ من جديد
+                  InlineTextBox: ابدأ من جديد
+      generic
+        generic
+          generic
+            none
+              none
+                generic
+                  none
+                    button: Open Next.js Dev Tools
+                      image
+                        none
+                        none
+                        none
+                        none
+                        none
+      generic
+        alert

@@ -35,9 +35,10 @@ Preconditions:
 ## Gotchas
 
 - `scripts/ui-test.mjs` waits for `شوف تقريري` / `View my report`. That copy is gone; the confirm CTA is `شوف المجموع ←` and skip is `تخطّى · روح للنتيجة`.
-- Upload and analyze screens are paced (~3s + ~2.5s). Wait for result text, not a short sleep.
+- Upload and analyze screens are paced (~3s + ~2.5s) and Framer Motion can leave the analyzing overlay in the DOM while results are already underneath. Wait until `افتح · 49 SAR` is a visible button, not merely present in `innerText`.
 - The sample path is CSV-only and stays local. A hang of 60s+ means the client fell through to the AI server; stop and check that the file fetched was `/test-statement.csv`.
 - Confirm is optional. Amazon-style one-off merchants may appear as unsure. Skipping them is still the demo journey; do not mark demo-scan failed only because confirm appeared.
 - Teaser shows the **top 3 by monthly SAR**. Adobe / ChatGPT may outrank Netflix. Assert a known name plus locked rows, not a fixed first row.
+- On a 390x844 viewport the unlock CTA sits below the fold. Scroll `افتح · 49 SAR` into view before treating it as visible; capture a full-page screenshot for proof.
 - `drive demo-scan` already writes artifacts. Re-running it overwrites `artifacts/demo-scan/`.
 - English entry is a second path. Do not report it proven if you only clicked the Arabic sample button.

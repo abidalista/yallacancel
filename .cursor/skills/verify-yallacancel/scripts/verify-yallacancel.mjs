@@ -63,20 +63,39 @@ function pidAlive(pid) {
     return false;
   }
 }
-function portPids(port) {
+function tryCmd(bin, argv) {
   try {
-    const out = execFileSync("ss", ["-ltnp"], { encoding: "utf8" });
-    const pids = new Set();
-    for (const line of out.split("\n")) {
-      if (!line.includes(`:${port} `) && !line.includes(`:${port}\n`)) {
-        if (!new RegExp(`:${port}\\s`).test(line)) continue;
-      }
+    return execFileSync(bin, argv, { encoding: "utf8" });
+  } catch (err) {
+    if (err && err.status === 1 && err.stdout) return String(err.stdout);
+    return null;
+  }
+}
+
+function portPids(port) {
+  const pids = new Set();
+  const ssOut = tryCmd("ss", ["-ltnp"]);
+  if (ssOut) {
+    for (const line of ssOut.split("\n")) {
+      if (!new RegExp(`:${port}\\b`).test(line)) continue;
       for (const m of line.matchAll(/pid=(\d+)/g)) pids.add(Number(m[1]));
     }
-    return [...pids];
-  } catch {
-    return [];
+    return { tool: "ss", pids: [...pids], unknown: false };
   }
+  const lsofOut = tryCmd("lsof", ["-nP", `-iTCP:${port}`, "-sTCP:LISTEN", "-t"]);
+  if (lsofOut !== null) {
+    for (const line of lsofOut.split("\n")) {
+      const n = Number(line.trim());
+      if (n) pids.add(n);
+    }
+    return { tool: "lsof", pids: [...pids], unknown: false };
+  }
+  const fuserOut = tryCmd("fuser", ["-n", "tcp", String(port)]);
+  if (fuserOut !== null) {
+    for (const m of fuserOut.matchAll(/(\d+)/g)) pids.add(Number(m[1]));
+    return { tool: "fuser", pids: [...pids], unknown: false };
+  }
+  return { tool: "none", pids: [], unknown: true };
 }
 function chromePath() {
   for (const c of [
@@ -132,9 +151,9 @@ async function launch(args) {
   }
   const port = Number(args.port || process.env.YALLACANCEL_VERIFY_PORT || DEFAULT_PORT);
   const cdpPort = Number(args["cdp-port"] || process.env.YALLACANCEL_VERIFY_CDP_PORT || DEFAULT_CDP);
-  const owners = portPids(port);
-  if (owners.length) {
-    throw new Error(`Port ${port} already owned by pid(s) ${owners.join(",")}. Refuse to share.`);
+  const already = portPids(port);
+  if (!already.unknown && already.pids.length) {
+    throw new Error(`Port ${port} already owned by pid(s) ${already.pids.join(",")}. Refuse to share.`);
   }
   if (!existsSync(join(repoRoot, "node_modules", "next"))) {
     console.error("Installing npm dependencies (node_modules missing)...");
@@ -235,13 +254,25 @@ async function doctor() {
   const problems = [];
   if (!pidAlive(state.nextPid)) problems.push(`next pid ${state.nextPid} is dead`);
   const owners = portPids(state.port);
-  if (!owners.length) problems.push(`port ${state.port} has no listener`);
-  else if (!owners.includes(state.nextPid) && !owners.some((p) => pidAlive(p))) {
-    problems.push(`port ${state.port} owned by dead pid(s) ${owners.join(",")}`);
-  } else if (!owners.includes(state.nextPid)) {
-    // next often listens via a child thread/process; require our pid still alive.
-    if (!pidAlive(state.nextPid)) {
-      problems.push(`port ${state.port} owned by ${owners.join(",")} and nextPid ${state.nextPid} is dead`);
+  if (owners.unknown) {
+    // ss/lsof/fuser missing: require HTTP identity instead of a PID map.
+  } else if (!owners.pids.length) {
+    problems.push(`port ${state.port} has no listener`);
+  } else {
+    const ours =
+      owners.pids.includes(state.nextPid) ||
+      owners.pids.some((p) => {
+        try {
+          const cmd = readFileSync(`/proc/${p}/cmdline`, "utf8");
+          return cmd.includes("next") && cmd.includes(String(state.port));
+        } catch {
+          return false;
+        }
+      });
+    if (!ours) {
+      problems.push(
+        `port ${state.port} owned by ${owners.pids.join(",")} not this nextPid ${state.nextPid}`
+      );
     }
   }
   let landing = "";
@@ -345,6 +376,30 @@ async function clickText(page, text) {
 async function waitText(page, text, timeout = 30_000) {
   await page.waitForFunction(
     (needle) => (document.body?.innerText || "").includes(needle),
+    { timeout },
+    text
+  );
+}
+
+async function waitVisibleButton(page, text, timeout = 30_000) {
+  await page.waitForFunction(
+    (needle) => {
+      const want = (needle || "").replace(/\s+/g, " ").trim();
+      const els = Array.from(document.querySelectorAll("button, a, [role='button']"));
+      const el = els.find((e) => (e.textContent || "").replace(/\s+/g, " ").trim().includes(want));
+      if (!el) return false;
+      const r = el.getBoundingClientRect();
+      const s = getComputedStyle(el);
+      return (
+        r.width > 8 &&
+        r.height > 8 &&
+        r.bottom > 0 &&
+        r.top < window.innerHeight &&
+        s.visibility !== "hidden" &&
+        Number(s.opacity) > 0.5 &&
+        s.pointerEvents !== "none"
+      );
+    },
     { timeout },
     text
   );
@@ -502,8 +557,17 @@ async function driveDemoScan() {
       throw new Error(`Did not reach confirm or results. Last stage=${stage}\n${t.slice(0, 800)}`);
     }
 
-    await waitText(page, UNLOCK_AR, 15_000);
-    await waitText(page, START_OVER_AR, 5_000);
+    await page.waitForFunction(() => {
+      const t = document.body?.innerText || "";
+      return !t.includes("نفحص الاشتراكات") && !t.includes("جاري رفع الملفات");
+    }, { timeout: 10_000 });
+    await page.evaluate((needle) => {
+      const want = (needle || "").replace(/\s+/g, " ").trim();
+      const els = Array.from(document.querySelectorAll("button"));
+      const el = els.find((e) => (e.textContent || "").replace(/\s+/g, " ").trim().includes(want));
+      el?.scrollIntoView({ block: "center" });
+    }, UNLOCK_AR);
+    await waitVisibleButton(page, UNLOCK_AR, 10_000);
     const text = await visibleText(page);
     const checks = {
       heroGone: !text.includes(HERO_AR),
@@ -515,7 +579,8 @@ async function driveDemoScan() {
         () => document.querySelectorAll('[aria-label="مخفي"]').length
       ),
     };
-    await page.screenshot({ path: join(outDir, "03-teaser-results.png") });
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({ path: join(outDir, "03-teaser-results.png"), fullPage: true });
     const snap = await page.accessibility.snapshot({ interestingOnly: false });
     writeFileSync(join(outDir, "03-teaser-results.aria.txt"), flattenAria(snap).join("\n"));
     writeFileSync(join(outDir, "03-teaser-results.txt"), text);
