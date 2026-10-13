@@ -1,0 +1,28 @@
+{
+  "featureId": "demo-scan",
+  "entryPoint": "landing demo button",
+  "provenAt": "2026-10-13T15:36:45.916Z",
+  "doctor": {
+    "url": "http://127.0.0.1:4173",
+    "port": 4173,
+    "nextPid": 2633
+  },
+  "result": {
+    "stage": "results",
+    "checks": {
+      "heroGone": true,
+      "yearly": true,
+      "unlock": true,
+      "startOver": true,
+      "knownSub": true,
+      "hiddenCount": 6
+    },
+    "url": "http://127.0.0.1:4173/"
+  },
+  "artifacts": [
+    "01-landing.png",
+    "03-teaser-results.png",
+    "03-teaser-results.aria.txt",
+    "03-teaser-results.txt"
+  ]
+}
