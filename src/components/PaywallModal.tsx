@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, FolderOpen, FileDown, Link2, BookOpen, Loader2, Mail, Zap } from "lucide-react";
 import { WhopCheckoutEmbed } from "@whop/checkout/react";
-import { PRICE_LABEL, normalizeAccessCode, formatHeadlineYearly, subscriptionCountLabel } from "@/lib/format";
-import { track, POSTHOG_EVENTS } from "@/lib/analytics";
+import { PRICE_LABEL, PRICE_SAR, PRICE_CURRENCY, normalizeAccessCode, formatHeadlineYearly, subscriptionCountLabel } from "@/lib/format";
+import { track as capturePostHog, POSTHOG_EVENTS } from "@/lib/analytics";
+import { track } from "@/lib/track";
+import { getWhopCheckoutEnvironment, getWhopPlanId } from "@/lib/whop-checkout";
 import Ltr from "@/components/Ltr";
 
 interface PaywallModalProps {
@@ -47,7 +49,8 @@ export default function PaywallModal({
   const [codeError, setCodeError] = useState(false);
   const [receiptMissing, setReceiptMissing] = useState(false);
   const [checkoutError, setCheckoutError] = useState(false);
-  const planId = process.env.NEXT_PUBLIC_WHOP_PLAN_ID || "plan_3E0V8cxU8VYXI";
+  const planId = getWhopPlanId();
+  const checkoutEnvironment = getWhopCheckoutEnvironment();
   const hasHiddenValue = hiddenCount > 0 && hiddenYearlySar > 0;
 
   useEffect(() => {
@@ -57,8 +60,8 @@ export default function PaywallModal({
       hidden_count: hiddenCount,
       hidden_yearly_sar: Math.round(hiddenYearlySar),
     };
-    track(POSTHOG_EVENTS.PAYWALL_VIEWED, props);
-    track(POSTHOG_EVENTS.PAYWALL_VIEW, props);
+    capturePostHog(POSTHOG_EVENTS.PAYWALL_VIEWED, props);
+    capturePostHog(POSTHOG_EVENTS.PAYWALL_VIEW, props);
   }, [locale, planId, hiddenCount, hiddenYearlySar]);
 
   function submitAccessCode() {
@@ -66,8 +69,8 @@ export default function PaywallModal({
     // Recovery: paste Whop receipt id (pay_…) from dashboard email / support
     if (/^pay_[A-Za-z0-9]+$/.test(raw)) {
       setCodeError(false);
-      track(POSTHOG_EVENTS.CHECKOUT_STARTED, { locale, plan_id: planId, method: "pay_receipt" });
-      track(POSTHOG_EVENTS.CHECKOUT_START, { locale, plan_id: planId, method: "pay_receipt" });
+      capturePostHog(POSTHOG_EVENTS.CHECKOUT_STARTED, { locale, plan_id: planId, method: "pay_receipt" });
+      capturePostHog(POSTHOG_EVENTS.CHECKOUT_START, { locale, plan_id: planId, method: "pay_receipt" });
       onPaymentSuccess(raw);
       return;
     }
@@ -77,20 +80,25 @@ export default function PaywallModal({
       return;
     }
     setCodeError(false);
-    track(POSTHOG_EVENTS.CHECKOUT_STARTED, { locale, plan_id: planId, method: "access_code" });
-    track(POSTHOG_EVENTS.CHECKOUT_START, { locale, plan_id: planId, method: "access_code" });
+    capturePostHog(POSTHOG_EVENTS.CHECKOUT_STARTED, { locale, plan_id: planId, method: "access_code" });
+    capturePostHog(POSTHOG_EVENTS.CHECKOUT_START, { locale, plan_id: planId, method: "access_code" });
     onPaymentSuccess(`founder_${code}`);
   }
 
   function startCheckout() {
-    track(POSTHOG_EVENTS.CHECKOUT_STARTED, { locale, plan_id: planId, method: "whop" });
-    track(POSTHOG_EVENTS.CHECKOUT_START, { locale, plan_id: planId, method: "whop" });
+    track("checkout_clicked", {
+      price: PRICE_SAR,
+      currency: PRICE_CURRENCY,
+      path: typeof window !== "undefined" ? window.location.pathname : "/",
+    });
+    capturePostHog(POSTHOG_EVENTS.CHECKOUT_STARTED, { locale, plan_id: planId, method: "whop" });
+    capturePostHog(POSTHOG_EVENTS.CHECKOUT_START, { locale, plan_id: planId, method: "whop" });
     setCheckoutError(false);
     setShowCheckout(true);
   }
 
   function handleClose() {
-    track(POSTHOG_EVENTS.PAYWALL_DISMISSED, { locale, plan_id: planId, saw_checkout: showCheckout });
+    capturePostHog(POSTHOG_EVENTS.PAYWALL_DISMISSED, { locale, plan_id: planId, saw_checkout: showCheckout });
     onClose();
   }
 
@@ -261,6 +269,7 @@ export default function PaywallModal({
               </div>
               <WhopCheckoutEmbed
                 planId={planId}
+                environment={checkoutEnvironment}
                 theme="light"
                 skipRedirect
                 returnUrl={
@@ -271,12 +280,12 @@ export default function PaywallModal({
                 onComplete={(_planId, receiptId) => {
                   // Never invent a fake id. Reject missing receipts and the whop_paid placeholder.
                   if (!receiptId || receiptId === "whop_paid" || !receiptId.startsWith("pay_")) {
-                    track(POSTHOG_EVENTS.PAYMENT_FAILED, {
+                    capturePostHog(POSTHOG_EVENTS.PAYMENT_FAILED, {
                       locale,
                       plan_id: planId,
                       reason: "missing_receipt",
                     });
-                    track(POSTHOG_EVENTS.PURCHASE_FAIL, {
+                    capturePostHog(POSTHOG_EVENTS.PURCHASE_FAIL, {
                       locale,
                       plan_id: planId,
                       reason: "missing_receipt",
@@ -287,7 +296,7 @@ export default function PaywallModal({
                     return;
                   }
                   setCheckoutError(false);
-                  track(POSTHOG_EVENTS.PAYMENT_COMPLETED, {
+                  capturePostHog(POSTHOG_EVENTS.PAYMENT_COMPLETED, {
                     locale,
                     plan_id: planId,
                     receipt_prefix: "pay_",
