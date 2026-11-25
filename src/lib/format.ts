@@ -3,7 +3,9 @@ const intFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
-export const PRICE_LABEL = "49 SAR";
+export const PRICE_SAR = 49;
+export const PRICE_CURRENCY = "SAR";
+export const PRICE_LABEL = `${PRICE_SAR} ${PRICE_CURRENCY}`;
 
 /** Support inbox — used only in mailto: links, never shown in UI */
 export const SUPPORT_EMAIL = "theamsh@gmail.com";

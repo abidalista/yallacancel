@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, join, relative } from "node:path";
 import { describe, it } from "node:test";
-import { formatPriceOnce, PRICE_LABEL } from "./format";
+import { formatPriceOnce, PRICE_CURRENCY, PRICE_LABEL, PRICE_SAR } from "./format";
 import { PRIVACY_ONE_LINER, translations } from "./i18n";
 
 const ROOT = process.cwd();
@@ -83,6 +83,8 @@ describe("ABI-152 privacy one-liner", () => {
 
 describe("ABI-153 product price", () => {
   it("formatPriceOnce is always 49 SAR", () => {
+    assert.equal(PRICE_SAR, 49);
+    assert.equal(PRICE_CURRENCY, "SAR");
     assert.equal(PRICE_LABEL, "49 SAR");
     assert.equal(formatPriceOnce(), "49 SAR");
     assert.equal(formatPriceOnce(true), "49 SAR");
